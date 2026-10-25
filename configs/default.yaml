@@ -1,0 +1,21 @@
+seed: 42
+
+data:
+  raw_dir: data/raw
+  processed_dir: data/processed
+
+evaluation:
+  partition_strategy: temporal
+  validation_size: 0.1
+  test_size: 0.2
+  shared_partitions: true
+  neural_network_seeds: 30
+
+scorecard:
+  base_score: 600
+  base_good_to_bad_odds: 50
+  points_to_double_good_to_bad_odds: 20
+
+demo:
+  max_rows: 5000
+  time_limit_seconds: 120
