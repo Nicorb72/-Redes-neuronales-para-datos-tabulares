@@ -22,3 +22,19 @@ venv/
 .idea/
 .DS_Store
 Thumbs.db
+
+
+# Archivos generados del procesamiento
+/data/processed/*
+!/data/processed/README.md
+
+# Modelos y transformadores generados
+/artifacts/models/*
+!/artifacts/models/README.md
+
+# Archivos temporales
+/artifacts/prueba_data/
+
+# Figuras generadas
+/reports/figures/*
+!/reports/figures/README.md
