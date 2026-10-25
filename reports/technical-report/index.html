@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Reporte técnico sobre riesgo de crédito con redes neuronales para datos tabulares."
+    >
+    <title>Riesgo de crédito | Reporte técnico</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+        color: #172b4d;
+        background: #f3f6fb;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+      }
+
+      .topbar {
+        height: 6px;
+        background: linear-gradient(90deg, #176b87, #45a88a);
+      }
+
+      main {
+        width: min(100% - 40px, 880px);
+        margin: 64px auto;
+      }
+
+      .eyebrow {
+        margin: 0 0 18px;
+        color: #16718a;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        max-width: 760px;
+        margin: 0;
+        font-size: clamp(2.35rem, 7vw, 4.5rem);
+        letter-spacing: -0.055em;
+        line-height: 1.04;
+      }
+
+      .subtitle {
+        max-width: 690px;
+        margin: 24px 0 0;
+        color: #52647a;
+        font-size: clamp(1.05rem, 2.5vw, 1.2rem);
+        line-height: 1.75;
+      }
+
+      .rule {
+        height: 1px;
+        margin: 44px 0 36px;
+        border: 0;
+        background: #dce4ed;
+      }
+
+      h2 {
+        margin: 0 0 20px;
+        font-size: 1.3rem;
+        letter-spacing: -0.02em;
+      }
+
+      ol {
+        display: grid;
+        gap: 12px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        counter-reset: team;
+      }
+
+      li {
+        display: grid;
+        grid-template-columns: 42px 1fr;
+        gap: 14px;
+        align-items: start;
+        padding: 18px 20px;
+        border: 1px solid #e2e9f0;
+        border-radius: 12px;
+        background: #fff;
+        counter-increment: team;
+      }
+
+      li::before {
+        display: grid;
+        width: 36px;
+        height: 36px;
+        place-items: center;
+        border-radius: 50%;
+        background: #e7f3f4;
+        color: #12677a;
+        content: counter(team, decimal-leading-zero);
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
+      .name {
+        display: block;
+        margin: 1px 0 5px;
+        font-weight: 700;
+      }
+
+      .role {
+        color: #52647a;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .notice {
+        margin: 26px 0 0;
+        padding: 16px 18px;
+        border-left: 3px solid #45a88a;
+        border-radius: 0 8px 8px 0;
+        background: #eaf5f1;
+        color: #365c56;
+        font-size: 0.94rem;
+        line-height: 1.65;
+      }
+
+      footer {
+        margin-top: 56px;
+        color: #758398;
+        font-size: 0.82rem;
+      }
+
+      @media (max-width: 560px) {
+        main {
+          width: min(100% - 32px, 880px);
+          margin: 42px auto;
+        }
+
+        li {
+          padding: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar" aria-hidden="true"></div>
+    <main>
+      <p class="eyebrow">Reporte técnico · Proyecto académico</p>
+      <h1>Riesgo de crédito con redes neuronales para datos tabulares</h1>
+      <p class="subtitle">
+        Estimación de la probabilidad de incumplimiento (PD) y la pérdida dado
+        incumplimiento (LGD), con modelos de aprendizaje automático, una
+        scorecard y una aplicación web.
+      </p>
+
+      <hr class="rule">
+
+      <section aria-labelledby="team-heading">
+        <h2 id="team-heading">El equipo</h2>
+        <ol>
+          <li>
+            <div>
+              <span class="name">[Nombre del integrante 1]</span>
+              <span class="role">Datos y análisis</span>
+            </div>
+          </li>
+          <li>
+            <div>
+              <span class="name">[Nombre del integrante 2]</span>
+              <span class="role">Clasificación: probabilidad de incumplimiento (PD)</span>
+            </div>
+          </li>
+          <li>
+            <div>
+              <span class="name">[Nombre del integrante 3]</span>
+              <span class="role">Regresión: pérdida dado incumplimiento (LGD)</span>
+            </div>
+          </li>
+          <li>
+            <div>
+              <span class="name">[Nombre del integrante 4]</span>
+              <span class="role">Scorecard, interpretación y aplicación web</span>
+            </div>
+          </li>
+          <li>
+            <div>
+              <span class="name">[Nombre del integrante 5]</span>
+              <span class="role">Integración, reproducibilidad y reporte técnico</span>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <p class="notice">
+        <strong>Borrador inicial.</strong> Los nombres están pendientes de
+        completar. La metodología y los resultados se incorporarán cuando el
+        equipo haya integrado y verificado sus análisis.
+      </p>
+
+      <footer>Reporte en desarrollo · Riesgo de crédito</footer>
+    </main>
+  </body>
+</html>
