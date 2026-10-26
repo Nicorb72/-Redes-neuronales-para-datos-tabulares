@@ -16,6 +16,11 @@ scorecard:
   base_good_to_bad_odds: 50
   points_to_double_good_to_bad_odds: 20
 
+app:
+  pd_bundle: artifacts/models/pd_bundle.json
+  report_url: https://nicorb72.github.io/-Redes-neuronales-para-datos-tabulares/technical-report/
+  video_url: null  # Reemplazar por el enlace real cuando se publique.
+
 demo:
   max_rows: 5000
   time_limit_seconds: 120
