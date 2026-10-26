@@ -15,7 +15,9 @@ La página inicial del reporte está en
 [`reports/technical-report/index.html`](reports/technical-report/index.html)
 y puede abrirse directamente desde un clon local. Al publicar los cambios en
 `main`, GitHub Actions desplegará esa carpeta en
-[GitHub Pages](https://nicorb72.github.io/-Redes-neuronales-para-datos-tabulares/).
+[GitHub Pages](https://nicorb72.github.io/-Redes-neuronales-para-datos-tabulares/technical-report/).
+El reporte se publica en la ruta `/technical-report/` del sitio para conservar
+también los recursos gráficos de `reports/figures/`.
 En la configuración del repositorio, seleccionen **Settings → Pages → Build
 and deployment → Source: GitHub Actions** para habilitar el primer despliegue.
 El enlace público estará disponible cuando termine correctamente esa ejecución.
@@ -26,8 +28,9 @@ El enlace público estará disponible cuando termine correctamente esa ejecució
 - Git.
 - El archivo de datos Credit Risk Analysis de Kaggle. Descárguenlo desde
   [la fuente del conjunto](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset)
-  y colóquenlo en `data/raw/`. No se requiere una API de Kaggle para ejecutar
-  el proyecto una vez que el archivo esté disponible localmente.
+  y colóquenlo en `data/raw/loan/loan.csv`, como espera el módulo de carga.
+  No se requiere una API de Kaggle para ejecutar el proyecto una vez que el
+  archivo esté disponible localmente.
 
 ## Instalación
 
@@ -111,10 +114,13 @@ todo en un único commit final.
 
 `data/raw/` se excluye de Git para evitar subir el archivo original sin
 revisar tamaño y condiciones de distribución. No se excluyen los datos
-procesados, modelos ni figuras: antes de incorporarlos, comprueben los límites
-de tamaño del repositorio y documenten su origen. Si el archivo original es
-demasiado grande, versionen la versión procesada y comprimida que use el
-proyecto, junto con el código y los metadatos necesarios para reproducirla.
+procesados, modelos ni figuras: la configuración actual de `.gitignore` sí
+excluye `data/processed/`, los archivos de `artifacts/models/` y las figuras
+generadas. Antes de entregar, el equipo debe decidir cuáles artefactos finales
+versionará, comprobar el tamaño del repositorio y documentar su origen. Si el
+archivo original es demasiado grande, versionen la versión procesada y
+comprimida que use el proyecto, junto con el código y los metadatos necesarios
+para reproducirla.
 
 No incluyan credenciales, tokens ni datos personales. No suban datasets,
 modelos o figuras que no sean necesarios para reproducir el trabajo.
@@ -142,6 +148,13 @@ Antes de entregar:
 
 ## Pruebas
 
-Las pruebas de integración se ejecutarán con `pytest` una vez que los módulos
-y pruebas hayan sido añadidos. No hay todavía una suite de pruebas en este
-repositorio.
+Ejecuten las pruebas desde la raíz del repositorio con:
+
+```powershell
+python -m pytest
+```
+
+Las pruebas que requieren el CSV o matrices locales se omiten si esos archivos
+no están disponibles; las pruebas unitarias de etiquetado, particiones,
+preprocesamiento y exclusión de variables posteriores al desembolso no
+requieren el dataset original.

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260" role="img" aria-labelledby="title desc">
+  <title id="title">Distribución documentada de etiquetas de PD</title>
+  <desc id="desc">Se reportan 209.711 créditos buenos, 58.819 malos y 618.849 sin etiqueta.</desc>
+  <rect width="900" height="260" rx="12" fill="#ffffff"/>
+  <text x="28" y="38" fill="#172b4d" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Estado de las observaciones</text>
+  <text x="28" y="59" fill="#718096" font-family="Segoe UI, Arial, sans-serif" font-size="12">Conteos consignados en el README del módulo de datos</text>
+  <text x="28" y="105" fill="#384c63" font-family="Segoe UI, Arial, sans-serif" font-size="14">Buen pagador (0)</text>
+  <rect x="240" y="86" width="200" height="26" rx="5" fill="#3b9b83"/>
+  <text x="452" y="105" fill="#172b4d" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">209.711</text>
+  <text x="28" y="158" fill="#384c63" font-family="Segoe UI, Arial, sans-serif" font-size="14">Mal pagador (1)</text>
+  <rect x="240" y="139" width="56" height="26" rx="5" fill="#d06a5f"/>
+  <text x="308" y="158" fill="#172b4d" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">58.819</text>
+  <text x="28" y="211" fill="#384c63" font-family="Segoe UI, Arial, sans-serif" font-size="14">Sin etiqueta</text>
+  <rect x="240" y="192" width="590" height="26" rx="5" fill="#7185a3"/>
+  <text x="842" y="211" fill="#172b4d" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">618.849</text>
+</svg>

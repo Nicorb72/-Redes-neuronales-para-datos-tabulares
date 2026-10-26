@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260" role="img" aria-labelledby="title desc">
+  <title id="title">Tamaño documentado de las particiones temporales PD</title>
+  <desc id="desc">Entrenamiento 90.347; validación 73.194; prueba 74.154; conjunto complementario 2015, 30.835 registros.</desc>
+  <rect width="900" height="260" rx="12" fill="#ffffff"/>
+  <text x="28" y="38" fill="#172b4d" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Tamaño de las particiones temporales</text>
+  <text x="28" y="59" fill="#718096" font-family="Segoe UI, Arial, sans-serif" font-size="12">Conteos consignados en el README del módulo de datos</text>
+  <text x="28" y="105" fill="#384c63" font-family="Segoe UI, Arial, sans-serif" font-size="14">Entrenamiento · 2007–2012</text>
+  <rect x="260" y="86" width="550" height="25" rx="5" fill="#176b87"/>
+  <text x="822" y="104" fill="#172b4d" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">90.347</text>
+  <text x="28" y="151" fill="#384c63" font-family="Segoe UI, Arial, sans-serif" font-size="14">Validación · 2013</text>
+  <rect x="260" y="132" width="446" height="25" rx="5" fill="#45a88a"/>
+  <text x="718" y="150" fill="#172b4d" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">73.194</text>
+  <text x="28" y="197" fill="#384c63" font-family="Segoe UI, Arial, sans-serif" font-size="14">Prueba · 2014</text>
+  <rect x="260" y="178" width="451" height="25" rx="5" fill="#d4a44c"/>
+  <text x="723" y="196" fill="#172b4d" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">74.154</text>
+  <text x="28" y="243" fill="#384c63" font-family="Segoe UI, Arial, sans-serif" font-size="14">Complementario · 2015</text>
+  <rect x="260" y="224" width="188" height="25" rx="5" fill="#8d77ad"/>
+  <text x="460" y="242" fill="#172b4d" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">30.835</text>
+</svg>

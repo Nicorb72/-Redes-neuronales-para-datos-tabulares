@@ -14,6 +14,7 @@ El archivo original se ubica en `data/raw/loan/loan.csv` y no se incluye en GitH
 
 ## 3. Variable objetivo
 
+
 La variable `default_flag` se construye a partir de `loan_status`:
 
 - **0 — Buen pagador:** `Fully Paid` y `Does not meet the credit policy. Status:Fully Paid`.
@@ -82,6 +83,18 @@ Desde la raíz del proyecto, con las dependencias instaladas y `loan.csv` ubicad
 $env:PYTHONPATH = "src"
 python -m credit_risk.data.prepare_data
 ```
+
+Para regenerar las figuras que usa el reporte, ejecutar:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m credit_risk.data.generate_eda_figures
+```
+
+El comando guarda `distribucion_etiquetas_pd.svg` y
+`particiones_temporales_pd.svg` en `reports/figures/`. Ambos se calculan a
+partir del archivo original; si los conteos difieren de los resumidos aquí, se
+debe actualizar el reporte con los resultados regenerados.
 
 ## 10. Archivos generados
 

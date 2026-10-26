@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "reports/technical-report/**"
+      - "reports/**"
       - ".github/workflows/deploy-report.yml"
   workflow_dispatch:
 
@@ -28,10 +28,10 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Upload report site
+      - name: Upload report and figures
         uses: actions/upload-pages-artifact@v3
         with:
-          path: reports/technical-report
+          path: reports
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

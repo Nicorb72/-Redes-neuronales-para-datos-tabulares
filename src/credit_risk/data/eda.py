@@ -1,6 +1,9 @@
 
 import pandas as pd
 from pathlib import Path
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 def resumen_estados_crediticios(df):
@@ -131,6 +134,139 @@ def graficar_creditos_sin_etiqueta(resumen, ruta_salida):
     plt.close(figura)
 
     return ruta_salida
+
+
+def graficar_distribucion_etiquetas_pd(df, ruta_salida):
+    """
+    Grafica el conteo de créditos buenos, malos y sin etiqueta para PD.
+    """
+
+    if "default_flag" not in df.columns:
+        raise ValueError(
+            "El DataFrame debe contener default_flag."
+        )
+
+    etiquetas = df["default_flag"]
+    desconocidas = set(etiquetas.dropna().unique()) - {0, 1}
+
+    if desconocidas:
+        raise ValueError(
+            f"Etiquetas PD desconocidas: {desconocidas}"
+        )
+
+    nombres = [
+        "Buen pagador (0)",
+        "Mal pagador (1)",
+        "Sin etiqueta"
+    ]
+    cantidades = [
+        int((etiquetas == 0).sum()),
+        int((etiquetas == 1).sum()),
+        int(etiquetas.isna().sum())
+    ]
+    colores = ["#3B9B83", "#D06A5F", "#7185A3"]
+
+    figura, eje = plt.subplots(figsize=(9, 4.5))
+    barras = eje.barh(
+        nombres,
+        cantidades,
+        color=colores
+    )
+
+    eje.invert_yaxis()
+    eje.set_title("Distribución de etiquetas para PD")
+    eje.set_xlabel("Número de créditos")
+    eje.set_ylabel("")
+    eje.grid(axis="x", alpha=0.25)
+    eje.set_axisbelow(True)
+    eje.set_xlim(0, max(cantidades, default=0) * 1.18 or 1)
+
+    for barra, cantidad in zip(barras, cantidades):
+        eje.annotate(
+            f"{cantidad:,}".replace(",", "."),
+            (barra.get_width(), barra.get_y() + barra.get_height() / 2),
+            xytext=(6, 0),
+            textcoords="offset points",
+            va="center"
+        )
+
+    figura.tight_layout()
+
+    ruta_salida = Path(ruta_salida)
+    ruta_salida.parent.mkdir(parents=True, exist_ok=True)
+    figura.savefig(ruta_salida, dpi=300, bbox_inches="tight")
+    plt.close(figura)
+
+    return ruta_salida
+
+
+def graficar_particiones_temporales_pd(particiones, ruta_salida):
+    """
+    Grafica el tamaño de las particiones creadas para PD.
+    """
+
+    if "split" not in particiones.columns:
+        raise ValueError(
+            "El DataFrame debe contener la columna split."
+        )
+
+    orden = [
+        "train",
+        "validation",
+        "test",
+        "supplementary_2015"
+    ]
+    desconocidas = set(particiones["split"].dropna().unique()) - set(orden)
+
+    if desconocidas or particiones["split"].isna().any():
+        raise ValueError(
+            f"Particiones desconocidas o vacías: {desconocidas}"
+        )
+
+    etiquetas = [
+        "Entrenamiento (2007–2012)",
+        "Validación (2013)",
+        "Prueba (2014)",
+        "Complementario (2015)"
+    ]
+    cantidades = [
+        int((particiones["split"] == nombre).sum())
+        for nombre in orden
+    ]
+
+    figura, eje = plt.subplots(figsize=(9, 4.5))
+    barras = eje.barh(
+        etiquetas,
+        cantidades,
+        color=["#176B87", "#45A88A", "#D4A44C", "#8D77AD"]
+    )
+
+    eje.invert_yaxis()
+    eje.set_title("Tamaño de las particiones temporales de PD")
+    eje.set_xlabel("Número de créditos etiquetados")
+    eje.set_ylabel("")
+    eje.grid(axis="x", alpha=0.25)
+    eje.set_axisbelow(True)
+    eje.set_xlim(0, max(cantidades, default=0) * 1.18 or 1)
+
+    for barra, cantidad in zip(barras, cantidades):
+        eje.annotate(
+            f"{cantidad:,}".replace(",", "."),
+            (barra.get_width(), barra.get_y() + barra.get_height() / 2),
+            xytext=(6, 0),
+            textcoords="offset points",
+            va="center"
+        )
+
+    figura.tight_layout()
+
+    ruta_salida = Path(ruta_salida)
+    ruta_salida.parent.mkdir(parents=True, exist_ok=True)
+    figura.savefig(ruta_salida, dpi=300, bbox_inches="tight")
+    plt.close(figura)
+
+    return ruta_salida
+
 
 def resumen_variables_financieras(df):
     """
@@ -269,4 +405,3 @@ def auditar_utilizacion_credito(df):
     }
 
     return resumen
-

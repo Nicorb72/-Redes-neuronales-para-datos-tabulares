@@ -55,7 +55,7 @@
       }
 
       .subtitle {
-        max-width: 690px;
+        max-width: 720px;
         margin: 24px 0 0;
         color: #52647a;
         font-size: clamp(1.05rem, 2.5vw, 1.2rem);
@@ -70,12 +70,27 @@
       }
 
       h2 {
-        margin: 0 0 20px;
-        font-size: 1.3rem;
-        letter-spacing: -0.02em;
+        margin: 48px 0 16px;
+        font-size: 1.6rem;
+        letter-spacing: -0.03em;
       }
 
-      ol {
+      h3 {
+        margin: 32px 0 12px;
+        font-size: 1.16rem;
+      }
+
+      p,
+      li {
+        color: #384c63;
+        line-height: 1.75;
+      }
+
+      a {
+        color: #12677a;
+      }
+
+      .team {
         display: grid;
         gap: 12px;
         margin: 0;
@@ -84,19 +99,19 @@
         counter-reset: team;
       }
 
-      li {
+      .team li {
         display: grid;
         grid-template-columns: 42px 1fr;
         gap: 14px;
         align-items: start;
-        padding: 18px 20px;
+        padding: 16px 18px;
         border: 1px solid #e2e9f0;
         border-radius: 12px;
         background: #fff;
         counter-increment: team;
       }
 
-      li::before {
+      .team li::before {
         display: grid;
         width: 36px;
         height: 36px;
@@ -112,6 +127,7 @@
       .name {
         display: block;
         margin: 1px 0 5px;
+        color: #172b4d;
         font-weight: 700;
       }
 
@@ -121,8 +137,64 @@
         line-height: 1.5;
       }
 
+      .table-wrap {
+        overflow-x: auto;
+        margin: 18px 0 28px;
+        border: 1px solid #e2e9f0;
+        border-radius: 10px;
+        background: #fff;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+      }
+
+      caption {
+        padding: 16px;
+        color: #172b4d;
+        font-weight: 700;
+        text-align: left;
+      }
+
+      th,
+      td {
+        padding: 12px 16px;
+        border-top: 1px solid #e8edf3;
+        color: #384c63;
+        line-height: 1.55;
+        vertical-align: top;
+      }
+
+      th {
+        background: #f8fafc;
+        color: #172b4d;
+      }
+
+      figure {
+        margin: 28px 0;
+        padding: 22px;
+        border: 1px solid #e2e9f0;
+        border-radius: 12px;
+        background: #fff;
+      }
+
+      figure img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      figcaption {
+        margin-top: 12px;
+        color: #52647a;
+        font-size: 0.88rem;
+        line-height: 1.6;
+      }
+
       .notice {
-        margin: 26px 0 0;
+        margin: 26px 0;
         padding: 16px 18px;
         border-left: 3px solid #45a88a;
         border-radius: 0 8px 8px 0;
@@ -132,8 +204,28 @@
         line-height: 1.65;
       }
 
+      code {
+        overflow-wrap: anywhere;
+        color: #244b62;
+      }
+
+      pre {
+        overflow-x: auto;
+        padding: 16px;
+        border-radius: 10px;
+        background: #172b3d;
+        color: #f1f5f8;
+        line-height: 1.6;
+      }
+
+      pre code {
+        color: inherit;
+      }
+
       footer {
         margin-top: 56px;
+        padding-top: 20px;
+        border-top: 1px solid #dce4ed;
         color: #758398;
         font-size: 0.82rem;
       }
@@ -144,8 +236,13 @@
           margin: 42px auto;
         }
 
-        li {
-          padding: 15px;
+        figure {
+          padding: 14px;
+        }
+
+        th,
+        td {
+          padding: 10px 12px;
         }
       }
     </style>
@@ -164,48 +261,215 @@
       <hr class="rule">
 
       <section aria-labelledby="team-heading">
-        <h2 id="team-heading">El equipo</h2>
-        <ol>
+        <h2 id="team-heading">Integrantes</h2>
+        <ol class="team">
           <li>
             <div>
-              <span class="name">[Nombre del integrante 1]</span>
+              <span class="name">Nicole Guaranguay</span>
               <span class="role">Datos y análisis</span>
             </div>
           </li>
           <li>
             <div>
-              <span class="name">[Nombre del integrante 2]</span>
+              <span class="name">Nicolas Ruiz</span>
               <span class="role">Clasificación: probabilidad de incumplimiento (PD)</span>
             </div>
           </li>
           <li>
             <div>
-              <span class="name">[Nombre del integrante 3]</span>
+              <span class="name">Sara Acevedo</span>
               <span class="role">Regresión: pérdida dado incumplimiento (LGD)</span>
             </div>
           </li>
           <li>
             <div>
-              <span class="name">[Nombre del integrante 4]</span>
+              <span class="name">Sebastián Cataño</span>
               <span class="role">Scorecard, interpretación y aplicación web</span>
             </div>
           </li>
           <li>
             <div>
-              <span class="name">[Nombre del integrante 5]</span>
-              <span class="role">Integración, reproducibilidad y reporte técnico</span>
+              <span class="name">Ivan Dario Gomez Cabrera</span>
+              <span class="role">Integración, reproducibilidad y reporte</span>
             </div>
           </li>
         </ol>
       </section>
 
-      <p class="notice">
-        <strong>Borrador inicial.</strong> Los nombres están pendientes de
-        completar. La metodología y los resultados se incorporarán cuando el
-        equipo haya integrado y verificado sus análisis.
-      </p>
+      <section aria-labelledby="data-heading">
+        <h2 id="data-heading">1. Preparación de datos para PD</h2>
+        <h3>1.1 Conjunto de datos y objetivo</h3>
+        <p>
+          El módulo de datos utiliza el archivo <code>loan.csv</code> del
+          conjunto
+          <a href="https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset">
+            Credit Risk Analysis de Kaggle</a>.
+          Su README reporta <strong>887.379 préstamos</strong>, originados
+          entre junio de 2007 y diciembre de 2015. El archivo original no se
+          incluye en GitHub por su tamaño. La fecha de descarga debe registrarse
+          cuando se consolide la versión del conjunto usada por el equipo.
+        </p>
+        <p>
+          La variable <code>default_flag</code> se deriva de
+          <code>loan_status</code>: los pagos confirmados se codifican como 0,
+          los incumplimientos como 1 y los estados sin resultado definitivo
+          quedan sin etiqueta. Estos últimos no se consideran buenos pagadores
+          ni se utilizan para entrenar PD.
+        </p>
 
-      <footer>Reporte en desarrollo · Riesgo de crédito</footer>
+        <div class="table-wrap">
+          <table>
+            <caption>Tabla 1. Codificación de <code>loan_status</code> para PD. Fuente: <code>src/credit_risk/data/preprocessing.py</code>.</caption>
+            <thead>
+              <tr><th scope="col">Etiqueta</th><th scope="col">Estados de <code>loan_status</code></th></tr>
+            </thead>
+            <tbody>
+              <tr><td>0 — Buen pagador</td><td><code>Fully Paid</code>; <code>Does not meet the credit policy. Status:Fully Paid</code></td></tr>
+              <tr><td>1 — Mal pagador</td><td><code>Charged Off</code>; <code>Default</code>; <code>Late (31-120 days)</code>; <code>Does not meet the credit policy. Status:Charged Off</code></td></tr>
+              <tr><td>Sin etiqueta</td><td><code>Current</code>; <code>Issued</code>; <code>In Grace Period</code>; <code>Late (16-30 days)</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Según los conteos documentados por el módulo, hay
+          <strong>209.711</strong> préstamos etiquetados como buenos,
+          <strong>58.819</strong> como malos y <strong>618.849</strong> sin
+          etiqueta. La Figura 1 muestra esta distribución; los registros sin
+          etiqueta se mantienen separados de las clases de entrenamiento.
+        </p>
+
+        <figure>
+          <img src="../figures/distribucion_etiquetas_pd.svg" alt="Gráfico de barras: 209.711 préstamos buenos, 58.819 malos y 618.849 sin etiqueta.">
+          <figcaption>
+            <strong>Figura 1.</strong> Conteo documentado de etiquetas para PD.
+            <strong>Fuente:</strong> conteos registrados en
+            <code>src/credit_risk/data/README.md</code>; gráfico elaborado para
+            este reporte. El archivo original no estaba disponible en este clon
+            para recalcularlos.
+          </figcaption>
+        </figure>
+
+        <h3>1.2 Particiones cronológicas</h3>
+        <p>
+          <code>asignar_particiones</code> conserva los préstamos con etiqueta
+          válida y los separa por año de originación: entrenamiento entre
+          2007 y 2012, validación en 2013, prueba en 2014 y un conjunto
+          complementario para 2015. La Tabla 2 presenta los tamaños reportados
+          y la Figura 2 los compara visualmente.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <caption>Tabla 2. Particiones temporales reportadas para PD. Fuente: <code>src/credit_risk/data/README.md</code>.</caption>
+            <thead>
+              <tr><th scope="col">Partición</th><th scope="col">Año(s) de originación</th><th scope="col">Registros</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Entrenamiento</td><td>2007–2012</td><td>90.347</td></tr>
+              <tr><td>Validación</td><td>2013</td><td>73.194</td></tr>
+              <tr><td>Prueba</td><td>2014</td><td>74.154</td></tr>
+              <tr><td>Complementario</td><td>2015</td><td>30.835</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <figure>
+          <img src="../figures/particiones_temporales_pd.svg" alt="Gráfico de barras con los tamaños reportados de entrenamiento, validación, prueba y conjunto complementario de 2015.">
+          <figcaption>
+            <strong>Figura 2.</strong> Tamaño de las particiones temporales
+            reportadas para PD. <strong>Fuente:</strong> conteos registrados
+            en <code>src/credit_risk/data/README.md</code>; gráfico elaborado
+            para este reporte. El archivo original no estaba disponible en
+            este clon para recalcularlos.
+          </figcaption>
+        </figure>
+
+        <p>
+          La partición por originación no constituye por sí sola una validación
+          histórica estricta: el estado final de algunos préstamos pudo
+          conocerse después de su fecha de originación. Además, el README del
+          módulo reporta que el 67,82 % del conjunto está en estado
+          <code>Current</code> y que el 92,68 % de los créditos originados en
+          2015 no tiene etiqueta. Esto limita la interpretación de las tasas de
+          incumplimiento por año y puede generar sesgo de selección entre
+          préstamos etiquetados.
+        </p>
+
+        <h3>1.3 Variables y transformaciones</h3>
+        <p>La implementación prepara 15 variables predictoras de entrada:</p>
+        <ul>
+          <li><strong>Numéricas (11):</strong> <code>loan_amnt</code>, <code>annual_inc</code>, <code>dti</code>, <code>delinq_2yrs</code>, <code>inq_last_6mths</code>, <code>open_acc</code>, <code>pub_rec</code>, <code>revol_bal</code>, <code>revol_util</code>, <code>total_acc</code> y <code>antiguedad_crediticia_meses</code>.</li>
+          <li><strong>Categóricas (4):</strong> <code>term</code>, <code>purpose</code>, <code>emp_length</code> y <code>home_ownership</code>.</li>
+        </ul>
+        <p>
+          La antigüedad crediticia se calcula como la diferencia en meses entre
+          <code>earliest_cr_line</code> y <code>issue_d</code>; valores
+          negativos se consideran faltantes. El preprocesamiento imputa las
+          variables numéricas con la mediana y las estandariza; imputa las
+          categóricas con <code>Desconocido</code> y las codifica con one-hot
+          encoding. El preprocesador se ajusta <strong>solo con el conjunto de
+          entrenamiento</strong> y luego transforma los demás conjuntos. El
+          README del módulo reporta 44 características después de la
+          codificación.
+        </p>
+        <p>
+          La revisión documentada no identificó IDs de préstamo duplicados y
+          señala 44.825 valores faltantes en <code>emp_length</code> (5,05 %).
+          Los valores financieros extremos se conservan inicialmente, por lo
+          que su efecto debe evaluarse en los modelos. La auditoría de fuga
+          excluye predictores evidentes de resultados posteriores al
+          desembolso, pero el propio módulo advierte que no verifica por
+          completo la disponibilidad temporal de cada variable.
+        </p>
+
+        <h3>1.4 Implementación y reproducción</h3>
+        <p>
+          El flujo está dividido en <code>load_data.py</code> (carga del CSV),
+          <code>preprocessing.py</code> (objetivo, fechas, variables y
+          transformador), <code>prepare_data.py</code> (particiones y
+          matrices) y <code>eda.py</code> (resúmenes y funciones de análisis
+          exploratorio). Desde la raíz del repositorio, con las dependencias
+          instaladas y <code>loan.csv</code> en <code>data/raw/loan/</code>, la
+          preparación se ejecuta en PowerShell:
+        </p>
+        <pre><code>$env:PYTHONPATH = "src"
+python -m credit_risk.data.prepare_data</code></pre>
+        <p>
+          El flujo guarda matrices dispersas <code>X_*.npz</code>, etiquetas
+          <code>y_*.npy</code>, el preprocesador
+          <code>preprocesador_pd.joblib</code> y los nombres de variables
+          transformadas <code>columnas_pd.json</code>. Estos artefactos locales
+          están excluidos de Git en la configuración actual; el equipo debe
+          decidir cuáles datos procesados y modelos finales necesarios para
+          reproducir o servir el proyecto deben versionarse.
+        </p>
+
+        <aside class="notice">
+          <strong>Estado de las figuras.</strong> El módulo
+          <code>eda.py</code> contiene funciones para graficar los conteos de
+          etiquetas y las particiones temporales. Se regeneran con
+          <code>python -m credit_risk.data.generate_eda_figures</code> desde la
+          raíz, tras configurar <code>PYTHONPATH=src</code> y disponer del CSV
+          original. En este clon no está el CSV, por lo que las Figuras 1 y 2
+          muestran los conteos documentados en el README del módulo, sin
+          recálculo independiente. Deben regenerarse y contrastarse con el
+          archivo fuente antes de presentar los conteos como verificados.
+        </aside>
+      </section>
+
+      <section aria-labelledby="pending-heading">
+        <h2 id="pending-heading">2. Trabajo pendiente</h2>
+        <p>
+          Esta versión documenta la preparación de PD. Todavía faltan la
+          exploración recalculada desde el archivo fuente, los modelos y
+          métricas de PD, la construcción y evaluación de LGD, la scorecard,
+          la aplicación, la discusión comparativa, la bibliografía APA 7 y la
+          cacería de alucinaciones. No se presentan aquí resultados de modelos
+          que aún no están integrados.
+        </p>
+      </section>
+
+      <footer>Reporte técnico en desarrollo · Riesgo de crédito</footer>
     </main>
   </body>
 </html>
