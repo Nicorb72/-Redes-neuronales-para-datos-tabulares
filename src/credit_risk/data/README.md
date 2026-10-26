@@ -14,7 +14,6 @@ El archivo original se ubica en `data/raw/loan/loan.csv` y no se incluye en GitH
 
 ## 3. Variable objetivo
 
-
 La variable `default_flag` se construye a partir de `loan_status`:
 
 - **0 — Buen pagador:** `Fully Paid` y `Does not meet the credit policy. Status:Fully Paid`.
@@ -31,6 +30,14 @@ Se obtienen 209.711 buenos pagadores, 58.819 malos pagadores y 618.849 créditos
 | Validación | 2013 | 73.194 |
 | Prueba | 2014 | 74.154 |
 | Complementario | 2015 | 30.835 |
+
+### Justificación de la partición temporal
+
+Se utilizó una partición temporal basada en el año de originación de los créditos, con el propósito de conservar el orden cronológico de los datos y evaluar el desempeño de los modelos en periodos posteriores a los utilizados durante el entrenamiento.
+
+Los créditos originados entre 2007 y 2012 se asignaron al conjunto de entrenamiento, mientras que los correspondientes a 2013 se reservaron para validación y ajuste de hiperparámetros. El año 2014 se destinó a la evaluación final, manteniendo un conjunto de prueba independiente. Los créditos de 2015 se conservaron para un análisis complementario, debido a la elevada proporción de registros sin una clasificación definitiva.
+
+Esta distribución permite aplicar una estrategia de evaluación común a los diferentes modelos, manteniendo separados los procesos de entrenamiento, validación y prueba.
 
 Las particiones se realizan por año de originación. No representan una validación histórica estricta, ya que los estados finales de los créditos pueden haberse observado después de su fecha de originación.
 
@@ -91,10 +98,7 @@ $env:PYTHONPATH = "src"
 python -m credit_risk.data.generate_eda_figures
 ```
 
-El comando guarda `distribucion_etiquetas_pd.svg` y
-`particiones_temporales_pd.svg` en `reports/figures/`. Ambos se calculan a
-partir del archivo original; si los conteos difieren de los resumidos aquí, se
-debe actualizar el reporte con los resultados regenerados.
+El comando guarda `distribucion_etiquetas_pd.svg` y `particiones_temporales_pd.svg` en `reports/figures/`. Ambos se calculan a partir del archivo original; si los conteos difieren de los resumidos aquí, se debe actualizar el reporte con los resultados regenerados.
 
 ## 10. Archivos generados
 
