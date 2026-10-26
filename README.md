@@ -4,10 +4,31 @@ Proyecto académico para estimar la probabilidad de incumplimiento (PD), la
 pérdida dado incumplimiento (LGD) y la pérdida esperada, y para presentar los
 resultados mediante una scorecard y una aplicación web.
 
-> **Estado:** repositorio en preparación. La estructura y el entorno están
-> definidos; los modelos, la aplicación y los datos aún deben ser integrados
-> por el equipo. Los comandos de entrenamiento y de la aplicación se
-> documentarán aquí cuando sus módulos estén implementados.
+> **Estado:** datos y estructura implementados; scorecard y aplicación local
+> disponibles. Faltan los modelos entrenados y los artefactos procesados en el
+> clon. La app muestra integración pendiente hasta recibir un paquete PD válido;
+> no genera predicciones ficticias. Entrenamiento PD/LGD y publicación pendientes.
+
+## Aplicación y scorecard (integrante 4)
+
+Con el entorno activado, instalar `python -m pip install -r requirements-test.txt`
+y arrancar con un único comando:
+
+```powershell
+python run_app.py
+```
+
+Abrir `http://127.0.0.1:8501`. Usar `python run_app.py --check` para comprobar
+los artefactos sin navegador. `configs/default.yaml` permite cambiar puntaje
+base, odds buenas:malas, PDO, ruta del paquete PD y enlaces al reporte/video.
+Una vez integrado el modelo, la app muestra PD, puntaje, percentil de la
+referencia train y simulación de cambios, siempre con el mismo modelo.
+
+La [guía del integrante 4](docs/integrante-4.md) contiene los bloqueos por
+responsable, el contrato de inferencia, el comando de empaquetado de modelos,
+la derivación matemática, las pruebas y el método de interpretabilidad con
+referencias verificables. No se necesitan datos originales ni reentrenamiento
+para abrir la app; las consultas requieren los artefactos reales guardados.
 
 ## Reporte tipo blog
 
@@ -127,11 +148,11 @@ modelos o figuras que no sean necesarios para reproducir el trabajo.
 
 ## Reproducibilidad y entrega
 
-La ejecución completa, la demostración rápida y el inicio local de la app
-deben quedar disponibles cada uno en un solo comando cuando se integren esos
-módulos. La demostración debe tardar menos de dos minutos. Anoten aquí los
-comandos definitivos y sus resultados de validación; por ahora aún no hay
-experimentos o app ejecutables en este repositorio.
+La aplicación local se inicia con `python run_app.py`. La ejecución completa
+y la demostración de los experimentos de entrenamiento siguen pendientes.
+La demostración debe tardar menos de dos minutos; su tiempo con modelos reales
+debe medirse al integrar los artefactos. Los comandos de interpretación y
+validación se describen en `docs/integrante-4.md`.
 
 Antes de entregar:
 
