@@ -3,9 +3,15 @@
 ## Revisión inicial y bloqueos
 
 Revisión del 26 de octubre de 2026, sobre `main` en `d4d95b8`.
-Rama de trabajo: `feature/integrante-4-scorecard-app`. Este documento define
+Rama de trabajo: `INTEGRANTE-4` (antes `feature/integrante-4-scorecard-app`). Este documento define
 una propuesta de integración verificable; no implica que los otros integrantes
 ya hayan aprobado el contrato.
+
+Se incorporó posteriormente el commit de `main` `b192a3f`, que añade la
+justificación de las particiones temporales al documento del módulo de datos.
+La generación y el guardado de matrices y transformadores ya estaban
+implementados; su ausencia en el clon corresponde a la distribución de
+artefactos, no a una falta de implementación del integrante 1.
 
 | Responsable | Contrato encontrado | Entrega pendiente |
 | --- | --- | --- |

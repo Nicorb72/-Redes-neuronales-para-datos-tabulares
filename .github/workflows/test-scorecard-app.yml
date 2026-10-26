@@ -2,7 +2,7 @@ name: Pruebas de datos, scorecard y app
 on:
   pull_request:
   push:
-    branches: [feature/integrante-4-scorecard-app]
+    branches: [INTEGRANTE-4, feature/integrante-4-scorecard-app]
 jobs:
   tests:
     runs-on: ubuntu-latest
