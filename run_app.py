@@ -32,6 +32,7 @@ def main():
         sys.executable, "-m", "streamlit", "run",
         str(ROOT / "src/credit_risk/app/web.py"),
         "--server.address", "127.0.0.1", "--server.port", str(args.port),
+        "--server.headless", "true",
         "--browser.gatherUsageStats", "false", "--", "--config", str(Path(args.config).resolve()),
     ], env=env, cwd=ROOT)
 
