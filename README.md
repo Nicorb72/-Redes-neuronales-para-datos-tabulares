@@ -9,7 +9,7 @@ resultados mediante una scorecard y una aplicación web.
 > clon. La app muestra integración pendiente hasta recibir un paquete PD válido;
 > no genera predicciones ficticias. Entrenamiento PD/LGD y publicación pendientes.
 
-## Aplicación y scorecard (integrante 4)
+## Aplicación y scorecard 
 
 Con el entorno activado, instalar `python -m pip install -r requirements-test.txt`
 y arrancar con un único comando:
