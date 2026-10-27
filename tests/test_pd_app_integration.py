@@ -90,3 +90,13 @@ def test_web_uses_real_model():
     app.button[1].click().run(timeout=30)
     assert not app.exception
     assert len(app.metric) == 6
+
+
+def test_cloud_entrypoint_uses_saved_model():
+    app = AppTest.from_file(str(ROOT / "deploy/streamlit_app.py"))
+    app.run(timeout=30)
+    assert not app.exception
+    assert not app.warning
+    app.button[0].click().run(timeout=30)
+    assert not app.exception
+    assert len(app.metric) == 3
