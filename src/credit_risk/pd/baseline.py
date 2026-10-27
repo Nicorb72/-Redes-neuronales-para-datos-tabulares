@@ -11,10 +11,10 @@ from sklearn.linear_model import LogisticRegression
 class BaselinePD:
     """Regresión logística con probabilidades para la clase de incumplimiento."""
 
-    def __init__(self, C: float = 1.0, solver: str = "lbfgs", max_iter: int = 2000,
-                 class_weight=None):
+    def __init__(self, penalty: str | None = None, solver: str = "lbfgs",
+                 max_iter: int = 2000, class_weight=None):
         self.model = LogisticRegression(
-            C=float(C),
+            penalty=penalty,
             solver=solver,
             max_iter=int(max_iter),
             class_weight=class_weight,
@@ -66,7 +66,7 @@ class BaselinePD:
         if not isinstance(estimator, LogisticRegression):
             raise TypeError("El artefacto no contiene una LogisticRegression.")
         instance = cls(
-            C=estimator.C,
+            penalty=estimator.penalty,
             solver=estimator.solver,
             max_iter=estimator.max_iter,
             class_weight=estimator.class_weight,

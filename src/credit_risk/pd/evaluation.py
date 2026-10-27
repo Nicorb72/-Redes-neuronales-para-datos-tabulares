@@ -184,7 +184,7 @@ Se reutilizaron las particiones temporales y el preprocesador del proyecto: entr
 
 La tasa de incumplimiento aumenta de entrenamiento a validación y prueba. Esto evidencia un cambio temporal en la población etiquetada; por ello la evaluación de 2014 es más exigente y las probabilidades requieren cautela.
 
-La regresión logística es el modelo de referencia: `C={baseline['C']}`, solver `{baseline['solver']}`, sin ponderación de clases y ajustada sobre las mismas observaciones y características transformadas que el MLP. El MLP usa {config['n_layers']} capas ocultas de {config['width']} neuronas, activación {config['activation']}, dropout {dropout:.4f}, optimizador {config['optimizer']}, tasa de aprendizaje {config['learning_rate']:.6f}, lote {config['batch_size']} y regularización L1 con λ={lambda_l1:.3g}. Se ejecutaron {len(semillas)} semillas ({semillas[0]}–{semillas[-1]}). El checkpoint entregado se ajustó con la semilla fija {seed_final}.
+La regresión logística es el modelo de referencia sin regularización (`penalty=None`), con solver `{baseline['solver']}` y sin ponderación de clases; se ajustó sobre las mismas observaciones y características transformadas que el MLP. El MLP usa {config['n_layers']} capas ocultas de {config['width']} neuronas, activación {config['activation']}, dropout {dropout:.4f}, optimizador {config['optimizer']}, tasa de aprendizaje {config['learning_rate']:.6f}, lote {config['batch_size']} y regularización L1 con λ={lambda_l1:.3g}. Se ejecutaron {len(semillas)} semillas ({semillas[0]}–{semillas[-1]}). El checkpoint entregado se ajustó con la semilla fija {seed_final}.
 
 Las corridas comparten los mismos conjuntos temporales e hiperparámetros; solo cambia la semilla de inicialización y el orden de minibatches. La desviación estándar describe variabilidad por aleatoriedad del entrenamiento, no incertidumbre muestral. El modelo entregado usa la semilla configurada {seed_final}; no se seleccionó una semilla usando la prueba.
 
@@ -196,7 +196,7 @@ El AUC medio del MLP supera al de la logística en {auc_delta:+.5f}; el Brier me
 
 ## Definiciones matemáticas
 
-Para cada préstamo i, yᵢ ∈ {{0,1}} es el resultado y pᵢ ∈ [0,1] la PD estimada. La regresión logística calcula pᵢ = σ(β₀ + βᵀxᵢ), donde σ(z)=1/(1+e⁻ᶻ), y estima β minimizando la entropía cruzada binaria con penalización L2 de scikit-learn; `C={baseline['C']}` es la inversa de la intensidad de regularización. El MLP calcula pᵢ = σ(fθ(xᵢ)); sus pesos se entrenan minimizando la entropía cruzada binaria más la penalización L1: L(θ)=−(1/n)Σᵢ[yᵢlog(pᵢ)+(1−yᵢ)log(1−pᵢ)] + λΣⱼ|wⱼ|. El dropout desactiva aleatoriamente unidades ocultas durante entrenamiento con probabilidad {dropout:.4f}.
+Para cada préstamo i, yᵢ ∈ {{0,1}} es el resultado y pᵢ ∈ [0,1] la PD estimada. La regresión logística calcula pᵢ = σ(β₀ + βᵀxᵢ), donde σ(z)=1/(1+e⁻ᶻ), y estima β minimizando la entropía cruzada binaria sin término de regularización. El MLP calcula pᵢ = σ(fθ(xᵢ)); sus pesos se entrenan minimizando la entropía cruzada binaria más la penalización L1: L(θ)=−(1/n)Σᵢ[yᵢlog(pᵢ)+(1−yᵢ)log(1−pᵢ)] + λΣⱼ|wⱼ|. El dropout desactiva aleatoriamente unidades ocultas durante entrenamiento con probabilidad {dropout:.4f}.
 
 - **AUC:** área bajo ROC; mide la probabilidad de ordenar un incumplidor por encima de un buen pagador.
 - **Gini:** Gini = 2·AUC − 1.

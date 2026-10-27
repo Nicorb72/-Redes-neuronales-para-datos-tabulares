@@ -23,7 +23,7 @@ split:
 
 baseline:
   logistic_regression:
-    C: 1.0
+    penalty: null
     solver: lbfgs
     max_iter: 2000
     class_weight: null

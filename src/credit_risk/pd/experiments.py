@@ -48,7 +48,7 @@ def _evaluar_baseline(config: dict, X: dict, y: dict):
     """Ajusta logística en entrenamiento y evalúa validación/prueba."""
     params = config["baseline"]["logistic_regression"]
     baseline = BaselinePD(
-        C=params["C"],
+        penalty=params["penalty"],
         solver=params["solver"],
         max_iter=params["max_iter"],
         class_weight=params["class_weight"],
