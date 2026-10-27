@@ -27,6 +27,9 @@ Thumbs.db
 # Archivos generados del procesamiento
 /data/processed/*
 !/data/processed/README.md
+!/data/processed/X_train_pd.npz
+!/data/processed/X_validation_pd.npz
+!/data/processed/y_validation_pd.npy
 
 # Modelos y transformadores generados
 /artifacts/models/*
@@ -37,6 +40,7 @@ Thumbs.db
 !/artifacts/models/pd_logistic.joblib
 !/artifacts/models/pd_preprocessor.joblib
 !/artifacts/models/pd_feature_names.json
+!/artifacts/models/pd_bundle.json
 
 # Archivos temporales
 /artifacts/prueba_data/

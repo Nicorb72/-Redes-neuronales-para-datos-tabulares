@@ -123,8 +123,8 @@ def test_app_prediction_and_simulation(pd_artifacts):
 
 def test_single_command_check_reports_missing_model(tmp_path):
     completed = subprocess.run(
-        [sys.executable, str(ROOT / "run_app.py"), "--check", "--config", str(missing_config(tmp_path))],
-        cwd=ROOT, capture_output=True, text=True)
+        [sys.executable, "-X", "utf8", str(ROOT / "run_app.py"), "--check", "--config", str(missing_config(tmp_path))],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8")
     assert completed.returncode == 2
     assert "Integración pendiente" in completed.stdout
 
@@ -137,31 +137,31 @@ def test_export_check_interpretation_commands(pd_artifacts):
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT / "src")
     exported = data.tmp_path / "exported.json"
-    command = [sys.executable, "-m", "credit_risk.scorecard.export",
+    command = [sys.executable, "-X", "utf8", "-m", "credit_risk.scorecard.export",
                "--model", str(data.tmp_path / "model.joblib"),
                "--preprocessor", str(data.tmp_path / "preprocessor.joblib"),
                "--columns", str(data.tmp_path / "columns.json"),
                "--reference-matrix", str(data.tmp_path / "reference.npz"),
                "--model-id", "SYNTHETIC-TEST-ONLY", "--training-data", "synthetic",
                "--reference-population", "synthetic", "--output", str(exported)]
-    result = subprocess.run(command, cwd=ROOT, env=env, capture_output=True, text=True)
+    result = subprocess.run(command, cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8")
     assert result.returncode == 0, result.stderr
     config = yaml.safe_load((ROOT / "configs/default.yaml").read_text(encoding="utf-8"))
     config["app"]["pd_bundle"] = str(exported)
     config_path = data.tmp_path / "valid.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
-    result = subprocess.run([sys.executable, str(ROOT / "run_app.py"), "--check",
+    result = subprocess.run([sys.executable, "-X", "utf8", str(ROOT / "run_app.py"), "--check",
                              "--config", str(config_path)], cwd=ROOT,
-                            capture_output=True, text=True)
+                            capture_output=True, text=True, encoding="utf-8")
     assert result.returncode == 0, result.stdout + result.stderr
     sparse.save_npz(data.tmp_path / "validation.npz", data.matrix)
     np.save(data.tmp_path / "labels.npy", data.labels)
     output = data.tmp_path / "importance.json"
     result = subprocess.run([
-        sys.executable, "-m", "credit_risk.scorecard.interpretability", "--config", str(config_path),
+        sys.executable, "-X", "utf8", "-m", "credit_risk.scorecard.interpretability", "--config", str(config_path),
         "--matrix", str(data.tmp_path / "validation.npz"), "--labels", str(data.tmp_path / "labels.npy"),
         "--repeats", "2", "--max-rows", "160", "--output", str(output),
-    ], cwd=ROOT, env=env, capture_output=True, text=True)
+    ], cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8")
     assert result.returncode == 0, result.stderr
     assert output.with_suffix(".svg").exists()
     assert output.with_suffix(".csv").exists()

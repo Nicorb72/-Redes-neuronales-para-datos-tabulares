@@ -1,6 +1,7 @@
 """Contrato de inferencia: artefactos locales confiables, sin fit ni descargas."""
 import hashlib
 import json
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -8,6 +9,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from scipy import sparse
+from sklearn.exceptions import InconsistentVersionWarning
 
 from credit_risk.data.preprocessing import VARIABLES_CATEGORICAS, VARIABLES_NUMERICAS
 from credit_risk.scorecard.scaling import probabilities
@@ -116,13 +118,30 @@ def load_bundle(manifest_path):
             if sha256(artifact) != entry["sha256"]:
                 raise ArtifactError(f"Hash incompatible: {key}.")
             paths[key] = artifact
-        preprocessor = joblib.load(paths["preprocessor"])
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", InconsistentVersionWarning)
+            preprocessor = joblib.load(paths["preprocessor"])
         columns = json.loads(paths["columns"].read_text(encoding="utf-8"))
         if columns != list(preprocessor.get_feature_names_out()):
             raise ArtifactError("columnas_pd.json no coincide con el preprocesador ajustado.")
         if list(preprocessor.feature_names_in_) != FEATURES:
             raise ArtifactError("El preprocesador no usa las variables PD esperadas en orden.")
-        model = joblib.load(paths["model"])
+        model_format = metadata.get("model_format", "joblib")
+        if model_format == "pd_mlp":
+            import torch
+            from credit_risk.pd.neural_network import PDNeuralNetwork
+
+            threads = metadata.get("inference_threads", 1)
+            if not isinstance(threads, int) or not 1 <= threads <= 64:
+                raise ArtifactError("inference_threads debe ser un entero entre 1 y 64.")
+            torch.set_num_threads(threads)
+            model = PDNeuralNetwork.load(paths["model"], device="cpu")
+        elif model_format == "joblib":
+            with warnings.catch_warnings():
+                warnings.simplefilter("error", InconsistentVersionWarning)
+                model = joblib.load(paths["model"])
+        else:
+            raise ArtifactError("Formato de modelo desconocido: use joblib o pd_mlp.")
         if getattr(model, "n_features_in_", None) != len(columns):
             raise ArtifactError("El modelo no declara la dimensión transformada esperada.")
         reference = sparse.load_npz(paths["reference_matrix"])
