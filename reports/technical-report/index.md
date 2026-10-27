@@ -135,7 +135,7 @@ README del módulo, sin recálculo independiente. Deben regenerarse y
 contrastarse con el archivo fuente antes de presentar los conteos como
 verificados.
 
-## 2. Pérdida dado incumplimiento (LGD) y Pérdida Esperada
+## 2. Pérdida dado incumplimiento (LGD)
 
 ### 2.1 Definición y justificación de la variable objetivo
 
@@ -185,27 +185,172 @@ La distribución observada en prueba revela una pronunciada concentración: el *
   <figcaption><strong>Figura 3.</strong> Distribución de LGD observada vs. predicciones del Modelo Lineal y Red Neuronal MLP en prueba (2014). <strong>Fuente:</strong> generada por <code>src/credit_risk/lgd/experiments.py</code>.</figcaption>
 </figure>
 
-### 2.4 Pérdida Esperada ($E[L] = PD \times LGD \times EAD$)
+### 2.4 Exposición y pérdida en la cohorte castigada
 
-Al originar un crédito, el momento futuro de un posible impago es desconocido; por tanto, la exposición conservadora ex-ante es $EAD_0 = \text{funded\_amnt}$. Al evaluar retrospectivamente la cartera morosa, la exposición residual al incumplimiento es $EAD_{obs} = \text{funded\_amnt} - \text{total\_rec\_prncp}$.
+En la originación, la exposición ex-ante propuesta es
+$EAD_0 = \text{funded\_amnt}$. En el conjunto de préstamos ya castigados,
+la exposición observada se calcula como
+$EAD_{obs} = \text{funded\_amnt} - \text{total\_rec\_prncp}$.
 
-Evaluando los 13.981 créditos castigados de 2014:
-- **Exposición total comprometida:** $178.668.119,71 USD
-- **Pérdida esperada estimada por el modelo:** $163.408.908,93 USD (tasa esperada: 91,46 %)
-- **Pérdida real observada:** $168.195.585,76 USD (tasa real: 94,14 %)
-- **Error absoluto medio:** $979,53 USD por préstamo.
+El informe experimental del integrante 3 consigna para los 13.981 préstamos
+castigados de prueba (2014): exposición observada total de
+$178.668.119,71 USD$, pérdida calculada con LGD predicha de
+$163.408.908,93 USD$ (91,46 % de exposición), pérdida observada de
+$168.195.585,76 USD$ (94,14 %) y MAE de $979,53 USD$ por préstamo. Estos
+valores describen la magnitud de pérdida dentro de una cohorte condicionada
+a incumplimiento; **no son una estimación ex-ante de pérdida esperada
+$PD \times LGD \times EAD$**, porque PD no varía ni se aplica en esa cohorte.
 
-### 2.5 Discusión: ¿Qué aportó la red neuronal en LGD?
+El módulo `src/credit_risk/lgd/expected_loss.py` sí implementa la operación
+genérica $PD \times LGD \times EAD$ y tiene pruebas unitarias. Sin embargo,
+el flujo de `src/credit_risk/lgd/experiments.py` no integra un modelo PD ni
+invoca esa función. Para reportar pérdida esperada de cartera antes del
+incumplimiento, falta integrar predicciones PD reales con las predicciones
+LGD y definir EAD coherente con el momento de decisión.
 
-La evidencia empírica es contundente: multiplicar por 115 la cantidad de parámetros entrenables (de 45 a 5.185) **no produjo ninguna mejora** en el error absoluto (MAE idéntico de 0,0771) y resultó en un RMSE ligeramente peor (0,0887 vs. 0,0868). La red neuronal añade costo computacional y variabilidad entre semillas sin aportar ventajas en capacidad predictiva para esta tarea tabular, confirmando que una mayor complejidad arquitectural no compensa la debilidad intrínseca de la señal predictiva ex-ante sobre recuperaciones ex-post.
+### 2.5 Procedimiento reproducible de LGD
 
-## 3. Trabajo pendiente
+Con `loan.csv` en `data/raw/loan/loan.csv` y las dependencias completas del
+proyecto instaladas, en PowerShell se preparan las matrices de LGD y luego se
+ejecuta el experimento:
 
-Faltan los modelos y métricas finales de clasificación PD (Integrante 2), la integración final de la aplicación web publicada (Integrante 4) y la consolidación de la cacería de alucinaciones (Integrante 5).
+```powershell
+$env:PYTHONPATH = "src"
+python -m credit_risk.lgd.data
+python -m credit_risk.lgd.experiments --demo
+python -m credit_risk.lgd.experiments --seeds 30
+python -m pytest tests/test_lgd.py -v
+```
 
-## 4. Referencias bibliográficas (Normas APA 7.ª edición)
+La preparación produce `X_<split>_lgd.npz`, `y_<split>_lgd.npy`,
+`ead_<split>_lgd.npy` y el transformador LGD. El experimento completo guarda
+la regresión lineal, el MLP, `lgd_benchmark_results.json` y la Figura 3.
+`--demo` usa dos arquitecturas y cinco semillas; el modo completo evalúa
+cinco configuraciones y 30 semillas por defecto. El informe del integrante
+registra aproximadamente 120 segundos para el benchmark, pero ese tiempo no
+está verificado en una máquina limpia en este clon y debe medirse antes de
+afirmar que cumple el límite de demostración de dos minutos.
+
+### 2.6 Discusión: ¿Qué aportó la red neuronal en LGD?
+
+Los resultados consignados muestran que multiplicar aproximadamente por 115
+los parámetros entrenables (de 45 a 5.185) no redujo el MAE (0,0771 para
+ambos modelos); el RMSE reportado es ligeramente menor para la regresión
+lineal (0,0868 frente a 0,0887 para el MLP). La red neuronal incorpora mayor
+costo y variabilidad sin una mejora reportada en estas métricas. La conclusión
+se limita a esta tarea, definición de LGD, cohorte y partición de prueba.
+
+> **Trazabilidad:** los valores de la Tabla 3 y de esta sección se encuentran
+> en el informe `docs/integrante-3.md`. El código experimental guarda
+> `artifacts/models/lgd_benchmark_results.json`, pero dicho JSON, las matrices
+> procesadas y los modelos no están presentes en este clon. La figura
+> observada/predicha sí está versionada. Por tanto, las cifras se presentan
+> como resultados reportados por el integrante y aún no se han recalculado
+> independientemente desde `loan.csv`.
+
+## 3. Scorecard, interpretación y aplicación
+
+### 3.1 Escala de scorecard
+
+La scorecard transforma la probabilidad de incumplimiento
+$p=P(default\_flag=1 \mid x)$ a una escala de puntos. Se definen las odds
+buenas:malas como $O=(1-p)/p$ y se usa una transformación logarítmica
+$S=A+B\ln(O)$. Para que duplicar las odds buenas:malas sume los puntos
+definidos (PDO), $B=PDO/\ln(2)$; si $S_0$ es el puntaje para odds de
+referencia $O_0$, entonces $A=S_0-B\ln(O_0)$. Equivalente:
+
+$$S(p)=S_0+\frac{PDO}{\ln 2}
+\left[\ln(1-p)-\ln(p)-\ln(O_0)\right]$$
+
+La configuración inicial usa $S_0=600$, $O_0=50:1$ y $PDO=20$; son
+parámetros de escala, no resultados del modelo. Un puntaje alto representa
+menor PD. Para que el puntaje y percentil sean válidos en los extremos, la
+implementación recorta la probabilidad solo durante la transformación de
+scorecard y usa `epsilon=1e-9`; la PD mostrada no se modifica.
+
+La app compara el puntaje individual con la distribución empírica de PD de
+train. El percentil es el porcentaje de puntajes de referencia menores o
+iguales al consultado; no es una probabilidad de aprobación ni representa la
+población actual. Los escenarios cambian una característica a la vez y
+recalculan el perfil con el mismo preprocesador y modelo. La variación es una
+respuesta local del modelo, no un efecto causal ni una garantía de que el
+perfil sea factible.
+
+### 3.2 Interpretabilidad
+
+El módulo propone importancia por permutación agrupada en la validación
+temporal. Las columnas one-hot de cada variable categórica se permutan juntas;
+la importancia es el incremento en Brier respecto del modelo sin permutar.
+Esto cuantifica cuánto depende el modelo de una característica para predecir
+en esa muestra, pero no indica por sí solo si un valor mayor aumenta el
+riesgo. Correlaciones entre variables, combinaciones fuera de distribución y
+la muestra usada limitan la interpretación.
+
+### 3.3 Contrato del modelo e integración de artefactos
+
+La app espera las 15 variables originales de PD, un `ColumnTransformer`
+ajustado en train, un clasificador con `predict_proba`, las clases `0` y `1`,
+y la matriz transformada de train para construir la referencia del percentil.
+`pd_bundle.json` registra metadatos y SHA-256 de los artefactos. La carga
+valida la clase positiva, dimensiones, columnas y hashes; no entrena ni
+descarga un modelo. El equipo debe usar solo archivos confiables al cargar
+modelos serializados.
+
+**Procedimiento documentado por el integrante 4 (PowerShell, raíz del repo):**
+
+```powershell
+python -m pip install -r requirements-test.txt
+$env:PYTHONPATH = "src"
+python -m credit_risk.scorecard.export --model artifacts/models/pd_model.joblib --model-id ID_REAL_DE_CORRIDA --training-data VERSION_REAL_DE_TRAIN --reference-population "Créditos etiquetados de train 2007-2012"
+python run_app.py --check
+python run_app.py
+```
+
+Los valores `pd_model.joblib`, `ID_REAL_DE_CORRIDA` y
+`VERSION_REAL_DE_TRAIN` son marcadores: deben sustituirse por el modelo real y
+su procedencia. El exportador usa por defecto el preprocesador, las columnas
+y la matriz de referencia producidas por datos; falla si no existen o son
+incompatibles. Para la interpretación, con un paquete PD válido:
+
+```powershell
+python -m credit_risk.scorecard.interpretability --repeats 10 --max-rows 5000
+```
+
+La app se ejecuta localmente en `http://127.0.0.1:8501`; acepta `--port`,
+`--config` y `--check`. Inicia sin modelos y muestra “Integración pendiente”
+en lugar de producir predicciones ficticias. En este clon no están
+`pd_bundle.json`, el clasificador, el preprocesador ni la matriz de
+referencia: la comprobación `python run_app.py --check` confirma que la
+inferencia real está bloqueada. GitHub Pages publica únicamente el reporte
+estático, no ejecuta la aplicación Python; la URL pública de la app sigue
+pendiente.
+
+**Evidencia procedimental:** la guía detallada de integración, scorecard y
+app está en [docs/integrante-4.md](../../docs/integrante-4.md); las pruebas
+de `tests/test_scorecard.py`, `tests/test_app.py` y
+`tests/test_interpretability.py` usan artefactos sintéticos etiquetados para
+prueba, no modelos ni resultados reales.
+
+## 4. Qué está documentado y qué falta
+
+| Componente | Procedimiento en el reporte | Estado en el clon |
+| --- | --- | --- |
+| Datos / PD | Preparación de datos y regeneración de figuras (sección 1) | Código y pruebas disponibles; falta el CSV para regenerar/cotejar cifras. No hay modelos PD. |
+| LGD | Objetivo, particiones, métricas reportadas, figura, comandos y pruebas (sección 2) | Código y figura disponibles; no hay CSV, matrices ni JSON de benchmark para recalcular resultados. |
+| Scorecard / app | Fórmula, contrato, exportación, comprobación y arranque local (sección 3) | Código y pruebas con datos sintéticos disponibles; falta el paquete PD real. App pública no desplegada. |
+| Integración / reporte | Este reporte y los pasos de ejecución anteriores | Falta combinar PD real con LGD para estimar pérdida esperada ex-ante, verificar en clon limpio y completar divulgación. |
+
+Faltan los modelos y métricas finales de clasificación PD, el paquete PD real
+para habilitar inferencia en la app, la integración de PD con LGD para estimar
+pérdida esperada ex-ante, la publicación de la aplicación web y el video
+promocional. También faltan la revisión independiente de resultados LGD,
+la fecha de descarga y la cacería de alucinaciones consolidada.
+
+## 5. Referencias bibliográficas (Normas APA 7.ª edición)
 
 - Basel Committee on Banking Supervision. (2005). *An explanatory note on the Basel II IRB risk-weight functions*. Bank for International Settlements. https://www.bis.org/bcbs/irbriskweight.pdf
 - Loshchilov, I., & Hutter, F. (2019). Decoupled weight decay regularization. En *International Conference on Learning Representations (ICLR)*. https://openreview.net/forum?id=Bkg6RiCqY7
 - Papke, L. E., & Wooldridge, J. M. (1996). Econometric methods for fractional response variables with an application to 401(k) plan participation rates. *Journal of Applied Econometrics, 11*(6), 619–632. https://doi.org/10.1002/(SICI)1099-1255(199611)11:6<619::AID-JAE418>3.0.CO;2-1
 - Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., & Salakhutdinov, R. (2014). Dropout: A simple way to prevent neural networks from overfitting. *Journal of Machine Learning Research, 15*(56), 1929–1958. https://www.jmlr.org/papers/v15/srivastava14a.html
+- Fisher, A., Rudin, C., & Dominici, F. (2019). All models are wrong, but many are useful: Learning a variable’s importance by studying an entire class of prediction models simultaneously. *Journal of Machine Learning Research, 20*(177), 1–81. https://www.jmlr.org/papers/v20/18-760.html
+- scikit-learn developers. (s. f.). *Permutation importance with multicollinear or correlated features* (versión 1.5.2). https://scikit-learn.org/1.5/auto_examples/inspection/plot_permutation_importance_multicollinear.html
