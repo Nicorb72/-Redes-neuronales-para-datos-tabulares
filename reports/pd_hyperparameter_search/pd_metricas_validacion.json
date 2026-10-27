@@ -1,0 +1,10 @@
+{
+  "auc": 0.6730613455734047,
+  "gini": 0.3461226911468094,
+  "ks": 0.24847902549471979,
+  "brier": 0.1658666687955863,
+  "log_loss": 0.5071000728995737,
+  "split": "validation_2013",
+  "calibration_bins": 10,
+  "calibrator_fitted": false
+}

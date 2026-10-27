@@ -24,12 +24,12 @@ Se obtienen 209.711 buenos pagadores, 58.819 malos pagadores y 618.849 créditos
 
 ## 4. Particiones temporales
 
-| Conjunto | Originación | Registros |
-|---|---|---:|
-| Entrenamiento | 2007–2012 | 90.347 |
-| Validación | 2013 | 73.194 |
-| Prueba | 2014 | 74.154 |
-| Complementario | 2015 | 30.835 |
+| Conjunto       | Originación | Registros |
+| -------------- | ------------ | --------: |
+| Entrenamiento  | 2007–2012   |    90.347 |
+| Validación    | 2013         |    73.194 |
+| Prueba         | 2014         |    74.154 |
+| Complementario | 2015         |    30.835 |
 
 ### Justificación de la partición temporal
 

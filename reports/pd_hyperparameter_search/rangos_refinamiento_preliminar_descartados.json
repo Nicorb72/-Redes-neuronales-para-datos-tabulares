@@ -1,0 +1,36 @@
+{
+  "layer_bounds": [
+    1,
+    4
+  ],
+  "widths": [
+    32,
+    64,
+    128,
+    256
+  ],
+  "activations": [
+    "relu",
+    "tanh"
+  ],
+  "optimizers": [
+    "nadam",
+    "adam"
+  ],
+  "reg_types": [
+    "l2",
+    "none"
+  ],
+  "batches": [
+    1024,
+    512
+  ],
+  "learning_rate_bounds": [
+    0.0001,
+    0.01
+  ],
+  "dropout_bounds": [
+    0.05027812222851755,
+    0.45595135834048894
+  ]
+}

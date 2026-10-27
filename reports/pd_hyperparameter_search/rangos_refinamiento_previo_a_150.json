@@ -1,0 +1,45 @@
+{
+  "layer_bounds": [
+    1,
+    4
+  ],
+  "widths": [
+    32,
+    64,
+    128,
+    256
+  ],
+  "activations": [
+    "relu",
+    "tanh"
+  ],
+  "optimizers": [
+    "nadam",
+    "adam"
+  ],
+  "reg_types": [
+    "l2",
+    "none"
+  ],
+  "batches": [
+    1024,
+    512
+  ],
+  "learning_rate_bounds": [
+    0.00042346397287601,
+    0.007901662411061211
+  ],
+  "dropout_bounds": [
+    0.15027812222851755,
+    0.3559513583404889
+  ],
+  "l1_bounds": [
+    2.915455015954134e-06,
+    1.565978836492143e-05
+  ],
+  "l2_bounds": [
+    1.971810883264171e-06,
+    9.176633771523744e-05
+  ],
+  "refinement_rule": "q10-q90 de las 10 mejores; log-cu\u00e1ntiles para LR y penalizaciones; categor\u00edas top-2; ancho con vecinos. Profundidad se ampl\u00eda un nivel, acotado a 1-4."
+}

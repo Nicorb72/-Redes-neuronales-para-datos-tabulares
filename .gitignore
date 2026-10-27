@@ -31,6 +31,12 @@ Thumbs.db
 # Modelos y transformadores generados
 /artifacts/models/*
 !/artifacts/models/README.md
+!/artifacts/models/pd_mlp_hyperparameter_search.pt
+!/artifacts/models/pd_mlp_hyperparameter_search_preprocessor.joblib
+!/artifacts/models/pd_mlp_final.pt
+!/artifacts/models/pd_logistic.joblib
+!/artifacts/models/pd_preprocessor.joblib
+!/artifacts/models/pd_feature_names.json
 
 # Archivos temporales
 /artifacts/prueba_data/
@@ -39,3 +45,7 @@ Thumbs.db
 /reports/figures/*
 !/reports/figures/README.md
 !/reports/figures/*.svg
+
+# Notebooks de experimentos reproducibles: permitir su publicación en GitHub.
+!/src/notebooks/
+!/src/notebooks/**/*.ipynb

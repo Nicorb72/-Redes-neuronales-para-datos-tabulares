@@ -1,0 +1,99 @@
+{
+  "n_layers": 2,
+  "width": 64,
+  "activation": "relu",
+  "optimizer": "nadam",
+  "learning_rate": 0.009872493705787,
+  "dropout": 0.3326782660578228,
+  "reg_type": "l1",
+  "l1": 4.133872799689977e-06,
+  "l2": 0.0,
+  "batch_size": 2048,
+  "seed": 202612,
+  "input_dim": 44,
+  "positive_class": 1,
+  "early_stopping_patience": 8,
+  "max_epochs": 100,
+  "selection_metric": "validation_auc",
+  "robustness_mean_auc": 0.6691058298468906,
+  "robustness_std_auc": 0.0024446398961948668,
+  "robustness_seeds": [
+    11,
+    23,
+    37,
+    41,
+    53
+  ],
+  "selected_candidate_id": 4,
+  "search_seeds": {
+    "phase1": 202603,
+    "phase2": 202604
+  },
+  "search_trial_counts": {
+    "phase1": 150,
+    "phase2": 30
+  },
+  "refinement_ranges": {
+    "layer_bounds": [
+      1,
+      4
+    ],
+    "widths": [
+      32,
+      64,
+      128,
+      256
+    ],
+    "activations": [
+      "relu",
+      "tanh"
+    ],
+    "optimizers": [
+      "nadam",
+      "adam"
+    ],
+    "reg_types": [
+      "l2",
+      "l1"
+    ],
+    "batches": [
+      1024,
+      512
+    ],
+    "learning_rate_bounds": [
+      0.00138339064087162,
+      0.008297424966648639
+    ],
+    "dropout_bounds": [
+      0.02290284798737143,
+      0.3335937491721943
+    ],
+    "l1_bounds": [
+      2.572110625516243e-06,
+      1.4155300479086126e-05
+    ],
+    "l2_bounds": [
+      3.1071195958512727e-06,
+      0.0007382020542544482
+    ],
+    "refinement_rule": "q10-q90 de las 10 mejores; log-cuántiles para LR y penalizaciones; categorías top-2; ancho con vecinos. Profundidad se amplía un nivel, acotado a 1-4."
+  },
+  "validation_fit": {
+    "auc": 0.6730613455734047,
+    "gini": 0.3461226911468094,
+    "ks": 0.24847902549471979,
+    "brier": 0.1658666687955863,
+    "log_loss": 0.5071000728995737,
+    "epochs": 11,
+    "seconds": 9.357503915991401,
+    "parameters": 7105
+  },
+  "split": {
+    "train": "2007-2012",
+    "validation": "2013",
+    "test_reserved": "2014",
+    "supplementary_reserved": "2015"
+  },
+  "preprocessor": "credit_risk.data.preprocessing.construir_preprocesador; fit only on train",
+  "preprocessor_artifact": "artifacts/models/pd_mlp_hyperparameter_search_preprocessor.joblib"
+}

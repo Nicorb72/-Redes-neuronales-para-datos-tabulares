@@ -9,7 +9,7 @@ resultados mediante una scorecard y una aplicación web.
 > clon. La app muestra integración pendiente hasta recibir un paquete PD válido;
 > no genera predicciones ficticias. Entrenamiento PD/LGD y publicación pendientes.
 
-## Aplicación y scorecard 
+## Aplicación y scorecard
 
 Con el entorno activado, instalar `python -m pip install -r requirements-test.txt`
 y arrancar con un único comando:
@@ -92,13 +92,13 @@ tests/                  Pruebas de integración y de los módulos
 
 ## División de trabajo e integración
 
-| Integrante | Responsabilidad | Ubicación principal |
-| --- | --- | --- |
-| 1 | Datos, diccionario de variables y análisis descriptivo | `src/credit_risk/data/`, `data/processed/` |
-| 2 | Clasificación y estimación de PD | `src/credit_risk/pd/` |
-| 3 | Construcción de LGD y modelos de regresión | `src/credit_risk/lgd/` |
-| 4 | Scorecard, interpretación y aplicación web | `src/credit_risk/scorecard/`, `src/credit_risk/app/` |
-| 5 | Integración, reproducibilidad, evaluación comparativa y reporte | `src/credit_risk/evaluation/`, `reports/`, README y configuración |
+| Integrante | Responsabilidad                                                   | Ubicación principal                                                   |
+| ---------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 1          | Datos, diccionario de variables y análisis descriptivo           | `src/credit_risk/data/`, `data/processed/`                         |
+| 2          | Clasificación y estimación de PD                                | `src/credit_risk/pd/`                                                |
+| 3          | Construcción de LGD y modelos de regresión                      | `src/credit_risk/lgd/`                                               |
+| 4          | Scorecard, interpretación y aplicación web                      | `src/credit_risk/scorecard/`, `src/credit_risk/app/`               |
+| 5          | Integración, reproducibilidad, evaluación comparativa y reporte | `src/credit_risk/evaluation/`, `reports/`, README y configuración |
 
 Antes de integrar, acuerden entre los responsables las columnas y el formato
 de los datos de entrada, las particiones que compartirán PD y LGD, las rutas

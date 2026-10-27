@@ -1,0 +1,39 @@
+# Hiperparámetros finales del MLP PD, seleccionados en la búsqueda documentada.
+n_layers: 2
+width: 64
+activation: relu
+optimizer: nadam
+learning_rate: 0.009872493705787
+dropout: 0.3326782660578228
+reg_type: l1
+l1: 4.133872799689977e-06
+l2: 0.0
+batch_size: 2048
+seed: 202612
+input_dim: 44
+early_stopping_patience: 8
+max_epochs: 100
+positive_class: 1
+
+split:
+  train: [2007, 2012]
+  validation: 2013
+  test: 2014
+  supplementary: 2015
+
+baseline:
+  logistic_regression:
+    C: 1.0
+    solver: lbfgs
+    max_iter: 2000
+    class_weight: null
+
+artifacts:
+  output_dir: reports/pd_evaluation
+  mlp_model: artifacts/models/pd_mlp_final.pt
+  logistic_model: artifacts/models/pd_logistic.joblib
+  preprocessor: artifacts/models/pd_preprocessor.joblib
+  feature_names: artifacts/models/pd_feature_names.json
+
+evaluation:
+  calibration_bins: 10
