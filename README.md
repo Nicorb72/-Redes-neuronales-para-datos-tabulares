@@ -4,10 +4,9 @@ Proyecto académico para estimar la probabilidad de incumplimiento (PD), la
 pérdida dado incumplimiento (LGD) y la pérdida esperada, y para presentar los
 resultados mediante una scorecard y una aplicación web.
 
-> **Estado:** datos y estructura implementados; scorecard y aplicación local
-> disponibles. Faltan los modelos entrenados y los artefactos procesados en el
-> clon. La app muestra integración pendiente hasta recibir un paquete PD válido;
-> no genera predicciones ficticias. Entrenamiento PD/LGD y publicación pendientes.
+> **Estado:** modelo PD final, preprocesador, matrices de inferencia y scorecard
+> integrados. La app calcula PD, puntaje, percentil y escenarios sin reentrenar.
+> LGD tiene su implementación propia; publicación de la app y video pendientes.
 
 ## Aplicación y scorecard
 
@@ -21,7 +20,7 @@ python run_app.py
 Abrir `http://127.0.0.1:8501`. Usar `python run_app.py --check` para comprobar
 los artefactos sin navegador. `configs/default.yaml` permite cambiar puntaje
 base, odds buenas:malas, PDO, ruta del paquete PD y enlaces al reporte/video.
-Una vez integrado el modelo, la app muestra PD, puntaje, percentil de la
+La app usa `pd_mlp_final.pt` y muestra PD, puntaje, percentil de la
 referencia train y simulación de cambios, siempre con el mismo modelo.
 
 La [guía del integrante 4](docs/integrante-4.md) contiene los bloqueos por
@@ -125,23 +124,19 @@ todo en un único commit final.
 - Las semillas, hiperparámetros y parámetros de scorecard deben poder
   cambiarse desde configuración o línea de comandos, no editando la lógica
   del modelo. `configs/default.yaml` propone una partición temporal,
-  configuración inicial de scorecard (odds buenas:malas) y semilla; aún no
-  está conectada a modelos.
+  configuración de scorecard (odds buenas:malas) y semilla, conectada al
+  modelo final PD mediante el manifiesto de artefactos.
 - Los modelos guardados permiten abrir la app y regenerar figuras sin
   reentrenar. Documenten el procedimiento de regeneración cuando se integren
   los experimentos.
 
 ## Datos, modelos y artefactos
 
-`data/raw/` se excluye de Git para evitar subir el archivo original sin
-revisar tamaño y condiciones de distribución. No se excluyen los datos
-procesados, modelos ni figuras: la configuración actual de `.gitignore` sí
-excluye `data/processed/`, los archivos de `artifacts/models/` y las figuras
-generadas. Antes de entregar, el equipo debe decidir cuáles artefactos finales
-versionará, comprobar el tamaño del repositorio y documentar su origen. Si el
-archivo original es demasiado grande, versionen la versión procesada y
-comprimida que use el proyecto, junto con el código y los metadatos necesarios
-para reproducirla.
+`data/raw/` se excluye de Git por tamaño. Se versionan las matrices train y
+validación PD necesarias para inferencia e interpretación, sus etiquetas de
+validación y el paquete del modelo final. El archivo original y los artefactos
+LGD siguen teniendo sus propias reglas. Las excepciones explícitas de
+`.gitignore` evitan incluir archivos temporales junto a las entregas finales.
 
 No incluyan credenciales, tokens ni datos personales. No suban datasets,
 modelos o figuras que no sean necesarios para reproducir el trabajo.

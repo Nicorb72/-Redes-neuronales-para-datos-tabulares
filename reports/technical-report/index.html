@@ -606,7 +606,7 @@ S0 = 600; O0 = 50:1; PDO = 20</code></pre>
         <p><strong>Procedimiento documentado por el integrante 4 (PowerShell, raíz del repositorio):</strong></p>
         <pre><code>python -m pip install -r requirements-test.txt
 $env:PYTHONPATH = "src"
-python -m credit_risk.scorecard.export --model artifacts/models/pd_model.joblib --model-id ID_REAL_DE_CORRIDA --training-data VERSION_REAL_DE_TRAIN --reference-population "Créditos etiquetados de train 2007-2012"
+python -m credit_risk.scorecard.export --model artifacts/models/pd_mlp_final.pt --model-format pd_mlp --model-id pd_mlp_final-seed202612 --training-data "Matrices PD train 2007-2012" --reference-population "90347 creditos etiquetados de train 2007-2012"
 python run_app.py --check
 python run_app.py</code></pre>
         <p>
@@ -614,11 +614,17 @@ python run_app.py</code></pre>
         </p>
         <pre><code>python -m credit_risk.scorecard.interpretability --repeats 10 --max-rows 5000</code></pre>
         <p>
-          La app local usa <code>http://127.0.0.1:8501</code> y permite cambiar puerto o configuración. Sin paquete PD muestra “Integración pendiente”, no predicciones ficticias. En este clon faltan el paquete, el clasificador, el preprocesador y la matriz de referencia; <code>python run_app.py --check</code> confirma que la inferencia real aún está bloqueada. GitHub Pages publica solo el blog estático, no la app Python; la URL pública de la aplicación sigue pendiente.
+          La app local usa <code>http://127.0.0.1:8501</code> y permite cambiar puerto o configuración. Sin paquete PD muestra “Integración pendiente”, no predicciones ficticias. El paquete PD real y la matriz de referencia están integrados; <code>python run_app.py --check</code> verifica su compatibilidad antes de abrir la app. GitHub Pages publica solo el blog estático, no la app Python; la URL pública de la aplicación sigue pendiente.
         </p>
         <p>
-          La guía completa del contrato, scorecard, aplicación y límites está en <a href="../../docs/integrante-4.md">docs/integrante-4.md</a>. Las pruebas de scorecard, app e interpretación usan artefactos sintéticos etiquetados para prueba, no resultados del proyecto.
+          La guía completa del contrato, scorecard, aplicación y límites está en <a href="../../docs/integrante-4.md">docs/integrante-4.md</a>. Se mantienen las pruebas sintéticas y se añaden pruebas con el checkpoint publicado, datos reales y comparación contra las métricas de validación del integrante 2.
         </p>
+        <h3>3.4 Integración y resultados reales</h3>
+        <p>La app carga <code>pd_mlp_final.pt</code>, semilla 202612, con su preprocesador y 44 columnas, sin reentrenar. Utiliza 90.347 filas train para percentiles y 73.194 filas de validación. Las métricas reproducidas coinciden con el reporte PD: AUC ≈ 0,67306135 y Brier ≈ 0,16586667, con tolerancia absoluta 2e-6.</p>
+        <p>Como se observa en la Tabla I4-1 y la Figura I4-1, plazo, ingreso anual y utilización rotativa presentan las mayores importancias en la muestra de 5.000 filas de validación, con semilla 42 y 10 permutaciones. El ranking describe dependencia predictiva y no indica dirección ni causalidad.</p>
+        <div class="table-wrap"><table><caption>Tabla I4-1. Cinco mayores incrementos de Brier al permutar variables. Fuente: elaboración propia con MLP final y validación temporal.</caption><thead><tr><th>Variable</th><th>Incremento medio de Brier</th><th>DE entre permutaciones</th></tr></thead><tbody><tr><td>term</td><td>0.006147</td><td>0.000543</td></tr><tr><td>annual_inc</td><td>0.005259</td><td>0.000651</td></tr><tr><td>revol_util</td><td>0.003100</td><td>0.000681</td></tr><tr><td>loan_amnt</td><td>0.001849</td><td>0.000208</td></tr><tr><td>open_acc</td><td>0.001357</td><td>0.000268</td></tr></tbody></table></div>
+        <figure><img src="../interpretability/pd_permutation.svg" alt="Importancia por permutación agrupada de las 15 variables PD" style="max-width:100%;height:auto"><figcaption>Figura I4-1. Importancia por permutación agrupada de PD. Fuente: elaboración propia con MLP final, validación temporal y semilla 42. La DE describe variación entre permutaciones, no incertidumbre poblacional.</figcaption></figure>
+        <p><a href="../interpretability/pd_permutation.csv">Tabla completa</a> · <a href="../interpretability/pd_permutation.json">Trazabilidad de la corrida</a>.</p>
       </section>
 
       <section aria-labelledby="pending-heading">
@@ -630,15 +636,15 @@ python run_app.py</code></pre>
               <tr><th scope="col">Componente</th><th scope="col">Procedimiento documentado</th><th scope="col">Estado</th></tr>
             </thead>
             <tbody>
-              <tr><td>Datos / PD</td><td>Preparación y regeneración de figuras (sección 1).</td><td>Código y pruebas disponibles; falta el CSV para regenerar/cotejar cifras. No hay modelos PD.</td></tr>
+              <tr><td>Datos / PD</td><td>Preparación y regeneración de figuras (sección 1).</td><td>Modelo PD final y evaluación disponibles; falta el CSV original para reproducir la preparación completa.</td></tr>
               <tr><td>LGD</td><td>Objetivo, particiones, resultados reportados, figura, comandos y pruebas (sección 2).</td><td>Código y figura disponibles; faltan CSV, matrices y JSON de benchmark para recalcular resultados.</td></tr>
-              <tr><td>Scorecard / app</td><td>Fórmula, contrato, exportación, comprobación y arranque local (sección 3).</td><td>Código y pruebas sintéticas; falta el paquete PD real. App pública no desplegada.</td></tr>
+              <tr><td>Scorecard / app</td><td>Fórmula, contrato, exportación, comprobación y arranque local (sección 3).</td><td>Paquete PD real, matrices y pruebas integrados. App local con inferencia; publicación pendiente.</td></tr>
               <tr><td>Integración</td><td>Contratos, dependencias y estado de publicación.</td><td>Falta integrar PD con LGD para pérdida esperada ex-ante, verificar en clon limpio y completar divulgación.</td></tr>
             </tbody>
           </table>
         </div>
         <p>
-          Faltan los modelos y métricas finales de PD, el paquete PD real para habilitar inferencia en la app, su combinación con LGD para pérdida esperada ex-ante, la publicación de la aplicación y el video promocional. También faltan la revisión independiente de resultados LGD, la fecha de descarga y la cacería de alucinaciones consolidada.
+          Faltan la combinación con LGD para pérdida esperada ex-ante, la publicación de la aplicación y el video promocional. También faltan la revisión independiente de resultados LGD, la fecha de descarga y la cacería de alucinaciones consolidada.
         </p>
       </section>
 
