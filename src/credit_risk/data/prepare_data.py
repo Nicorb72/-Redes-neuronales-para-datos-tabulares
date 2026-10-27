@@ -10,7 +10,6 @@ from credit_risk.data.preprocessing import (
     VARIABLES_NUMERICAS,
     VARIABLES_CATEGORICAS
 )
-from pathlib import Path
 import json
 import joblib
 import numpy as np
