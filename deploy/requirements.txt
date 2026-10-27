@@ -1,0 +1,4 @@
+# Dependencias exclusivas del despliegue Linux, con PyTorch para CPU.
+--extra-index-url https://download.pytorch.org/whl/cpu
+-r ../requirements-app.txt
+torch==2.5.1+cpu

@@ -28,7 +28,7 @@
   "artifacts": {
     "model": {
       "path": "pd_mlp_final.pt",
-      "sha256": "55abb2313ce48f8fd3557f19e91679b1b8c0b96eed2d1cea9f0ce437e25ba765"
+      "sha256": "f1a9e3670b9eaa3024fbfebb17001a3d1269440c6e7c042483988caa2c271f73"
     },
     "preprocessor": {
       "path": "pd_preprocessor.joblib",
