@@ -457,16 +457,133 @@ python -m credit_risk.data.prepare_data</code></pre>
         </aside>
       </section>
 
-      <section aria-labelledby="pending-heading">
-        <h2 id="pending-heading">2. Trabajo pendiente</h2>
+      <section aria-labelledby="lgd-heading">
+        <h2 id="lgd-heading">2. Pérdida dado incumplimiento (LGD) y Pérdida Esperada</h2>
+
+        <h3>2.1 Definición y justificación de la variable objetivo</h3>
         <p>
-          Esta versión documenta la preparación de PD. Todavía faltan la
-          exploración recalculada desde el archivo fuente, los modelos y
-          métricas de PD, la construcción y evaluación de LGD, la scorecard,
-          la aplicación, la discusión comparativa, la bibliografía APA 7 y la
-          cacería de alucinaciones. No se presentan aquí resultados de modelos
-          que aún no están integrados.
+          Cuando un deudor incurre en impago, la entidad financiera usualmente activa procesos de cobranza y liquidación. La pérdida dado incumplimiento (<em>Loss Given Default</em>, LGD) mide la proporción económica de la deuda impagada que finalmente no logra recuperarse.
         </p>
+        <p>
+          A partir del diccionario oficial <code>LCDataDictionary.xlsx</code> (hoja <code>LoanStats</code>):
+        </p>
+        <ul>
+          <li><code>funded_amnt</code>: Monto total financiado y desembolsado.</li>
+          <li><code>total_rec_prncp</code>: Capital amortizado previamente por el deudor.</li>
+          <li><code>recoveries</code>: Recuperaciones brutas posteriores al castigo contable.</li>
+          <li><code>collection_recovery_fee</code>: Comisiones de cobranza judicial y extrajudicial.</li>
+        </ul>
+        <p>
+          Para cada crédito en castigo <em>i</em>, la exposición observada en el impago (<em>EAD<sub>obs, i</sub></em>) y la recuperación neta (<em>R<sub>i</sub></em>) son:
+        </p>
+        <pre><code>EAD_obs = funded_amnt - total_rec_prncp
+R = recoveries - collection_recovery_fee
+LGD = clip(1 - R / EAD_obs, 0, 1)</code></pre>
+        <p>
+          Solo los créditos castigados (<code>Charged Off</code> y <code>Does not meet the credit policy. Status:Charged Off</code>, 46.009 préstamos) poseen un proceso de recuperación reconocido y exposición definitiva (<code>out_prncp = 0</code>). Los préstamos en <code>Default</code> y moras tempranas aún conservan saldo vivo pendiente de cobro y se excluyen para no introducir sesgo de pérdidas truncadas.
+        </p>
+
+        <h3>2.2 Modelos evaluados y comparación justa</h3>
+        <p>
+          Siguiendo la regla de comparación justa:
+        </p>
+        <ul>
+          <li><strong>Mismos datos y particiones:</strong> Entrenamiento 2007–2012 (14.419), Validación 2013 (14.836) y Prueba 2014 (13.981).</li>
+          <li><strong>Mismo preprocesamiento:</strong> 15 variables de solicitud antes del desembolso (11 numéricas y 4 categóricas), imputadas y codificadas con transformador ajustado exclusivamente en entrenamiento (44 columnas).</li>
+          <li><strong>Modelo de referencia (Baseline):</strong> Regresión lineal con proyección al rango admisible [0, 1] (45 parámetros entrenables).</li>
+          <li><strong>Red neuronal (MLP):</strong> Arquitectura optimizada tras evaluar sistemáticamente 5 combinaciones en 31,04 segundos. La arquitectura final seleccionada posee dos capas ocultas [64, 32], activación ReLU, regularización por Dropout (<em>p</em> = 0,20), decaimiento de pesos AdamW (&lambda; = 10<sup>-4</sup>), parada temprana (paciencia 8) y <strong>capa de salida con activación Sigmoide</strong> para garantizar matemáticamente que las predicciones pertenezcan al intervalo acotado (0, 1). La función de pérdida minimizada es el Error Cuadrático Medio (MSE), formalmente derivada como el estimador de máxima verosimilitud bajo perturbaciones gaussianas.</li>
+          <li><strong>Protocolo de 30 semillas:</strong> El MLP final se entrenó con 30 semillas aleatorias independientes.</li>
+        </ul>
+
+        <p>
+          <strong>Tabla 3. Desempeño en el conjunto de prueba independiente (Año 2014, 13.981 préstamos).</strong><br>
+          <strong>Fuente:</strong> cálculo experimental documentado en <code>src/credit_risk/lgd/experiments.py</code>.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Modelo</th>
+              <th>Parámetros</th>
+              <th>Tiempo de ajuste</th>
+              <th>MAE (Media ± Desv. Est.)</th>
+              <th>MAE [Mín, Máx]</th>
+              <th>RMSE (Media ± Desv. Est.)</th>
+              <th>RMSE [Mín, Máx]</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Regresión Lineal (Baseline)</strong></td>
+              <td>45</td>
+              <td>0,05 s</td>
+              <td>0,0771</td>
+              <td>[0,0771, 0,0771]</td>
+              <td>0,0868</td>
+              <td>[0,0868, 0,0868]</td>
+            </tr>
+            <tr>
+              <td><strong>Red Neuronal MLP (30 semillas)</strong></td>
+              <td>5.185</td>
+              <td>~120 s</td>
+              <td>0,0771 ± 0,0007</td>
+              <td>[0,0757, 0,0790]</td>
+              <td>0,0887 ± 0,0007</td>
+              <td>[0,0877, 0,0905]</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>2.3 Comparación de distribuciones (Observada vs. Predicha)</h3>
+        <p>
+          La distribución observada en prueba revela una pronunciada concentración: el <strong>62,74 %</strong> de los créditos castigados exhiben pérdida total (<code>LGD = 1.0</code>, cero recuperaciones netas), con una media de 0,9452. Como se aprecia en la <strong>Figura 3</strong>, tanto el modelo lineal como el MLP colapsan sus predicciones hacia la media condicional (~0,91 - 0,92), debido a que las características registradas en el momento de la originación poseen un poder explicativo muy limitado sobre los cobros judiciales posteriores al impago.
+        </p>
+
+        <figure>
+          <img
+            src="../figures/distribucion_lgd_observada_vs_predicha.svg"
+            alt="Gráfica de densidad e histograma comparando LGD observada contra Baseline lineal y MLP."
+          >
+          <figcaption>
+            <strong>Figura 3.</strong> Distribución de LGD observada vs. predicciones del Modelo Lineal y Red Neuronal MLP en prueba (2014).
+            <strong>Fuente:</strong> generada por <code>src/credit_risk/lgd/experiments.py</code>.
+          </figcaption>
+        </figure>
+
+        <h3>2.4 Pérdida Esperada (<em>E[L] = PD &times; LGD &times; EAD</em>)</h3>
+        <p>
+          Al originar un crédito, el momento futuro de un posible impago es desconocido; por tanto, la exposición conservadora ex-ante es <em>EAD<sub>0</sub> = funded_amnt</em>. Al evaluar retrospectivamente la cartera morosa, la exposición residual al incumplimiento es <em>EAD<sub>obs</sub> = funded_amnt - total_rec_prncp</em>.
+        </p>
+        <p>
+          Evaluando los 13.981 créditos castigados de 2014:
+        </p>
+        <ul>
+          <li><strong>Exposición total comprometida:</strong> $178.668.119,71 USD</li>
+          <li><strong>Pérdida esperada estimada por el modelo:</strong> $163.408.908,93 USD (tasa esperada: 91,46 %)</li>
+          <li><strong>Pérdida real observada:</strong> $168.195.585,76 USD (tasa real: 94,14 %)</li>
+          <li><strong>Error absoluto medio:</strong> $979,53 USD por préstamo.</li>
+        </ul>
+
+        <h3>2.5 Discusión: ¿Qué aportó la red neuronal en LGD?</h3>
+        <p>
+          La evidencia empírica es contundente: multiplicar por 115 la cantidad de parámetros entrenables (de 45 a 5.185) <strong>no produjo ninguna mejora</strong> en el error absoluto (MAE idéntico de 0,0771) y resultó en un RMSE ligeramente peor (0,0887 vs. 0,0868). La red neuronal añade costo computacional y variabilidad entre semillas sin aportar ventajas en capacidad predictiva para esta tarea tabular, confirmando que una mayor complejidad arquitectural no compensa la debilidad intrínseca de la señal predictiva ex-ante sobre recuperaciones ex-post.
+        </p>
+      </section>
+
+      <section aria-labelledby="pending-heading">
+        <h2 id="pending-heading">3. Trabajo pendiente</h2>
+        <p>
+          Faltan los modelos y métricas finales de clasificación PD (Integrante 2), la integración final de la aplicación web publicada (Integrante 4) y la consolidación de la cacería de alucinaciones (Integrante 5).
+        </p>
+      </section>
+
+      <section aria-labelledby="refs-heading">
+        <h2 id="refs-heading">4. Referencias bibliográficas (Normas APA 7.ª edición)</h2>
+        <ul>
+          <li>Basel Committee on Banking Supervision. (2005). <em>An explanatory note on the Basel II IRB risk-weight functions</em>. Bank for International Settlements. <a href="https://www.bis.org/bcbs/irbriskweight.pdf">https://www.bis.org/bcbs/irbriskweight.pdf</a></li>
+          <li>Loshchilov, I., &amp; Hutter, F. (2019). Decoupled weight decay regularization. En <em>International Conference on Learning Representations (ICLR)</em>. <a href="https://openreview.net/forum?id=Bkg6RiCqY7">https://openreview.net/forum?id=Bkg6RiCqY7</a></li>
+          <li>Papke, L. E., &amp; Wooldridge, J. M. (1996). Econometric methods for fractional response variables with an application to 401(k) plan participation rates. <em>Journal of Applied Econometrics, 11</em>(6), 619–632. <a href="https://doi.org/10.1002/(SICI)1099-1255(199611)11:6&lt;619::AID-JAE418&gt;3.0.CO;2-1">https://doi.org/10.1002/(SICI)1099-1255(199611)11:6&lt;619::AID-JAE418&gt;3.0.CO;2-1</a></li>
+          <li>Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., &amp; Salakhutdinov, R. (2014). Dropout: A simple way to prevent neural networks from overfitting. <em>Journal of Machine Learning Research, 15</em>(56), 1929–1958. <a href="https://www.jmlr.org/papers/v15/srivastava14a.html">https://www.jmlr.org/papers/v15/srivastava14a.html</a></li>
+        </ul>
       </section>
 
       <footer>Reporte técnico en desarrollo · Riesgo de crédito</footer>
