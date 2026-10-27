@@ -66,8 +66,10 @@ def test_matrices_ya_guardadas_si_existen():
     if not ruta.exists():
         pytest.skip("Matrices opcionales no presentes: ejecutar preparación de PD.")
     matriz = sparse.load_npz(ruta)
-    y = np.load(base / "y_train_pd.npy")
     assert matriz.shape == (90347, 44)
-    assert y.shape == (90347,)
     assert np.isfinite(matriz.data).all()
-    assert set(np.unique(y)) == {0, 1}
+    # El paquete de inferencia solo necesita X_train como referencia del percentil.
+    if (base / "y_train_pd.npy").exists():
+        y = np.load(base / "y_train_pd.npy")
+        assert y.shape == (90347,)
+        assert set(np.unique(y)) == {0, 1}

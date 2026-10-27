@@ -79,6 +79,11 @@ class PDNeuralNetwork:
         self.classes_ = np.asarray([0, 1])
 
     @property
+    def n_features_in_(self):
+        """Dimensión transformada para el contrato de inferencia de la app."""
+        return self.input_dim
+
+    @property
     def n_parameters(self) -> int:
         if self.model is None:
             return 0
@@ -217,7 +222,9 @@ class PDNeuralNetwork:
 
     @classmethod
     def load(cls, filepath: str | Path, device=None):
-        checkpoint = torch.load(filepath, map_location="cpu", weights_only=False)
+        checkpoint = torch.load(filepath, map_location="cpu", weights_only=True)
+        if checkpoint.get("positive_class") != 1:
+            raise ValueError("El checkpoint PD debe declarar positive_class=1.")
         instance = cls(checkpoint["model_config"], checkpoint["seed"], device=device)
         instance.input_dim = int(checkpoint["input_dim"])
         instance.best_epoch = int(checkpoint["best_epoch"])

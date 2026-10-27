@@ -301,49 +301,69 @@ modelos serializados.
 ```powershell
 python -m pip install -r requirements-test.txt
 $env:PYTHONPATH = "src"
-python -m credit_risk.scorecard.export --model artifacts/models/pd_model.joblib --model-id ID_REAL_DE_CORRIDA --training-data VERSION_REAL_DE_TRAIN --reference-population "Créditos etiquetados de train 2007-2012"
+python -m credit_risk.scorecard.export --model artifacts/models/pd_mlp_final.pt --model-format pd_mlp --model-id pd_mlp_final-seed202612 --training-data "Matrices PD train 2007-2012" --reference-population "90347 creditos etiquetados de train 2007-2012"
 python run_app.py --check
 python run_app.py
 ```
 
-Los valores `pd_model.joblib`, `ID_REAL_DE_CORRIDA` y
-`VERSION_REAL_DE_TRAIN` son marcadores: deben sustituirse por el modelo real y
-su procedencia. El exportador usa por defecto el preprocesador, las columnas
-y la matriz de referencia producidas por datos; falla si no existen o son
-incompatibles. Para la interpretación, con un paquete PD válido:
+El manifiesto ya está versionado. El comando de exportación permite regenerarlo
+al cambiar los artefactos; comprueba el preprocesador, las columnas, el modelo y
+la matriz train por SHA-256. Para regenerar la interpretación:
 
 ```powershell
 python -m credit_risk.scorecard.interpretability --repeats 10 --max-rows 5000
 ```
 
-La app se ejecuta localmente en `http://127.0.0.1:8501`; acepta `--port`,
-`--config` y `--check`. Inicia sin modelos y muestra “Integración pendiente”
-en lugar de producir predicciones ficticias. En este clon no están
-`pd_bundle.json`, el clasificador, el preprocesador ni la matriz de
-referencia: la comprobación `python run_app.py --check` confirma que la
-inferencia real está bloqueada. GitHub Pages publica únicamente el reporte
-estático, no ejecuta la aplicación Python; la URL pública de la app sigue
-pendiente.
+La app se ejecuta en `http://127.0.0.1:8501`; acepta `--port`, `--config`
+y `--check`. El paquete PD real y las matrices de referencia están versionados.
+`python run_app.py --check` comprueba su compatibilidad sin abrir navegador.
+Si faltan o son incompatibles, muestra integración pendiente. GitHub Pages
+publica el reporte estático; la aplicación Python requiere un servidor propio.
+Su URL pública y el enlace al video siguen pendientes.
 
-**Evidencia procedimental:** la guía detallada de integración, scorecard y
-app está en [docs/integrante-4.md](../../docs/integrante-4.md); las pruebas
-de `tests/test_scorecard.py`, `tests/test_app.py` y
-`tests/test_interpretability.py` usan artefactos sintéticos etiquetados para
-prueba, no modelos ni resultados reales.
+### 3.4 Integración y resultados reales
+
+La app utiliza `pd_mlp_final.pt` (semilla 202612), `pd_preprocessor.joblib` y
+`pd_feature_names.json`, publicados por el integrante 2. El paquete incluye
+90.347 filas train para percentiles y 73.194 filas de validación con sus etiquetas.
+La carga se hace sin entrenamiento y la clase positiva es incumplimiento = 1.
+Las métricas de validación reproducidas coinciden con el reporte PD:
+AUC ≈ 0,67306135 y Brier ≈ 0,16586667 (tolerancia absoluta 2e-6).
+
+Como se observa en la Tabla I4-1 y la Figura I4-1, plazo, ingreso anual y
+utilización rotativa presentan las mayores importancias de esta corrida.
+La muestra contiene 5.000 filas de validación, semilla 42 y 10 permutaciones;
+su Brier original es 0.16346065. La desviación entre permutaciones
+no es un intervalo de confianza y el ranking no determina dirección ni causalidad.
+
+**Tabla I4-1. Cinco mayores incrementos de Brier al permutar variables.**
+Fuente: elaboración propia con el MLP final y validación temporal.
+
+| Variable | Incremento medio de Brier | DE entre permutaciones |
+|---|---:|---:|
+| `term` | 0.006147 | 0.000543 |
+| `annual_inc` | 0.005259 | 0.000651 |
+| `revol_util` | 0.003100 | 0.000681 |
+| `loan_amnt` | 0.001849 | 0.000208 |
+| `open_acc` | 0.001357 | 0.000268 |
+
+![Figura I4-1. Importancia por permutación agrupada de PD](../interpretability/pd_permutation.svg)
+
+Fuente: elaboración propia; MLP final, validación temporal, semilla 42.
+[Tabla completa](../interpretability/pd_permutation.csv) y
+[trazabilidad de la corrida](../interpretability/pd_permutation.json).
 
 ## 4. Qué está documentado y qué falta
 
 | Componente | Procedimiento en el reporte | Estado en el clon |
 | --- | --- | --- |
-| Datos / PD | Preparación de datos y regeneración de figuras (sección 1) | Código y pruebas disponibles; falta el CSV para regenerar/cotejar cifras. No hay modelos PD. |
+| Datos / PD | Preparación de datos y regeneración de figuras (sección 1) | Modelo PD final y evaluación disponibles; falta el CSV original para reproducir la preparación completa. |
 | LGD | Objetivo, particiones, métricas reportadas, figura, comandos y pruebas (sección 2) | Código y figura disponibles; no hay CSV, matrices ni JSON de benchmark para recalcular resultados. |
-| Scorecard / app | Fórmula, contrato, exportación, comprobación y arranque local (sección 3) | Código y pruebas con datos sintéticos disponibles; falta el paquete PD real. App pública no desplegada. |
+| Scorecard / app | Fórmula, contrato, exportación, comprobación y arranque local (sección 3) | Paquete PD real, matrices y pruebas integrados. App local con inferencia; publicación pendiente. |
 | Integración / reporte | Este reporte y los pasos de ejecución anteriores | Falta combinar PD real con LGD para estimar pérdida esperada ex-ante, verificar en clon limpio y completar divulgación. |
 
-Faltan los modelos y métricas finales de clasificación PD, el paquete PD real
-para habilitar inferencia en la app, la integración de PD con LGD para estimar
-pérdida esperada ex-ante, la publicación de la aplicación web y el video
-promocional. También faltan la revisión independiente de resultados LGD,
+Faltan la integración de PD con LGD para estimar pérdida esperada ex-ante,
+la publicación de la aplicación web y el video promocional. También faltan la revisión independiente de resultados LGD,
 la fecha de descarga y la cacería de alucinaciones consolidada.
 
 ## 5. Referencias bibliográficas (Normas APA 7.ª edición)

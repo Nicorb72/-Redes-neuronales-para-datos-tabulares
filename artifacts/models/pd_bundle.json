@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "positive_class": 1,
+  "raw_features": [
+    "loan_amnt",
+    "annual_inc",
+    "dti",
+    "delinq_2yrs",
+    "inq_last_6mths",
+    "open_acc",
+    "pub_rec",
+    "revol_bal",
+    "revol_util",
+    "total_acc",
+    "antiguedad_crediticia_meses",
+    "term",
+    "purpose",
+    "emp_length",
+    "home_ownership"
+  ],
+  "model_id": "pd_mlp_final-seed202612",
+  "training_data": "Matrices PD de train 2007-2012 entregadas por integrante 1; preprocesador guardado por integrante 2 en commit 8beb684",
+  "reference_population": "90347 créditos etiquetados de Lending Club, originados entre 2007 y 2012",
+  "reference_split": "train",
+  "input_format": "sparse",
+  "model_format": "pd_mlp",
+  "inference_threads": 1,
+  "artifacts": {
+    "model": {
+      "path": "pd_mlp_final.pt",
+      "sha256": "55abb2313ce48f8fd3557f19e91679b1b8c0b96eed2d1cea9f0ce437e25ba765"
+    },
+    "preprocessor": {
+      "path": "pd_preprocessor.joblib",
+      "sha256": "826b36ec67f246bd7c5c46b280559cf38cc7fd597b91ffa86385f7b53bca648b"
+    },
+    "columns": {
+      "path": "pd_feature_names.json",
+      "sha256": "c6f0dd97f41019798a2ba61ed36e0fedf466b4a771afeb21674694c724cca7c6"
+    },
+    "reference_matrix": {
+      "path": "../../data/processed/X_train_pd.npz",
+      "sha256": "4f364b346e10366a2b26afac5dc38db0d1f72822c13fd2cc55bde651fc5b383b"
+    }
+  }
+}

@@ -1,117 +1,109 @@
 # Integrante 4: scorecard, interpretación y aplicación
 
-## Revisión inicial y bloqueos
+## Integración real del 27 de octubre de 2026
 
-Revisión del 26 de octubre de 2026, sobre `main` en `d4d95b8`.
-Rama de trabajo: `INTEGRANTE-4` (antes `feature/integrante-4-scorecard-app`). Este documento define
-una propuesta de integración verificable; no implica que los otros integrantes
-ya hayan aprobado el contrato.
+Rama: `INTEGRANTE-4`. Se conecta el checkpoint `pd_mlp_final.pt` publicado por
+el integrante 2 en `8beb684`, semilla 202612, con su `pd_preprocessor.joblib`
+y `pd_feature_names.json`. La app carga pesos existentes en CPU y aplica sigmoid
+a los logits; no entrena ni selecciona otra red. La carga exige `positive_class=1`,
+reconstruye la arquitectura guardada y verifica que sus 44 entradas coincidan
+con las columnas del preprocesador.
 
-Se incorporó posteriormente el commit de `main` `b192a3f`, que añade la
-justificación de las particiones temporales al documento del módulo de datos.
-La generación y el guardado de matrices y transformadores ya estaban
-implementados; su ausencia en el clon corresponde a la distribución de
-artefactos, no a una falta de implementación del integrante 1.
+Las matrices fueron entregadas por el integrante 1. Los archivos con extensión
+`.npz.zip` ya tenían el formato NPZ de SciPy: se conservaron sus bytes con el
+nombre `.npz`. Se versionan exactamente los artefactos necesarios para esta app:
 
-| Responsable | Contrato encontrado | Entrega pendiente |
-| --- | --- | --- |
-| Datos (1) | `default_flag=1` significa incumplimiento; 11 numéricas y 4 categóricas; `ColumnTransformer` ajustado solo en train | Archivos `preprocesador_pd.joblib`, `columnas_pd.json` y matrices procesadas; no están en el clon |
-| PD (2) | `pd/` contiene solamente `__init__.py` | Modelo entrenado, versiones del entorno, identificación de corrida y procedencia de train; interfaz de probabilidad explícita |
-| LGD (3) | `lgd/` contiene solamente `__init__.py` | Modelo, fórmula de LGD y definición de EAD; la app no muestra LGD ni pérdida esperada |
-| Integración (5) | Reporte inicial y configuración de scorecard | Publicación de app, video real, verificación en otra máquina y artefactos finales versionados |
+- `data/processed/X_train_pd.npz`: 90.347 × 44, referencia del percentil.
+- `data/processed/X_validation_pd.npz`: 73.194 × 44, interpretación y verificación.
+- `data/processed/y_validation_pd.npy`: 73.194 etiquetas 0/1.
+- `artifacts/models/pd_bundle.json`: manifiesto con rutas, modelo y SHA-256.
 
-Las matrices definidas por `data.prepare_data` son `X_train_pd.npz`,
-`X_validation_pd.npz`, `X_test_pd.npz` y la partición complementaria 2015,
-con etiquetas en archivos `y_<split>_pd.npy`. Son matrices transformadas,
-no entradas adecuadas para un formulario. No se presupone que siempre tengan
-44 columnas: se verifica la dimensión efectiva de los artefactos.
-La división implementada usa train 2007–2012, validación 2013 y test 2014.
-Los porcentajes generales de `configs/default.yaml` no gobiernan esa división.
+El preprocesador del modelo final carga con scikit-learn 1.5.2, la versión fijada
+por el proyecto. Se contrastaron columnas, categorías, medianas, media, escala
+y cantidad de filas con el preprocesador recibido previamente: coinciden a
+una tolerancia relativa/absoluta de 1e-12; la mayor diferencia de escala es
+7,28e-12. Las matrices tienen valores finitos y codificación one-hot coherente.
+La coincidencia de dimensiones no demuestra el orden de filas por sí sola;
+la reproducción de las métricas publicadas aporta una comprobación adicional.
 
-El PDF exige guardar modelos y datos procesados, pero `.gitignore` los excluye.
-Esta rama no añade modelos ni datos inventados y tampoco cambia esa política
-global: el equipo debe versionar explícitamente los archivos finales aprobados
-(o modificar las exclusiones) antes de entregar. El arranque funciona sin ellos,
-mostrando integración pendiente; la consulta real queda bloqueada.
-
-## Instalación y comandos
-
-Desde la raíz del clon y un entorno Python 3.11.9 activado:
+## Ejecución sin entrenamiento
 
 ```powershell
-python -m pip install -r requirements-test.txt
+python -m pip install -r requirements-app.txt
+python run_app.py --check
 python run_app.py
 ```
 
-`requirements-app.txt` contiene solo las dependencias directas de inferencia y
-web, fijadas a las mismas versiones del entorno original. `requirements-test.txt`
-añade pruebas y generación de figuras. Para entrenar o cargar un objeto que
-dependa de PyTorch se necesita además el entorno completo `requirements.txt`.
-Las dependencias transitivas no constituyen un lock completo.
-
-La app usa `http://127.0.0.1:8501`. Se puede cambiar el puerto y la configuración:
+Abrir `http://127.0.0.1:8501`. Para pruebas y figuras usar
+`python -m pip install -r requirements-test.txt` y `python -m pytest`.
+El arranque y las consultas usan archivos locales, sin descargar datos ni llamar
+APIs. El manifiesto se entrega validado; solo es necesario regenerarlo al cambiar
+artefactos. Para ello, desde la raíz, con `PYTHONPATH=src`:
 
 ```powershell
-python run_app.py --port 8502 --config configs/default.yaml
-python run_app.py --check
-python -m pytest
+python -m credit_risk.scorecard.export --model artifacts/models/pd_mlp_final.pt --model-format pd_mlp --model-id pd_mlp_final-seed202612 --training-data "Matrices PD train 2007-2012" --reference-population "90347 creditos etiquetados de train 2007-2012"
+python -m credit_risk.scorecard.interpretability --seed 42 --repeats 10 --max-rows 5000
 ```
 
-`--check` retorna 0 si el paquete PD es compatible y 2 si falta o es inválido.
-No necesita navegador. El lanzador configura la ruta del paquete, sin exigir
-instalación editable. Los comandos de módulos siguientes requieren la ruta
-`src` (en macOS/Linux: `export PYTHONPATH=src`):
+En PowerShell se configura la ruta con `$env:PYTHONPATH = "src"`.
+`configs/default.yaml` controla puntaje base, odds, PDO y enlaces. El exportador
+admite `--model-format pd_mlp` y el formato anterior `joblib`; no deduce el tipo
+por el nombre del archivo. La inferencia de PyTorch usa CPU y un hilo por defecto,
+configurable con `--inference-threads`. El manifiesto y los archivos se verifican
+por contenido para invalidar la caché al cambiar pesos o preprocesamiento.
+Los hashes JSON normalizan CRLF a LF para que Git no rompa la verificación
+al pasar de Windows a Linux; los artefactos binarios conservan SHA-256 exacto.
+Las cargas con una versión incompatible de scikit-learn se rechazan.
 
-```powershell
-$env:PYTHONPATH = "src"
-python -m credit_risk.scorecard.export --model artifacts/models/pd_model.joblib --model-id ID_REAL_DE_CORRIDA --training-data VERSION_REAL_DE_TRAIN --reference-population "Créditos etiquetados de train 2007-2012"
-python -m credit_risk.scorecard.interpretability --repeats 10 --max-rows 5000
-```
+## Verificación y resultados reales
 
-Los identificadores en mayúsculas son argumentos que debe sustituir quien
-entrenó el modelo; no corresponden a una corrida existente. El exportador
-solo empaqueta artefactos existentes y comprueba su compatibilidad.
-Nunca entrena, ajusta el preprocesador ni descarga datos.
-No sobrescribe un manifiesto válido si la nueva validación falla.
+La prueba `test_final_model_reproduces_published_validation` calcula las métricas
+sobre las 73.194 filas de validación y las compara con
+`reports/pd_evaluation/resultados.json`, con tolerancia absoluta 2e-6:
+AUC 0,67306135 y Brier 0,16586667. Corresponden al MLP de semilla base, sin una
+calibración adicional añadida por la app; no son promedios de 30 modelos.
 
-## Contrato PD versión 1
+En la muestra fija de 5.000 filas de validación, semilla 42, el Brier original
+es 0.16346065. La Tabla I4-1 muestra las cinco primeras
+variables por incremento de Brier al permutar. La Figura I4-1 y los archivos
+JSON/CSV contienen las 15 variables, sus repeticiones, hashes e índices muestreados.
 
-Entradas del formulario: exactamente las columnas de `VARIABLES_NUMERICAS +
-VARIABLES_CATEGORICAS` en `data.preprocessing`. La antigüedad se expresa en
-meses al originar el crédito, no en meses hasta hoy. Se introducen variables
-antes de transformar. Las categorías se obtienen del encoder ajustado,
-conservando incluso espacios en los códigos originales de `term`.
-El formulario exige datos completos, números finitos no negativos y conteos
-enteros; no inventa valores para campos faltantes. Sus valores iniciales
-provienen de las medianas (redondeadas para conteos) y categorías del preprocesador: deben revisarse.
-No impone techos financieros arbitrarios ni garantiza que un perfil esté dentro
-de la distribución de entrenamiento. Los rótulos de la app son orientativos;
-el equipo de datos debe contrastar su significado con el diccionario original.
+**Tabla I4-1. Cinco mayores importancias por permutación agrupada.**
+Fuente: elaboración propia con `pd_mlp_final`, validación temporal, semilla 42,
+10 permutaciones por variable.
 
-El preprocesador debe ser el `ColumnTransformer` guardado por el módulo de
-datos, con `feature_names_in_` y `get_feature_names_out()`. El modelo recibe
-las columnas **ya transformadas**, declara `n_features_in_`, `classes_` con
-las clases numéricas 0 y 1, y expone `predict_proba(X)` con salida `n × 2`.
-Se busca la posición de la clase 1; no se presupone que siempre sea la segunda.
-Se comprueban límites, valores finitos y suma por fila. Puede ser una regresión
-logística o un MLP con esa interfaz. No se presenta una logística como red.
-Los modelos que requieran entrada densa usan `--input-format dense`.
+| Variable | Incremento medio de Brier | DE entre permutaciones |
+|---|---:|---:|
+| `term` | 0.006147 | 0.000543 |
+| `annual_inc` | 0.005259 | 0.000651 |
+| `revol_util` | 0.003100 | 0.000681 |
+| `loan_amnt` | 0.001849 | 0.000208 |
+| `open_acc` | 0.001357 | 0.000268 |
 
-Si el integrante 2 entrega únicamente un `state_dict` de PyTorch, **aún hace
-falta un adaptador** con arquitectura, pesos, modo `eval`, salida sigmoid o
-softmax y esta interfaz; no es correcto deducirlos de los pesos ni volver
-a entrenar un modelo sustituto. Se debe guardar la clase del adaptador en un
-módulo importable del repositorio. La probabilidad de la clase 1 debe incluir
-la calibración seleccionada por el equipo de PD, si existe.
 
-`pd_bundle.json` guarda versión, modelo/corrida, versión de train, población
-de referencia, clase positiva, columnas originales y formato de entrada. Para
-cada uno de modelo, preprocesador, columnas y matriz train guarda ruta relativa
-al manifiesto y SHA-256. El exportador construye esos hashes. La carga comprueba
-dimensiones, columnas y hashes antes de inferir. Los hashes detectan cambios;
-no demuestran que el equipo entrenara ese modelo con ese train. Esa trazabilidad
-debe conservarse en el registro de entrenamiento. Solo se deben cargar archivos
-joblib confiables del equipo: deserializarlos puede ejecutar código.
+![Figura I4-1. Importancia por permutación agrupada de PD](../reports/interpretability/pd_permutation.svg)
+
+El plazo (`term`), el ingreso anual (`annual_inc`) y la utilización rotativa
+(`revol_util`) producen las mayores pérdidas de precisión al permutarse en esta
+muestra. Esto describe dependencia predictiva; no establece que valores altos
+aumenten el riesgo ni que modificar esas variables produzca un efecto causal.
+La dirección local se examina con la simulación de una característica de la app.
+
+## Contrato de formulario e inferencia
+
+La entrada contiene las 11 variables numéricas y 4 categóricas definidas por
+`data.preprocessing`; la antigüedad crediticia se expresa en meses al originar
+el préstamo. Las opciones se obtienen del encoder ajustado y conservan los códigos
+originales, incluidos los espacios de `term`. Se exigen campos completos, valores
+finitos no negativos y conteos enteros. Los valores iniciales son medianas
+(redondeadas en conteos) y categorías de train que el usuario debe revisar.
+El formulario no garantiza que un perfil esté dentro de la distribución histórica.
+
+El modelo recibe datos transformados y expone `classes_`, `n_features_in_` y
+`predict_proba`; se busca la clase 1 por su etiqueta. El formato `pd_mlp` utiliza
+la clase del módulo PD, carga el checkpoint con `weights_only=True` y modo `eval`,
+y no modifica pesos. Solo deben cargarse los archivos joblib confiables del equipo.
+La referencia del percentil es train, no validación ni test.
 
 ## Derivación de la scorecard
 
@@ -219,37 +211,19 @@ Referencias APA 7:
   or correlated features* (versión 1.5.2).
   https://scikit-learn.org/1.5/auto_examples/inspection/plot_permutation_importance_multicollinear.html
 
-## Resultados y entregables aún pendientes
+## Pendientes para la entrega académica
 
-No hay AUC, Brier real, ranking de variables ni perfiles reales calculados
-en esta rama porque faltan los artefactos entrenados. Las pruebas generan
-datos sintéticos únicamente en directorios temporales y los identifican
-como `SYNTHETIC-TEST-ONLY`; nunca se distribuyen como resultados del trabajo.
-
-Al recibir el paquete real:
-
-1. Verificar procedencia, diccionario, entorno y clase positiva con integrantes 1 y 2.
-2. Ejecutar exportador, `--check`, pruebas y app sin reentrenar.
-3. Generar interpretación con matrices/etiquetas de validación alineadas.
-4. Revisar resultados y citar en el blog la Tabla I4-1 (CSV generado) y
-   Figura I4-1 (SVG), con título, fuente y explicación de sus límites.
-5. Configurar el enlace real al video. Probar el enlace al reporte tras su despliegue.
-6. Publicar la app en un servidor Python/Streamlit con los artefactos del paquete
-   y versiones fijadas; el HTML estático de GitHub Pages no ejecuta Python.
-   La publicación y su URL siguen pendientes.
-7. Medir la demostración real (<120 s) y repetir en un clon limpio en otra máquina.
+- Publicar la aplicación en un servidor Python/Streamlit y comprobar su URL.
+- Configurar el enlace real del video promocional y verificar la publicación del reporte.
+- Repetir la demostración en otra máquina; el ensayo local no sustituye esa prueba.
+- Integrar LGD/EAD si el equipo acuerda mostrar pérdida esperada; no bloquea PD/scorecard.
+- Mantener en el reporte las limitaciones temporales y de selección del conjunto.
 
 ## Uso de IA y verificaciones
 
-El encargo fue implementar scorecard configurable, interpretabilidad justificada
-y app con PD/puntaje/percentil/simulación, sin modificar main ni inventar resultados.
-La IA ayudó con derivación, implementación, pruebas y documentación. El equipo
-debe conservar el prompt literal de esta conversación y revisar el código antes
-de defenderlo. No se inventan cinco alucinaciones para completar el reporte.
-
-Verificaciones implementadas: signo de la transformación, punto de referencia,
-duplicación de odds, inversa, límites, empates de percentil, búsqueda de clase 1,
-contratos dañados, agrupación one-hot, repetibilidad, consulta y simulación web.
-Estas comprobaciones son evidencia de revisión, no cinco errores observados
-atribuibles a una respuesta de IA. Los resultados de ejecución se documentan
-en la entrega y en el PR.
+La IA ayudó en derivación, implementación, pruebas y documentación. El equipo debe
+conservar los prompts literales y revisar el código antes de defenderlo.
+Se comprobaron signo, odds, PDO, inversa, empates de percentil, clase positiva,
+rechazo de checkpoints incompatibles, hashes, datos reales, métricas publicadas,
+consulta y simulación web. Las pruebas sintéticas siguen identificadas como tales.
+No se inventaron hallazgos de alucinación para completar el reporte.
