@@ -8,27 +8,6 @@ resultados mediante una scorecard y una aplicación web.
 > integrados. La app calcula PD, puntaje, percentil y escenarios sin reentrenar.
 > LGD tiene su implementación propia; publicación de la app y video pendientes.
 
-## Aplicación y scorecard
-
-Con el entorno activado, instalar `python -m pip install -r requirements-test.txt`
-y arrancar con un único comando:
-
-```powershell
-python run_app.py
-```
-
-Abrir `http://127.0.0.1:8501`. Usar `python run_app.py --check` para comprobar
-los artefactos sin navegador. `configs/default.yaml` permite cambiar puntaje
-base, odds buenas:malas, PDO, ruta del paquete PD y enlaces al reporte/video.
-La app usa `pd_mlp_final.pt` y muestra PD, puntaje, percentil de la
-referencia train y simulación de cambios, siempre con el mismo modelo.
-
-La [guía del integrante 4](docs/integrante-4.md) contiene los bloqueos por
-responsable, el contrato de inferencia, el comando de empaquetado de modelos,
-la derivación matemática, las pruebas y el método de interpretabilidad con
-referencias verificables. No se necesitan datos originales ni reentrenamiento
-para abrir la app; las consultas requieren los artefactos reales guardados.
-
 ## Reporte tipo blog
 
 La página inicial del reporte está en
@@ -49,23 +28,105 @@ El enlace público estará disponible cuando termine correctamente esa ejecució
 - El archivo de datos Credit Risk Analysis de Kaggle. Descárguenlo desde
   [la fuente del conjunto](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset)
   y colóquenlo en `data/raw/loan/loan.csv`, como espera el módulo de carga.
-  No se requiere una API de Kaggle para ejecutar el proyecto una vez que el
-  archivo esté disponible localmente.
+  Se necesita para regenerar los datos procesados; la app y los experimentos
+  PD pueden usar los artefactos procesados versionados. No se requiere una API
+  de Kaggle si el archivo ya está disponible localmente.
 
-## Instalación
+## Instalación y ejecución
 
-Desde la raíz del repositorio, creen y activen un entorno virtual:
+Los siguientes comandos se ejecutan desde la raíz del repositorio. El proyecto
+usa Python **3.11.9** y las dependencias fijadas en `requirements.txt`.
 
-```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
+### macOS y Linux
+
+En una terminal `zsh` o `bash`:
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m ensurepip --upgrade
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-En macOS o Linux, activen el entorno con
-`source .venv/bin/activate`. Las versiones de las dependencias están fijadas
-en `requirements.txt`.
+Si `python3.11` no está instalado, instalen Python 3.11 y vuelvan a ejecutar
+los comandos. `ensurepip` prepara pip dentro del entorno virtual; después de
+la instalación, activen siempre el entorno antes de ejecutar el proyecto:
+
+```bash
+source .venv/bin/activate
+```
+
+### Windows PowerShell
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m ensurepip --upgrade
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+### Ejecutar la aplicación
+
+Con el entorno virtual activado:
+
+```bash
+python run_app.py
+```
+
+Abrir `http://127.0.0.1:8501`. Para revisar que los artefactos del modelo
+cargan correctamente sin abrir la interfaz:
+
+```bash
+python run_app.py --check
+```
+
+La app utiliza `pd_mlp_final.pt` y muestra PD, puntaje, percentil de la
+referencia train y simulación de cambios. No requiere el CSV original ni
+reentrenar los modelos.
+
+### Ejecutar experimentos PD
+
+Las matrices preprocesadas de train, validación y prueba están versionadas; el
+entrenamiento PD no necesita el CSV original. En macOS/Linux:
+
+```bash
+PYTHONPATH=src python -m credit_risk.pd.experiments
+```
+
+En Windows PowerShell:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m credit_risk.pd.experiments
+```
+
+Para generar nuevamente las matrices procesadas desde el CSV (solo necesario
+si se cambian los datos o el preprocesamiento), coloquen el archivo en
+`data/raw/loan/loan.csv` y ejecuten:
+
+```bash
+PYTHONPATH=src python -m credit_risk.data.prepare_data
+```
+
+En PowerShell, definan antes la ruta de módulos con `$env:PYTHONPATH = "src"`.
+El entrenamiento y la generación de matrices producen artefactos y pueden
+tardar varios minutos.
+
+### Pruebas
+
+Con el entorno activado, ejecutar:
+
+```bash
+python -m pytest
+```
+
+Al terminar, salir del entorno virtual con `deactivate`.
+
+La [guía del integrante 4](docs/integrante-4.md) contiene el contrato de
+inferencia, el empaquetado de modelos, la derivación matemática y el método de
+interpretabilidad con referencias verificables.
 
 ## Estructura
 
@@ -132,22 +193,21 @@ todo en un único commit final.
 
 ## Datos, modelos y artefactos
 
-`data/raw/` se excluye de Git por tamaño. Se versionan las matrices train y
-validación PD necesarias para inferencia e interpretación, sus etiquetas de
-validación y el paquete del modelo final. El archivo original y los artefactos
-LGD siguen teniendo sus propias reglas. Las excepciones explícitas de
-`.gitignore` evitan incluir archivos temporales junto a las entregas finales.
+`data/raw/` se excluye de Git por tamaño. Se versionan las matrices y etiquetas
+de train, validación y prueba de PD, además del preprocesador y el paquete del
+modelo final. El archivo original y los artefactos LGD siguen teniendo sus
+propias reglas. Las excepciones explícitas de `.gitignore` evitan incluir
+archivos temporales junto a las entregas finales.
 
 No incluyan credenciales, tokens ni datos personales. No suban datasets,
 modelos o figuras que no sean necesarios para reproducir el trabajo.
 
 ## Reproducibilidad y entrega
 
-La aplicación local se inicia con `python run_app.py`. La ejecución completa
-y la demostración de los experimentos de entrenamiento siguen pendientes.
-La demostración debe tardar menos de dos minutos; su tiempo con modelos reales
-debe medirse al integrar los artefactos. Los comandos de interpretación y
-validación se describen en `docs/integrante-4.md`.
+La app y los experimentos PD se ejecutan con los comandos de la sección
+«Instalación y ejecución». La demostración debe tardar menos de dos minutos;
+su tiempo con modelos reales debe medirse al integrar los artefactos. Los
+comandos de interpretación y validación se describen en `docs/integrante-4.md`.
 
 Antes de entregar:
 
@@ -161,14 +221,6 @@ Antes de entregar:
 - Incluyan en el reporte los enlaces al repositorio, aplicación y video
   promocional; entreguen también el video de contribución individual de cada
   integrante.
-
-## Pruebas
-
-Ejecuten las pruebas desde la raíz del repositorio con:
-
-```powershell
-python -m pytest
-```
 
 Las pruebas que requieren el CSV o matrices locales se omiten si esos archivos
 no están disponibles; las pruebas unitarias de etiquetado, particiones,

@@ -28,8 +28,11 @@ Thumbs.db
 /data/processed/*
 !/data/processed/README.md
 !/data/processed/X_train_pd.npz
+!/data/processed/y_train_pd.npy
 !/data/processed/X_validation_pd.npz
 !/data/processed/y_validation_pd.npy
+!/data/processed/X_test_pd.npz
+!/data/processed/y_test_pd.npy
 
 # Modelos y transformadores generados
 /artifacts/models/*
