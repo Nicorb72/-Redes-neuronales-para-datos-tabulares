@@ -24,7 +24,11 @@ class ArtifactError(ValueError):
 
 
 def sha256(path):
-    with Path(path).open("rb") as stream:
+    """SHA-256 binario; en JSON se normalizan CRLF a LF para portabilidad Git."""
+    path = Path(path)
+    if path.suffix.lower() == ".json":
+        return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+    with path.open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 

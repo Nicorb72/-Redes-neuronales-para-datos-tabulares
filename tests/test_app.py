@@ -171,3 +171,26 @@ def test_export_check_interpretation_commands(pd_artifacts):
     with (data.tmp_path / "model.joblib").open("ab") as stream:
         stream.write(b"changed")
     assert fingerprint != bundle_fingerprint(exported)
+
+
+def test_json_integrity_is_portable_across_line_endings(pd_artifacts):
+    from credit_risk.app.contracts import sha256
+
+    data = pd_artifacts
+    columns = data.tmp_path / "columns.json"
+    original = columns.read_bytes()
+    # Insertar espacios de formato para ejercitar CRLF sin modificar los valores.
+    text = json.dumps(json.loads(original), indent=2).encode("utf-8")
+    columns.write_bytes(text)
+    metadata = data.metadata
+    metadata["artifacts"]["columns"]["sha256"] = sha256(columns)
+    data.manifest.write_text(json.dumps(metadata), encoding="utf-8")
+    before = bundle_fingerprint(data.manifest)
+    columns.write_bytes(text.replace(b"\n", b"\r\n"))
+    assert before == bundle_fingerprint(data.manifest)
+    assert load_bundle(data.manifest).columns == data.bundle.columns
+    binary = data.tmp_path / "example.bin"
+    binary.write_bytes(b"a\nb")
+    checksum = sha256(binary)
+    binary.write_bytes(b"a\r\nb")
+    assert checksum != sha256(binary)

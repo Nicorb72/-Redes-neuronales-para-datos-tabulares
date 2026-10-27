@@ -51,6 +51,8 @@ admite `--model-format pd_mlp` y el formato anterior `joblib`; no deduce el tipo
 por el nombre del archivo. La inferencia de PyTorch usa CPU y un hilo por defecto,
 configurable con `--inference-threads`. El manifiesto y los archivos se verifican
 por contenido para invalidar la caché al cambiar pesos o preprocesamiento.
+Los hashes JSON normalizan CRLF a LF para que Git no rompa la verificación
+al pasar de Windows a Linux; los artefactos binarios conservan SHA-256 exacto.
 Las cargas con una versión incompatible de scikit-learn se rechazan.
 
 ## Verificación y resultados reales

@@ -5265,7 +5265,7 @@
     }
   ],
   "model_id": "pd_mlp_final-seed202612",
-  "bundle_sha256": "551e30de91150e9809a67faaead7be991be81a4d722388ab22704f2937a81bd4",
+  "bundle_sha256": "8be2a81a156c1993111dedade6af4ec751eb294090c6b527b4fcac3b8ca4cc32",
   "matrix_sha256": "46e7112db0b411dc3cfc6f506021b7ef49b8df8401fce3c5007f35e7e9384376",
   "labels_sha256": "69db9dbdbb1ee4eb350fa4f55f45d6bbd9a21886b1aa3b10e4b7813dabc3526f",
   "split": "validation (debe verificarse su procedencia)"
