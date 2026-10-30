@@ -26,6 +26,9 @@ El README del módulo reporta **887.379 préstamos**, originados entre junio de
 2007 y diciembre de 2015. El archivo original no está incluido en GitHub por
 su tamaño. La fecha de descarga debe registrarse cuando se consolide la
 versión del conjunto usada por el equipo.
+El diccionario de referencia es `data/raw/LCDataDictionary.xlsx`, hoja
+`LoanStats`, incluido con el dataset. La fecha original de descarga no se
+ha podido corroborar; permanece como dato pendiente de confirmación.
 
 La variable `default_flag` se deriva de `loan_status`: los pagos confirmados
 se codifican como 0, los incumplimientos como 1 y los estados sin resultado
@@ -105,7 +108,22 @@ los modelos. La auditoría de fuga excluye predictores evidentes de resultados
 posteriores al desembolso, pero el propio módulo advierte que no verifica por
 completo la disponibilidad temporal de cada variable.
 
-### 1.4 Implementación y reproducción
+
+### 1.4 Hipótesis derivadas del análisis descriptivo
+
+A partir del EDA del subconjunto de **268.530 créditos etiquetados** se formularon tres hipótesis de asociación con el riesgo de incumplimiento:
+
+| Hipótesis | Fundamento descriptivo observado | Estado de la comprobación |
+|---|---|---|
+| **H1.** Una mayor relación deuda-ingreso (`dti`) se asocia con una mayor frecuencia de incumplimiento. | Mediana de `dti`: 18,55 en malos pagadores y 15,74 en buenos pagadores. | Compatible con el análisis descriptivo; falta contrastar con la interpretación de los modelos. |
+| **H2.** Un mayor ingreso anual declarado (`annual_inc`) se asocia con menor frecuencia de incumplimiento. | Mediana de ingresos: 57.000 USD/año en malos pagadores y 64.000 USD/año en buenos pagadores. | Compatible con el análisis descriptivo; falta contrastar con la interpretación de los modelos. |
+| **H3.** Un mayor monto solicitado (`loan_amnt`) se asocia con una mayor frecuencia de incumplimiento. | Mediana del préstamo: 13.000 USD en malos pagadores y 12.000 USD en buenos pagadores. | Compatible con el análisis descriptivo; falta contrastar con la interpretación de los modelos. |
+
+Estas son hipótesis **exploratorias de asociación**, no relaciones causales demostradas. Las diferencias de medianas entre grupos aportan evidencia inicial, pero la evaluación definitiva requiere contrastar los resultados con el análisis de variables de los modelos y considerar las diferencias de cobertura de etiquetas por año. No se declaran confirmadas o rechazadas por los modelos sin contrastar explícitamente esa evidencia.
+
+**Fuente:** cálculos descriptivos del módulo `src/credit_risk/data/eda.py` sobre préstamos etiquetados. Las definiciones de variables corresponden a `LCDataDictionary.xlsx`, hoja `LoanStats`.
+
+### 1.5 Implementación y reproducción
 
 El flujo está dividido en `load_data.py` (carga del CSV),
 `preprocessing.py` (objetivo, fechas, variables y transformador),
@@ -120,8 +138,8 @@ python -m credit_risk.data.prepare_data
 ```
 
 El flujo guarda matrices dispersas `X_*.npz`, etiquetas `y_*.npy`, el
-preprocesador `preprocesador_pd.joblib` y los nombres de variables
-transformadas `columnas_pd.json`. Estos artefactos locales están excluidos de
+preprocesador `pd_preprocessor.joblib` y los nombres de variables
+transformadas `pd_feature_names.json`. Estos artefactos locales están excluidos de
 Git en la configuración actual; el equipo debe decidir cuáles datos
 procesados y modelos finales necesarios para reproducir o servir el proyecto
 deben versionarse.

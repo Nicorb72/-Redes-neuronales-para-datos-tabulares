@@ -12,6 +12,15 @@ Se utiliza el archivo `loan.csv`, que contiene 887.379 registros de préstamos o
 
 El archivo original se ubica en `data/raw/loan/loan.csv` y no se incluye en GitHub debido a su tamaño.
 
+### Procedencia y diccionario de variables
+
+- **Fuente del conjunto:** *Credit Risk Analysis*, datos de préstamos de Lending Club publicados en [Kaggle](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset).
+- **Dimensiones originales:** 887.379 registros y 74 columnas en `loan.csv`.
+- **Diccionario consultado:** `data/raw/LCDataDictionary.xlsx`, hoja `LoanStats`, suministrado con el conjunto de datos.
+- **Fecha de descarga original:** no consta en los registros disponibles del proyecto; debe registrarse si el integrante que obtuvo el CSV puede confirmarla. No se utiliza como fecha de descarga la fecha de modificación o compresión del archivo.
+
+Las definiciones de las variables de la sección 5 se basan en la hoja `LoanStats` del diccionario suministrado.
+
 ## 3. Variable objetivo
 
 La variable `default_flag` se construye a partir de `loan_status`:
@@ -50,6 +59,30 @@ Se utilizan 15 características antes de la codificación:
 **Categóricas:** `term`, `purpose`, `emp_length` y `home_ownership`.
 
 La antigüedad crediticia se calcula a partir de la diferencia en meses entre `earliest_cr_line` e `issue_d`.
+
+### Diccionario de características seleccionadas
+
+Las descripciones siguientes proceden de `LCDataDictionary.xlsx`, hoja `LoanStats`; se presenta una traducción resumida al español. Para la antigüedad crediticia se documenta una variable derivada por este proyecto.
+
+| Variable | Significado de la fuente o definición derivada | Unidad o formato |
+|---|---|---|
+| `loan_amnt` | Monto del préstamo solicitado y listado; puede reflejar ajustes del área de crédito. | USD |
+| `annual_inc` | Ingreso anual declarado por el solicitante. | USD/año |
+| `dti` | Relación entre obligaciones de deuda mensuales y el ingreso mensual declarado, según la definición de Lending Club. | Razón, expresada en la escala porcentual del CSV |
+| `delinq_2yrs` | Incidentes de morosidad de 30 días o más durante los últimos dos años. | Conteo |
+| `inq_last_6mths` | Consultas crediticias durante los últimos seis meses, excluyendo las de autos e hipotecas. | Conteo |
+| `open_acc` | Líneas de crédito abiertas registradas en el historial del solicitante. | Conteo |
+| `pub_rec` | Registros públicos negativos del historial crediticio. | Conteo |
+| `revol_bal` | Saldo total de crédito revolvente. | USD |
+| `revol_util` | Utilización del crédito revolvente respecto al crédito disponible. | Porcentaje |
+| `total_acc` | Total de líneas de crédito registradas en el historial. | Conteo |
+| `antiguedad_crediticia_meses` | Meses entre `earliest_cr_line` (primera línea de crédito reportada) e `issue_d` (mes de financiación del préstamo). | Meses; variable derivada |
+| `term` | Número de pagos/plazo del préstamo: 36 o 60 meses. | Categoría (meses) |
+| `purpose` | Propósito del préstamo declarado por el solicitante. | Categoría |
+| `emp_length` | Antigüedad laboral declarada, con categorías desde menos de un año hasta diez años o más. | Categoría (años) |
+| `home_ownership` | Situación de tenencia de vivienda declarada al registrarse. | Categoría |
+
+**Nota metodológica:** `issue_d` representa el mes de financiación según el diccionario; se emplea como referencia temporal para las particiones y para calcular la antigüedad crediticia. Las categorías efectivamente utilizadas en la codificación se aprenden del conjunto de entrenamiento.
 
 ## 6. Preprocesamiento
 
@@ -111,8 +144,8 @@ El comando guarda `distribucion_etiquetas_pd.svg` y `particiones_temporales_pd.s
 
 **En `artifacts/models/`:**
 
-- `preprocesador_pd.joblib`
-- `columnas_pd.json`
+- `pd_preprocessor.joblib`
+- `pd_feature_names.json`
 
 Las matrices se guardan en formato disperso y pueden cargarse mediante `scipy.sparse.load_npz`.
 
