@@ -17,7 +17,7 @@ El archivo original se ubica en `data/raw/loan/loan.csv` y no se incluye en GitH
 - **Fuente del conjunto:** *Credit Risk Analysis*, datos de préstamos de Lending Club publicados en [Kaggle](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset).
 - **Dimensiones originales:** 887.379 registros y 74 columnas en `loan.csv`.
 - **Diccionario consultado:** `data/raw/LCDataDictionary.xlsx`, hoja `LoanStats`, suministrado con el conjunto de datos.
-- **Fecha de descarga original:** no consta en los registros disponibles del proyecto; debe registrarse si el integrante que obtuvo el CSV puede confirmarla. No se utiliza como fecha de descarga la fecha de modificación o compresión del archivo.
+- **Fecha de descarga de la copia de referencia:** 24/10/2026, según el registro del equipo. No se registraron el identificador de versión ni el checksum de Kaggle; la fecha no se infiere de la modificación o compresión del archivo.
 
 Las definiciones de las variables de la sección 5 se basan en la hoja `LoanStats` del diccionario suministrado.
 

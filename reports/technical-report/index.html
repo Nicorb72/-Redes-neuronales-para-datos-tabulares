@@ -266,6 +266,13 @@
         incumplimiento (LGD), con modelos de aprendizaje automático, una
         scorecard y una aplicación web.
       </p>
+<nav aria-label="Enlaces del proyecto">
+<p><strong>Enlaces del proyecto:</strong>
+<a href="https://rna-trabajo-2.streamlit.app/">Aplicación web</a> ·
+<a href="https://youtu.be/TijgcPZNboU">Video promocional</a> ·
+<a href="https://github.com/Nicorb72/-Redes-neuronales-para-datos-tabulares">Repositorio en GitHub</a>
+</p>
+</nav>
 <hr class="rule"/>
 <section aria-labelledby="team-heading">
 <h2 id="team-heading">Integrantes</h2>
@@ -312,8 +319,9 @@
             Credit Risk Analysis de Kaggle</a>.
           Su README reporta <strong>887.379 préstamos</strong>, originados
           entre junio de 2007 y diciembre de 2015. El archivo original no se
-          incluye en GitHub por su tamaño. La fecha de descarga debe registrarse
-          cuando se consolide la versión del conjunto usada por el equipo.
+          incluye en GitHub por su tamaño. El equipo descargó la copia de
+          referencia el <strong>24 de octubre de 2026</strong>; el identificador
+          de versión y el checksum de esa copia no quedaron registrados.
         </p>
 <p>
           La variable <code>default_flag</code> se deriva de
@@ -446,9 +454,9 @@ python -m credit_risk.data.prepare_data</code></pre>
           <code>pd_preprocessor.joblib</code> y los nombres de variables
           transformadas <code>pd_feature_names.json</code>. Ajusta el
           preprocesador solo con train y sobrescribe los artefactos
-          correspondientes. Como la fecha y versión exactas de la descarga
-          original no quedaron registradas, otra descarga podría no reconstruir
-          exactamente los mismos datos. Después de regenerar los datos, se
+          correspondientes. La copia de referencia se descargó el 24/10/2026,
+          pero su identificador de versión y checksum no se registraron; otra
+          descarga podría no reconstruir exactamente los mismos datos. Después de regenerar los datos, se
           debe reentrenar PD, exportar de nuevo el paquete y validar la
           aplicación; los pasos detallados están en el
           <a href="../../README.md">README del repositorio</a>.
@@ -632,7 +640,7 @@ python run_app.py</code></pre>
 <pre><code>$env:PYTHONPATH = "src"
 python -m credit_risk.pd.experiments</code></pre>
 <p>Este proceso actualiza los resultados y artefactos del modelo; luego se debe exportar de nuevo el paquete PD antes de volver a comprobar o iniciar la app. El README contiene el comando de exportación y el <a href="../../README.md">flujo completo de ejecución</a>.</p>
-<p>En cambio, <code>python -m credit_risk.data.prepare_data</code> reconstruye las matrices PD desde <code>loan.csv</code>, y <code>python -m credit_risk.lgd.data</code> prepara las matrices LGD desde el mismo archivo. Ambos requieren que el usuario obtenga el CSV de Kaggle y lo coloque en <code>data/raw/loan/loan.csv</code>. El resumen EDA solo contiene conteos y no reemplaza los registros, predictores ni variables objetivo necesarios para esos pasos. La fecha y versión exactas de la descarga usada originalmente no están registradas, por lo que la reproducción desde otra descarga puede no ser idéntica.</p>
+<p>En cambio, <code>python -m credit_risk.data.prepare_data</code> reconstruye las matrices PD desde <code>loan.csv</code>, y <code>python -m credit_risk.lgd.data</code> prepara las matrices LGD desde el mismo archivo. Ambos requieren que el usuario obtenga el CSV de Kaggle y lo coloque en <code>data/raw/loan/loan.csv</code>. El resumen EDA solo contiene conteos y no reemplaza los registros, predictores ni variables objetivo necesarios para esos pasos. La copia de referencia se descargó el 24/10/2026; como no se registraron su identificador de versión ni checksum, la reproducción desde otra descarga puede no ser idéntica.</p>
 </section>
 <section aria-labelledby="ai-audit-heading" id="caceria-alucinacion">
 <h2 id="ai-audit-heading">5. Cacería de la alucinación</h2>

@@ -8,7 +8,8 @@ Incluye comparación de modelos, scorecard, interpretación y aplicación web.
 
 El conjunto Credit Risk Analysis de Kaggle contiene 887.379 préstamos
 originados entre junio de 2007 y diciembre de 2015. El conjunto de datos
-original se utiliza desde `data/raw/loan/loan.csv` y no se versiona en Git.
+original se utiliza desde `data/raw/loan/loan.csv`, se descargó el 24 de
+octubre de 2026 y no se versiona en Git.
 El tratamiento de PD parte de 15 variables originales y genera 44 variables
 después de la imputación, estandarización y codificación one-hot. Las
 particiones temporales documentadas son train 2007–2012 (90.347 registros),
@@ -33,6 +34,8 @@ train y simulación de cambios en las variables.
 
 - [Reporte técnico tipo blog](https://nicorb72.github.io/-Redes-neuronales-para-datos-tabulares/reports/technical-report/)
 - [Video promocional](https://youtu.be/TijgcPZNboU)
+- [Aplicación web](https://rna-trabajo-2.streamlit.app/)
+- [Repositorio en GitHub](https://github.com/Nicorb72/-Redes-neuronales-para-datos-tabulares)
 - [Conjunto de datos en Kaggle](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset)
 
 ## Requisitos
@@ -144,9 +147,10 @@ requiere** el archivo de Lending Club en `data/raw/loan/loan.csv`. El resumen
 EDA no contiene registros ni variables predictoras y no sirve para este paso.
 Descarga el archivo desde [Credit Risk Analysis en
 Kaggle](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset) y
-colócalo en esa ruta. Como la fecha y versión exactas de la descarga usada en
-el proyecto no quedaron registradas, conserva la procedencia de la copia que
-utilices y no asumas que una descarga distinta producirá matrices idénticas.
+colócalo en esa ruta. La copia de referencia del proyecto se descargó el
+24/10/2026; no se registró un identificador de versión o checksum de Kaggle.
+Conserva la procedencia de la copia que utilices y no asumas que una descarga
+posterior producirá matrices idénticas.
 
 ```powershell
 $env:PYTHONPATH = "src"

@@ -65,7 +65,7 @@ def render(config_path=None):
     with st.sidebar:
         st.header("Acerca del proyecto")
         if app.get("report_url"):
-            st.link_button("Leer el reporte técnico", app["report_url"])
+            st.link_button("Leer el blog del proyecto", app["report_url"])
         else:
             st.caption("Reporte técnico: enlace pendiente.")
         if app.get("video_url"):

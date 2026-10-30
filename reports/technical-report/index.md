@@ -8,6 +8,10 @@ incumplen, la pérdida dado incumplimiento (LGD). El equipo prepara una
 comparación entre modelos de referencia y redes neuronales, una scorecard y
 una aplicación para presentar resultados.
 
+**Enlaces del proyecto:** [Aplicación web](https://rna-trabajo-2.streamlit.app/) ·
+[Video promocional](https://youtu.be/TijgcPZNboU) ·
+[Repositorio en GitHub](https://github.com/Nicorb72/-Redes-neuronales-para-datos-tabulares).
+
 ## Integrantes
 
 1. **Nicole Guaranguay** — Datos y análisis.
@@ -24,11 +28,11 @@ El módulo de datos utiliza el archivo `loan.csv` del conjunto
 [Credit Risk Analysis de Kaggle](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset).
 El README del módulo reporta **887.379 préstamos**, originados entre junio de
 2007 y diciembre de 2015. El archivo original no está incluido en GitHub por
-su tamaño. La fecha de descarga debe registrarse cuando se consolide la
-versión del conjunto usada por el equipo.
+su tamaño. El equipo descargó la copia de referencia el **24 de octubre de
+2026**; el identificador de versión y el checksum de esa copia no quedaron
+registrados.
 El diccionario de referencia es `data/raw/LCDataDictionary.xlsx`, hoja
-`LoanStats`, incluido con el dataset. La fecha original de descarga no se
-ha podido corroborar; permanece como dato pendiente de confirmación.
+`LoanStats`, incluido con el dataset.
 
 La variable `default_flag` se deriva de `loan_status`: los pagos confirmados
 se codifican como 0, los incumplimientos como 1 y los estados sin resultado
@@ -145,9 +149,10 @@ python -m credit_risk.data.prepare_data
 Este comando regenera matrices dispersas `X_*.npz`, etiquetas `y_*.npy`, el
 preprocesador `pd_preprocessor.joblib` y los nombres de variables
 transformadas `pd_feature_names.json`. Ajusta el preprocesador solo con train
-y sobrescribe los artefactos correspondientes. Como la fecha y versión exactas
-de la descarga original no quedaron registradas, una descarga distinta podría
-no reconstruir exactamente los mismos datos. Después de regenerar los datos,
+y sobrescribe los artefactos correspondientes. La copia de referencia se
+descargó el 24/10/2026, pero su identificador de versión y checksum no se
+registraron; una descarga distinta podría no reconstruir exactamente los
+mismos datos. Después de regenerar los datos,
 se debe reentrenar PD, exportar de nuevo el paquete y validar la aplicación;
 los pasos detallados están en el [README del repositorio](../../README.md).
 
@@ -344,12 +349,12 @@ matriz de referencia. Para regenerar la interpretación:
 python -m credit_risk.scorecard.interpretability --repeats 10 --max-rows 5000
 ```
 
-La app se ejecuta en `http://127.0.0.1:8501`; acepta `--port`, `--config`
-y `--check`. Si los artefactos faltan o son incompatibles, muestra un error de
-integración en lugar de producir predicciones ficticias. GitHub Pages publica
-el reporte estático; la aplicación Python requiere un servidor propio y aún no
-tiene una URL pública. El video promocional está enlazado en el
-[README](../../README.md).
+La app se ejecuta localmente en `http://127.0.0.1:8501`; acepta `--port`,
+`--config` y `--check`. También está publicada en
+[rna-trabajo-2.streamlit.app](https://rna-trabajo-2.streamlit.app/). Si los
+artefactos faltan o son incompatibles, muestra un error de integración en
+lugar de producir predicciones ficticias. GitHub Pages publica el reporte
+estático.
 
 ### 3.4 Integración y resultados reales
 
@@ -419,9 +424,9 @@ PD desde `loan.csv`, y `python -m credit_risk.lgd.data` prepara las matrices
 LGD desde el mismo archivo. Ambos requieren que el usuario obtenga el CSV de
 Kaggle y lo coloque en `data/raw/loan/loan.csv`. El resumen EDA solo contiene
 conteos y no reemplaza los registros, predictores ni variables objetivo
-necesarios para esos pasos. La fecha y versión exactas de la descarga usada
-originalmente no están registradas, por lo que la reproducción desde otra
-descarga puede no ser idéntica.
+necesarios para esos pasos. La copia de referencia se descargó el 24/10/2026;
+como no se registraron su identificador de versión ni checksum, la reproducción
+desde otra descarga puede no ser idéntica.
 
 ## 5. Cacería de la alucinación
 
