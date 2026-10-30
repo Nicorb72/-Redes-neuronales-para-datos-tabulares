@@ -384,63 +384,77 @@ Faltan la integración de PD con LGD para estimar pérdida esperada ex-ante,
 la publicación de la aplicación web y el video promocional. También faltan la revisión independiente de resultados LGD,
 la fecha de descarga y la cacería de alucinaciones consolidada.
 
-## 5. Verificación complementaria de una respuesta de IA
+## 5. Cacería de la alucinación
 
-### Caso: verificación del cálculo de antigüedad crediticia en Lending Club
+### Hallazgo: fallo de reproducibilidad en la generación de figuras del EDA
 
-**Categoría:** Código y tratamiento de datos.
+**Categoría:** Código y reproducibilidad.
 
 **Contexto**
 
-Mientras trabajaba en el preprocesamiento del dataset Lending Club, necesitaba calcular la antigüedad crediticia de cada solicitante. Para hacerlo contaba con dos variables: `earliest_cr_line`, que representa el inicio del historial crediticio, e `issue_d`, que indica el mes de financiación del préstamo.
+Cuando terminé las figuras del análisis exploratorio de Lending Club, el generador funcionaba en mi computador porque allí tenía `loan.csv`. Sin embargo, ese archivo estaba excluido de GitHub por su tamaño. Al pensar en la entrega, me di cuenta de que alguien que clonara el repositorio no podría ejecutar el mismo proceso sin conseguir primero el CSV.
 
-Tenía dudas sobre cómo calcular la diferencia en meses, ya que las fechas estaban registradas en un formato como `Jan-2010` y `Jun-2015`. Por eso consulté a ChatGPT para conocer el procedimiento adecuado y los posibles errores.
+**Prompt presentado para el caso (versión revisada)**
 
-**Prompt utilizado**
-
-> Estoy trabajando en el preprocesamiento del dataset Lending Club para un modelo de riesgo crediticio. Tengo las columnas `earliest_cr_line`, que indica cuándo comenzó el historial crediticio, e `issue_d`, que indica cuándo se otorgó el préstamo.
+> Estoy trabajando en las gráficas del análisis exploratorio de Lending Club. En mi computador funcionan, pero al clonar el repositorio en otro equipo presentan errores porque necesitan `loan.csv`, que no está en GitHub por su tamaño.
 >
-> Necesito calcular la antigüedad crediticia del solicitante en meses. Estaba pensando en convertir ambas columnas a fechas y restarlas directamente en Pandas, pero no sé si esa es la forma correcta, especialmente porque las fechas vienen en un formato como `Jan-2010` y `Jun-2015`.
->
-> ¿Me puedes explicar cómo debería calcular esa antigüedad, qué errores podrían aparecer y cómo corregirlos? Preferiblemente con un ejemplo pequeño en Python.
+> ¿Cómo puedo modificar el código para generar las gráficas sin depender del CSV original y comprobar que funciona en un clon limpio?
 
-**Respuesta de la IA**
+**Respuesta de la IA (fragmentos relevantes de la conversación)**
 
-ChatGPT recomendó convertir las columnas mediante `pd.to_datetime()` y calcular los meses calendario transcurridos utilizando la diferencia entre años y meses.
+ChatGPT propuso generar las figuras desde un archivo pequeño de estadísticas, `data/processed/eda_pd_resumen.json`, cuando `loan.csv` no estuviera disponible, y recomendó ejecutar:
 
-El procedimiento central de la respuesta fue:
-
-```python
-df["antiguedad_crediticia_meses"] = (
-    (fecha_prestamo.dt.year - fecha_inicio.dt.year) * 12
-    + fecha_prestamo.dt.month
-    - fecha_inicio.dt.month
-)
+```powershell
+$env:PYTHONPATH = "src"
+python -m credit_risk.data.generate_eda_figures
 ```
 
-También recomendó identificar fechas inválidas y tratar las antigüedades negativas como valores faltantes.
+En el código alternativo, la función intentaba abrir directamente el resumen:
 
-**Verificación realizada**
+```python
+ruta = raiz / "data" / "processed" / "eda_pd_resumen.json"
+with open(ruta, encoding="utf-8") as archivo:
+    resumen = json.load(archivo)
+```
 
-Para comprobar la respuesta, utilicé casos con fechas conocidas. Por ejemplo, entre enero de 2010 y junio de 2015 transcurren 65 meses, mientras que entre marzo de 2008 y diciembre de 2012 transcurren 57 meses.
+La respuesta también había indicado crear ese JSON y añadir una excepción a `.gitignore`. El fallo ocurrió porque la nueva ruta de ejecución dependía de que ese archivo ya estuviera creado y disponible; el código no comprobaba su existencia ni daba una indicación útil para recuperarlo.
 
-Los resultados coincidieron con los obtenidos mediante el procedimiento recomendado. Asimismo, las pruebas permitieron identificar valores faltantes y fechas inconsistentes.
+**Error encontrado y evidencia**
 
-**Resultado**
+Para comprobar la ejecución sin el CSV, lo oculté temporalmente y ejecuté el generador. El programa se detuvo con:
 
-No se identificó una alucinación en este caso. La respuesta proporcionó un procedimiento correcto para calcular la antigüedad crediticia en meses calendario, considerando la precisión mensual de las fechas del dataset.
+```text
+FileNotFoundError: [Errno 2] No such file or directory:
+...\data\processed\eda_pd_resumen.json
+Error al generar las figuras sin el CSV.
+```
 
-**Conclusión**
+El problema no era el cálculo de los conteos, sino una dependencia necesaria para la alternativa propuesta que no estaba disponible en el entorno de prueba. La solución de IA no había quedado lista para ejecutarse tal como estaba en ese momento.
 
-Esta consulta permitió comprobar el procedimiento utilizado para construir una de las características predictoras del modelo. También mostró la importancia de verificar las recomendaciones de la IA mediante ejemplos concretos y pruebas de código, en lugar de incorporarlas directamente al proyecto.
+![Error observado al generar las figuras sin el CSV](figures/error_generacion_eda_sin_csv.png)
 
-**Evidencia de la consulta:**
+*Figura. Captura de VS Code con el fallo real de la generación alternativa sin `loan.csv`.*
 
-![Captura del prompt y del inicio de la respuesta de ChatGPT](figures/verificacion_antiguedad_crediticia.png)
+**Corrección técnica**
 
-*Nota: la captura muestra el prompt y el inicio de la respuesta. El procedimiento completo se resume arriba. Esta verificación correcta no se contabiliza entre los cinco hallazgos de error solicitados.*
+La corrección consiste en crear y versionar `data/processed/eda_pd_resumen.json` con las estadísticas ya verificadas del dataset y permitir su inclusión en Git mediante una excepción en `.gitignore`. Los datos esenciales son:
+
+```json
+{
+  "total_creditos": 887379,
+  "etiquetas": {"buenos": 209711, "malos": 58819, "sin_etiqueta": 618849},
+  "particiones": {"train": 90347, "validation": 73194, "test": 74154, "supplementary_2015": 30835}
+}
+```
+
+La generación desde el resumen permite reconstruir las **dos figuras principales de PD** sin el CSV, mientras que repetir el preprocesamiento completo continúa requiriendo `loan.csv`. Es importante conservar la ruta y los nombres del JSON en sincronía con el generador.
+
+**Resultado y aprendizaje**
+
+La prueba documentada evidenció un fallo real de integración de la recomendación de ChatGPT: el mecanismo alternativo intentaba leer un archivo inexistente. La causa quedó identificada y la corrección técnica definida a partir de los conteos comprobados. No se trata de una cifra inventada por la IA, sino de una **solución de código incompleta respecto a sus dependencias**, que solo se hizo evidente al probarla sin el archivo original. Este caso muestra por qué las recomendaciones de código también deben verificarse en el entorno real de entrega.
 
 ---
+
 
 ## 6. Referencias bibliográficas (Normas APA 7.ª edición)
 
