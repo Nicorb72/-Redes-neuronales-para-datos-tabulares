@@ -384,7 +384,65 @@ Faltan la integración de PD con LGD para estimar pérdida esperada ex-ante,
 la publicación de la aplicación web y el video promocional. También faltan la revisión independiente de resultados LGD,
 la fecha de descarga y la cacería de alucinaciones consolidada.
 
-## 5. Referencias bibliográficas (Normas APA 7.ª edición)
+## 5. Verificación complementaria de una respuesta de IA
+
+### Caso: verificación del cálculo de antigüedad crediticia en Lending Club
+
+**Categoría:** Código y tratamiento de datos.
+
+**Contexto**
+
+Mientras trabajaba en el preprocesamiento del dataset Lending Club, necesitaba calcular la antigüedad crediticia de cada solicitante. Para hacerlo contaba con dos variables: `earliest_cr_line`, que representa el inicio del historial crediticio, e `issue_d`, que indica el mes de financiación del préstamo.
+
+Tenía dudas sobre cómo calcular la diferencia en meses, ya que las fechas estaban registradas en un formato como `Jan-2010` y `Jun-2015`. Por eso consulté a ChatGPT para conocer el procedimiento adecuado y los posibles errores.
+
+**Prompt utilizado**
+
+> Estoy trabajando en el preprocesamiento del dataset Lending Club para un modelo de riesgo crediticio. Tengo las columnas `earliest_cr_line`, que indica cuándo comenzó el historial crediticio, e `issue_d`, que indica cuándo se otorgó el préstamo.
+>
+> Necesito calcular la antigüedad crediticia del solicitante en meses. Estaba pensando en convertir ambas columnas a fechas y restarlas directamente en Pandas, pero no sé si esa es la forma correcta, especialmente porque las fechas vienen en un formato como `Jan-2010` y `Jun-2015`.
+>
+> ¿Me puedes explicar cómo debería calcular esa antigüedad, qué errores podrían aparecer y cómo corregirlos? Preferiblemente con un ejemplo pequeño en Python.
+
+**Respuesta de la IA**
+
+ChatGPT recomendó convertir las columnas mediante `pd.to_datetime()` y calcular los meses calendario transcurridos utilizando la diferencia entre años y meses.
+
+El procedimiento central de la respuesta fue:
+
+```python
+df["antiguedad_crediticia_meses"] = (
+    (fecha_prestamo.dt.year - fecha_inicio.dt.year) * 12
+    + fecha_prestamo.dt.month
+    - fecha_inicio.dt.month
+)
+```
+
+También recomendó identificar fechas inválidas y tratar las antigüedades negativas como valores faltantes.
+
+**Verificación realizada**
+
+Para comprobar la respuesta, utilicé casos con fechas conocidas. Por ejemplo, entre enero de 2010 y junio de 2015 transcurren 65 meses, mientras que entre marzo de 2008 y diciembre de 2012 transcurren 57 meses.
+
+Los resultados coincidieron con los obtenidos mediante el procedimiento recomendado. Asimismo, las pruebas permitieron identificar valores faltantes y fechas inconsistentes.
+
+**Resultado**
+
+No se identificó una alucinación en este caso. La respuesta proporcionó un procedimiento correcto para calcular la antigüedad crediticia en meses calendario, considerando la precisión mensual de las fechas del dataset.
+
+**Conclusión**
+
+Esta consulta permitió comprobar el procedimiento utilizado para construir una de las características predictoras del modelo. También mostró la importancia de verificar las recomendaciones de la IA mediante ejemplos concretos y pruebas de código, en lugar de incorporarlas directamente al proyecto.
+
+**Evidencia de la consulta:**
+
+![Captura del prompt y del inicio de la respuesta de ChatGPT](figures/verificacion_antiguedad_crediticia.png)
+
+*Nota: la captura muestra el prompt y el inicio de la respuesta. El procedimiento completo se resume arriba. Esta verificación correcta no se contabiliza entre los cinco hallazgos de error solicitados.*
+
+---
+
+## 6. Referencias bibliográficas (Normas APA 7.ª edición)
 
 - Basel Committee on Banking Supervision. (2005). *An explanatory note on the Basel II IRB risk-weight functions*. Bank for International Settlements. https://www.bis.org/bcbs/irbriskweight.pdf
 - Loshchilov, I., & Hutter, F. (2019). Decoupled weight decay regularization. En *International Conference on Learning Representations (ICLR)*. https://openreview.net/forum?id=Bkg6RiCqY7
