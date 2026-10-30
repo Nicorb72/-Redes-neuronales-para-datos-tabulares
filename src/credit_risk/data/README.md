@@ -117,7 +117,13 @@ La comprobación de fuga de información realizada excluye variables de resultad
 
 ## 9. Ejecución
 
-Desde la raíz del proyecto, con las dependencias instaladas y `loan.csv` ubicado en la carpeta correspondiente, ejecutar:
+Un clon limpio incluye las matrices, etiquetas y preprocesador de PD
+versionados; por eso los experimentos PD y la aplicación pueden ejecutarse sin
+`loan.csv`. El comando siguiente es distinto: reconstruye esas matrices desde
+los registros originales y requiere el CSV en `data/raw/loan/loan.csv`.
+
+Desde la raíz del proyecto, con las dependencias instaladas y el CSV ubicado en
+la carpeta correspondiente, ejecutar:
 
 ```powershell
 $env:PYTHONPATH = "src"
@@ -131,7 +137,12 @@ $env:PYTHONPATH = "src"
 python -m credit_risk.data.generate_eda_figures
 ```
 
-El comando guarda `distribucion_etiquetas_pd.svg` y `particiones_temporales_pd.svg` en `reports/figures/`. Ambos se calculan a partir del archivo original; si los conteos difieren de los resumidos aquí, se debe actualizar el reporte con los resultados regenerados.
+Si `loan.csv` está disponible, el comando recalcula las figuras desde el archivo
+original. Si no está, utiliza `data/processed/eda_pd_resumen.json`, versionado
+con los conteos verificados, para generar las dos figuras de PD. En ambos casos,
+guarda `distribucion_etiquetas_pd.svg` y `particiones_temporales_pd.svg` en
+`reports/figures/`. La alternativa permite regenerar las figuras, pero no
+reconstruir el preprocesamiento completo ni verificar conteos nuevos sin el CSV.
 
 ## 10. Archivos generados
 

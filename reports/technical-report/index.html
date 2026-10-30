@@ -347,9 +347,9 @@
 <figcaption>
 <strong>Figura 1.</strong> Conteo documentado de etiquetas para PD.
             <strong>Fuente:</strong> conteos registrados en
-            <code>src/credit_risk/data/README.md</code>; gráfico elaborado para
-            este reporte. El archivo original no estaba disponible en este clon
-            para recalcularlos.
+            <code>src/credit_risk/data/README.md</code>; figura regenerable
+            desde el resumen versionado. Sin el CSV original no se recalculan
+            los conteos.
           </figcaption>
 </figure>
 <h3>1.2 Particiones cronológicas</h3>
@@ -379,9 +379,9 @@
 <figcaption>
 <strong>Figura 2.</strong> Tamaño de las particiones temporales
             reportadas para PD. <strong>Fuente:</strong> conteos registrados
-            en <code>src/credit_risk/data/README.md</code>; gráfico elaborado
-            para este reporte. El archivo original no estaba disponible en
-            este clon para recalcularlos.
+            en <code>src/credit_risk/data/README.md</code>; figura regenerable
+            desde el resumen versionado. Sin el CSV original no se recalculan
+            los conteos.
           </figcaption>
 </figure>
 <p>
@@ -420,37 +420,49 @@
           desembolso, pero el propio módulo advierte que no verifica por
           completo la disponibilidad temporal de cada variable.
         </p>
-<h3>1.4 Implementación y reproducción</h3>
+<h3>1.5 Implementación y reproducción</h3>
 <p>
           El flujo está dividido en <code>load_data.py</code> (carga del CSV),
           <code>preprocessing.py</code> (objetivo, fechas, variables y
           transformador), <code>prepare_data.py</code> (particiones y
           matrices) y <code>eda.py</code> (resúmenes y funciones de análisis
-          exploratorio). Desde la raíz del repositorio, con las dependencias
-          instaladas y <code>loan.csv</code> en <code>data/raw/loan/</code>, la
-          preparación se ejecuta en PowerShell:
+          exploratorio). El repositorio incluye las matrices PD procesadas de
+          train, validation y test, sus etiquetas, el preprocesador y el
+          paquete del modelo. Por eso un clon limpio puede ejecutar los
+          experimentos PD y la aplicación sin descargar el CSV. Este recorrido
+          reproduce desde los artefactos versionados; no vuelve a construir
+          las matrices desde los registros originales.
+        </p>
+<p>
+          Para reconstruir las matrices desde la fuente, se requiere una copia
+          de <code>loan.csv</code> en <code>data/raw/loan/loan.csv</code>. Desde
+          la raíz, en PowerShell:
         </p>
 <pre><code>$env:PYTHONPATH = "src"
 python -m credit_risk.data.prepare_data</code></pre>
 <p>
-          El flujo guarda matrices dispersas <code>X_*.npz</code>, etiquetas
-          <code>y_*.npy</code>, el preprocesador
-          <code>preprocesador_pd.joblib</code> y los nombres de variables
-          transformadas <code>columnas_pd.json</code>. Estos artefactos locales
-          están excluidos de Git en la configuración actual; el equipo debe
-          decidir cuáles datos procesados y modelos finales necesarios para
-          reproducir o servir el proyecto deben versionarse.
+          Este comando regenera matrices dispersas <code>X_*.npz</code>,
+          etiquetas <code>y_*.npy</code>, el preprocesador
+          <code>pd_preprocessor.joblib</code> y los nombres de variables
+          transformadas <code>pd_feature_names.json</code>. Ajusta el
+          preprocesador solo con train y sobrescribe los artefactos
+          correspondientes. Como la fecha y versión exactas de la descarga
+          original no quedaron registradas, otra descarga podría no reconstruir
+          exactamente los mismos datos. Después de regenerar los datos, se
+          debe reentrenar PD, exportar de nuevo el paquete y validar la
+          aplicación; los pasos detallados están en el
+          <a href="../../README.md">README del repositorio</a>.
         </p>
 <aside class="notice">
 <strong>Estado de las figuras.</strong> El módulo
           <code>eda.py</code> contiene funciones para graficar los conteos de
           etiquetas y las particiones temporales. Se regeneran con
           <code>python -m credit_risk.data.generate_eda_figures</code> desde la
-          raíz, tras configurar <code>PYTHONPATH=src</code> y disponer del CSV
-          original. En este clon no está el CSV, por lo que las Figuras 1 y 2
-          muestran los conteos documentados en el README del módulo, sin
-          recálculo independiente. Deben regenerarse y contrastarse con el
-          archivo fuente antes de presentar los conteos como verificados.
+          raíz. Si el CSV está disponible, se recalculan a partir de él; si no,
+          se usa <code>data/processed/eda_pd_resumen.json</code> para regenerar
+          las dos figuras principales de PD. La ruta del resumen reproduce las
+          figuras con los conteos registrados, pero no recalcula esos conteos
+          ni permite reconstruir el preprocesamiento.
         </aside>
 </section>
 <section aria-labelledby="lgd-heading">
@@ -585,18 +597,17 @@ S0 = 600; O0 = 50:1; PDO = 20</code></pre>
 <p>
           La aplicación espera las 15 variables originales, un preprocesador ajustado con train, un clasificador <code>predict_proba</code> que identifique las clases 0 y 1, y la matriz transformada de train para el percentil. <code>pd_bundle.json</code> registra metadatos y SHA-256 de los artefactos; la carga verifica clase positiva, dimensiones, columnas y hashes. No entrena ni descarga un modelo.
         </p>
-<p><strong>Procedimiento documentado por el integrante 4 (PowerShell, raíz del repositorio):</strong></p>
-<pre><code>python -m pip install -r requirements-test.txt
-$env:PYTHONPATH = "src"
-python -m credit_risk.scorecard.export --model artifacts/models/pd_mlp_final.pt --model-format pd_mlp --model-id pd_mlp_final-seed202612 --training-data "Matrices PD train 2007-2012" --reference-population "90347 creditos etiquetados de train 2007-2012"
+<p><strong>Procedimiento en PowerShell, desde la raíz del repositorio:</strong></p>
+<pre><code>$env:PYTHONPATH = "src"
 python run_app.py --check
 python run_app.py</code></pre>
-<p>
-          Los nombres de modelo, corrida y versión de train del ejemplo son marcadores que deben reemplazarse por artefactos reales. Tras tener el paquete, la importancia se genera con:
-        </p>
+<p>El paquete y su manifiesto ya están versionados. <code>--check</code> verifica su integridad y compatibilidad sin abrir el servidor. Si se regeneran los datos o el modelo, se debe exportar de nuevo el paquete y repetir la comprobación:</p>
+<pre><code>python -m credit_risk.scorecard.export --model artifacts/models/pd_mlp_final.pt --model-format pd_mlp --model-id pd_mlp_final-seed202612 --training-data "Matrices PD train 2007-2012" --reference-population "90347 creditos etiquetados de train 2007-2012"
+python run_app.py --check</code></pre>
+<p>La exportación calcula los hashes del modelo, preprocesador, columnas y matriz de referencia. Para regenerar la interpretación:</p>
 <pre><code>python -m credit_risk.scorecard.interpretability --repeats 10 --max-rows 5000</code></pre>
 <p>
-          La app local usa <code>http://127.0.0.1:8501</code> y permite cambiar puerto o configuración. Sin paquete PD muestra “Integración pendiente”, no predicciones ficticias. El paquete PD real y la matriz de referencia están integrados; <code>python run_app.py --check</code> verifica su compatibilidad antes de abrir la app. GitHub Pages publica solo el blog estático, no la app Python; la URL pública de la aplicación sigue pendiente.
+          La app local usa <code>http://127.0.0.1:8501</code> y permite cambiar puerto o configuración. Si los artefactos faltan o son incompatibles, muestra un error de integración en lugar de producir predicciones ficticias. GitHub Pages publica el reporte estático; la aplicación Python requiere un servidor propio y aún no tiene una URL pública. El video promocional está enlazado en el <a href="../../README.md">README</a>.
         </p>
 <p>
           La guía completa del contrato, scorecard, aplicación y límites está en <a href="../../docs/integrante-4.md">docs/integrante-4.md</a>. Se mantienen las pruebas sintéticas y se añaden pruebas con el checkpoint publicado, datos reales y comparación contra las métricas de validación del integrante 2.
@@ -608,25 +619,20 @@ python run_app.py</code></pre>
 <figure><img alt="Importancia por permutación agrupada de las 15 variables PD" src="../interpretability/pd_permutation.svg" style="max-width:100%;height:auto"/><figcaption>Figura I4-1. Importancia por permutación agrupada de PD. Fuente: elaboración propia con MLP final, validación temporal y semilla 42. La DE describe variación entre permutaciones, no incertidumbre poblacional.</figcaption></figure>
 <p><a href="../interpretability/pd_permutation.csv">Tabla completa</a> · <a href="../interpretability/pd_permutation.json">Trazabilidad de la corrida</a>.</p>
 </section>
-<section aria-labelledby="pending-heading">
-<h2 id="pending-heading">4. Qué está documentado y qué falta</h2>
-<div class="table-wrap">
-<table>
-<caption>Estado de procedimientos y artefactos en este clon.</caption>
-<thead>
-<tr><th scope="col">Componente</th><th scope="col">Procedimiento documentado</th><th scope="col">Estado</th></tr>
-</thead>
-<tbody>
-<tr><td>Datos / PD</td><td>Preparación y regeneración de figuras (sección 1).</td><td>Modelo PD final y evaluación disponibles; falta el CSV original para reproducir la preparación completa.</td></tr>
-<tr><td>LGD</td><td>Objetivo, particiones, resultados reportados, figura, comandos y pruebas (sección 2).</td><td>Código y figura disponibles; faltan CSV, matrices y JSON de benchmark para recalcular resultados.</td></tr>
-<tr><td>Scorecard / app</td><td>Fórmula, contrato, exportación, comprobación y arranque local (sección 3).</td><td>Paquete PD real, matrices y pruebas integrados. App local con inferencia; publicación pendiente.</td></tr>
-<tr><td>Integración</td><td>Contratos, dependencias y estado de publicación.</td><td>Falta integrar PD con LGD para pérdida esperada ex-ante, verificar en clon limpio y completar divulgación.</td></tr>
-</tbody>
-</table>
-</div>
-<p>
-          Faltan la combinación con LGD para pérdida esperada ex-ante, la publicación de la aplicación y el video promocional. También faltan la revisión independiente de resultados LGD, la fecha de descarga y la cacería de alucinaciones consolidada.
-        </p>
+<section aria-labelledby="reproduction-heading">
+<h2 id="reproduction-heading">4. Cómo reproducir el proyecto</h2>
+<p>Hay dos recorridos distintos. Para usar un clon limpio no hace falta el CSV: las matrices y el paquete PD están versionados. En PowerShell, desde la raíz y con las dependencias instaladas:</p>
+<pre><code>$env:PYTHONPATH = "src"
+python -m credit_risk.data.generate_eda_figures
+python run_app.py --check
+python -m pytest -q
+python run_app.py</code></pre>
+<p>El primer comando regenera las dos figuras EDA desde el resumen versionado si no encuentra <code>loan.csv</code>; <code>--check</code> verifica los artefactos y la última línea inicia la aplicación local.</p>
+<p>Para repetir la evaluación PD completa desde las matrices versionadas (30 semillas por defecto), ejecuta:</p>
+<pre><code>$env:PYTHONPATH = "src"
+python -m credit_risk.pd.experiments</code></pre>
+<p>Este proceso actualiza los resultados y artefactos del modelo; luego se debe exportar de nuevo el paquete PD antes de volver a comprobar o iniciar la app. El README contiene el comando de exportación y el <a href="../../README.md">flujo completo de ejecución</a>.</p>
+<p>En cambio, <code>python -m credit_risk.data.prepare_data</code> reconstruye las matrices PD desde <code>loan.csv</code>, y <code>python -m credit_risk.lgd.data</code> prepara las matrices LGD desde el mismo archivo. Ambos requieren que el usuario obtenga el CSV de Kaggle y lo coloque en <code>data/raw/loan/loan.csv</code>. El resumen EDA solo contiene conteos y no reemplaza los registros, predictores ni variables objetivo necesarios para esos pasos. La fecha y versión exactas de la descarga usada originalmente no están registradas, por lo que la reproducción desde otra descarga puede no ser idéntica.</p>
 </section>
 <section aria-labelledby="ai-audit-heading" id="caceria-alucinacion">
 <h2 id="ai-audit-heading">5. Cacería de la alucinación</h2>
@@ -674,15 +680,15 @@ Error al generar las figuras sin el CSV.</code></pre>
 <p>El cálculo no fallaba: la ejecución alternativa dependía de un archivo que no estaba en el entorno de prueba.</p>
 <figure><img alt="Captura de VS Code: FileNotFoundError al buscar el resumen JSON sin loan.csv" loading="lazy" src="figures/error_generacion_eda_sin_csv.png"/><figcaption>Fallo real al intentar regenerar las figuras sin el CSV original.</figcaption></figure>
 <h4>Corrección técnica</h4>
-<p>Crear y versionar <code>data/processed/eda_pd_resumen.json</code> con los conteos verificados e incluir una excepción en <code>.gitignore</code> para que el clon limpio pueda usarlo.</p>
+<p>Crear y versionar <code>data/processed/eda_pd_resumen.json</code> con los conteos verificados e incluir una excepción en <code>.gitignore</code> para que el clon limpio pueda usarlo. La corrección ya está aplicada: el resumen se versionó y se agregó la excepción.</p>
 <pre><code>{
   "total_creditos": 887379,
   "etiquetas": {"buenos": 209711, "malos": 58819, "sin_etiqueta": 618849},
   "particiones": {"train": 90347, "validation": 73194, "test": 74154, "supplementary_2015": 30835}
 }</code></pre>
-<p>El resumen permite reproducir las dos figuras principales de PD; reconstruir todo el preprocesamiento requiere <code>loan.csv</code>.</p>
+<p>El resumen permite reproducir las dos figuras principales de PD; reconstruir todo el preprocesamiento requiere <code>loan.csv</code>. Sin el CSV ni el resumen, el comando falló como se documentó. Después de versionar el JSON, el mismo comando generó correctamente las dos figuras en el clon; una prueba automatizada también verifica esta ruta alternativa. Esto reproduce las figuras con los conteos registrados, pero no recalcula esos conteos ni reemplaza el CSV para repetir el preprocesamiento completo.</p>
 <h4>Resultado y aprendizaje</h4>
-<p>La ejecución documentada demostró un fallo real de integración: el código recomendado intentaba leer una dependencia inexistente. La causa se identificó y se definió una corrección a partir de conteos previamente verificados. Es un error de solución de código incompleta, no una cifra inventada. Aprendí a comprobar las dependencias en el entorno de entrega antes de aceptar una recomendación de IA como reproducible.</p>
+<p>La ejecución documentada demostró un fallo real de integración: el código recomendado intentaba leer una dependencia inexistente. La causa se corrigió al versionar el resumen e incluirlo en Git; el comando y la prueba automatizada verifican que las figuras se generen sin el CSV. Es un error de solución de código incompleta, no una cifra inventada. Aprendí a comprobar las dependencias en el entorno de entrega antes de aceptar una recomendación de IA como reproducible.</p>
 </section>
 <section aria-labelledby="refs-heading">
 <h2 id="refs-heading">6. Referencias bibliográficas (Normas APA 7.ª edición)</h2>

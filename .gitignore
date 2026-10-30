@@ -27,6 +27,7 @@ Thumbs.db
 # Archivos generados del procesamiento
 /data/processed/*
 !/data/processed/README.md
+!/data/processed/eda_pd_resumen.json
 !/data/processed/X_train_pd.npz
 !/data/processed/y_train_pd.npy
 !/data/processed/X_validation_pd.npz
