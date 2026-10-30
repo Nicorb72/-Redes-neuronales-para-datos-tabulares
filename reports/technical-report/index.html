@@ -472,6 +472,43 @@ python -m credit_risk.data.prepare_data</code></pre>
           figuras con los conteos registrados, pero no recalcula esos conteos
           ni permite reconstruir el preprocesamiento.
         </aside>
+<h3>1.6 Resultados de PD en prueba temporal</h3>
+<p>
+          La comparación final usa la partición de prueba de 2014. La regresión
+          logística sirve como referencia y el MLP se ejecutó con 30 semillas
+          (202612–202641); por ello, los valores del MLP se presentan como
+          media y desviación estándar entre corridas.
+        </p>
+<div class="table-wrap">
+<table>
+<caption>Tabla 3. Desempeño de PD en la prueba temporal de 2014. Fuente: <a href="../pd_evaluation/informe_pd.md">informe de evaluación PD</a>; métricas calculadas sobre la misma partición.</caption>
+<thead>
+<tr><th scope="col">Métrica</th><th scope="col">Regresión logística</th><th scope="col">MLP: media ± desviación estándar (30 semillas)</th></tr>
+</thead>
+<tbody>
+<tr><td>AUC</td><td>0.66476</td><td>0.66941 ± 0.00435</td></tr>
+<tr><td>Gini</td><td>0.32953</td><td>0.33883 ± 0.00870</td></tr>
+<tr><td>KS</td><td>0.24085</td><td>0.24698 ± 0.00726</td></tr>
+<tr><td>Brier</td><td>0.18725</td><td>0.18180 ± 0.00096</td></tr>
+<tr><td>Log-loss</td><td>0.56357</td><td>0.54471 ± 0.00267</td></tr>
+</tbody>
+</table>
+</div>
+<p>
+          El AUC medio del MLP supera al de la regresión logística en 0.00465 y
+          su Brier medio es 0.00545 menor; ambas diferencias favorecen al MLP,
+          pero son moderadas. La desviación entre semillas refleja la
+          variabilidad de entrenamiento en una partición fija, no un intervalo
+          de confianza ni una prueba de significancia. Además, la tasa de
+          incumplimiento aumenta de 16.30 % en entrenamiento a 26.22 % en
+          prueba, por lo que el cambio temporal de la población y las
+          limitaciones de las etiquetas también deben considerarse. Estos
+          resultados no bastan para afirmar que la ventaja del MLP sea
+          estadísticamente concluyente o que se mantenga en otros periodos. La
+          evaluación también reporta subestimación de la tasa observada en
+          varios grupos de riesgo, especialmente en los de mayor PD predicha;
+          por ello, la discriminación debe leerse junto con la calibración.
+        </p>
 </section>
 <section aria-labelledby="lgd-heading">
 <h2 id="lgd-heading">2. Pérdida dado incumplimiento (LGD)</h2>
@@ -509,7 +546,7 @@ LGD = clip(1 - R / EAD_obs, 0, 1)</code></pre>
 <li><strong>Protocolo de 30 semillas:</strong> El MLP final se entrenó con 30 semillas aleatorias independientes.</li>
 </ul>
 <p>
-<strong>Tabla 3. Desempeño en el conjunto de prueba independiente (Año 2014, 13.981 préstamos).</strong><br/>
+<strong>Tabla 4. Desempeño en el conjunto de prueba independiente (Año 2014, 13.981 préstamos).</strong><br/>
 <strong>Fuente:</strong> resultados consignados en <code>docs/integrante-3.md</code>; el resumen JSON del benchmark no está incluido en este clon.
         </p>
 <table>

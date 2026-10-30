@@ -164,6 +164,38 @@ está disponible, se recalculan a partir de él; si no, se usa
 de PD. La ruta del resumen reproduce las figuras con los conteos registrados,
 pero no recalcula esos conteos ni permite reconstruir el preprocesamiento.
 
+### 1.6 Resultados de PD en prueba temporal
+
+La comparación final usa la partición de prueba de 2014. La regresión
+logística sirve como referencia y el MLP se ejecutó con 30 semillas
+(202612–202641); por ello, los valores del MLP se presentan como media y
+desviación estándar entre corridas.
+
+**Tabla 3. Desempeño de PD en la prueba temporal de 2014.**<br>
+**Fuente:** [informe de evaluación PD](../pd_evaluation/informe_pd.md),
+con métricas calculadas sobre la misma partición.
+
+| Métrica | Regresión logística | MLP: media ± desviación estándar (30 semillas) |
+| --- | ---: | ---: |
+| AUC | 0.66476 | 0.66941 ± 0.00435 |
+| Gini | 0.32953 | 0.33883 ± 0.00870 |
+| KS | 0.24085 | 0.24698 ± 0.00726 |
+| Brier | 0.18725 | 0.18180 ± 0.00096 |
+| Log-loss | 0.56357 | 0.54471 ± 0.00267 |
+
+El AUC medio del MLP supera al de la regresión logística en 0.00465 y su
+Brier medio es 0.00545 menor; ambas diferencias favorecen al MLP, pero son
+moderadas. La desviación entre semillas refleja la variabilidad de
+entrenamiento en una partición fija, no un intervalo de confianza ni una
+prueba de significancia. Además, la tasa de incumplimiento aumenta de 16.30 %
+en entrenamiento a 26.22 % en prueba, por lo que el cambio temporal de la
+población y las limitaciones de las etiquetas también deben considerarse.
+Estos resultados no bastan para afirmar que la ventaja del MLP sea
+estadísticamente concluyente o que se mantenga en otros periodos. La
+evaluación también reporta subestimación de la tasa observada en varios
+grupos de riesgo, especialmente en los de mayor PD predicha; por ello, la
+discriminación debe leerse junto con la calibración.
+
 ## 2. Pérdida dado incumplimiento (LGD)
 
 ### 2.1 Definición y justificación de la variable objetivo
@@ -197,7 +229,7 @@ Siguiendo la regla de comparación justa:
 - **Red neuronal (MLP):** Arquitectura optimizada tras evaluar sistemáticamente 5 combinaciones en 31.04 segundos. La arquitectura final seleccionada posee dos capas ocultas `[64, 32]`, activación ReLU, regularización por Dropout ($p=0.20$), decaimiento de pesos AdamW ($\lambda=10^{-4}$), parada temprana (paciencia 8) y **capa de salida con activación Sigmoide** para garantizar matemáticamente que las predicciones pertenezcan al intervalo acotado $(0, 1)$. La función de pérdida minimizada es el Error Cuadrático Medio (MSE), formalmente derivada como el estimador de máxima verosimilitud bajo perturbaciones gaussianas.
 - **Protocolo de 30 semillas:** El MLP final se entrenó con 30 semillas aleatorias independientes.
 
-**Tabla 3. Desempeño en el conjunto de prueba independiente (Año 2014, $N=13.981$).**<br>
+**Tabla 4. Desempeño en el conjunto de prueba independiente (Año 2014, $N=13.981$).**<br>
 **Fuente:** cálculo experimental documentado en `src/credit_risk/lgd/experiments.py`.
 
 | Modelo | Parámetros | Tiempo de ajuste | MAE (Media ± Desv. Est.) | MAE [Mín, Máx] | RMSE (Media ± Desv. Est.) | RMSE [Mín, Máx] |
@@ -269,7 +301,7 @@ lineal (0,0868 frente a 0,0887 para el MLP). La red neuronal incorpora mayor
 costo y variabilidad sin una mejora reportada en estas métricas. La conclusión
 se limita a esta tarea, definición de LGD, cohorte y partición de prueba.
 
-> **Trazabilidad:** los valores de la Tabla 3 y de esta sección se encuentran
+> **Trazabilidad:** los valores de la Tabla 4 y de esta sección se encuentran
 > en el informe `docs/integrante-3.md`. El código experimental guarda
 > `artifacts/models/lgd_benchmark_results.json`, pero dicho JSON, las matrices
 > procesadas y los modelos no están presentes en este clon. La figura
