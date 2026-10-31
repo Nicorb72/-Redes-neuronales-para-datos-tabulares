@@ -565,6 +565,110 @@ La prueba documentada evidenció un fallo real de integración de la recomendaci
 ---
 
 
+### Hallazgo: evaluación de PD incompleta por omitir la calibración
+
+**Categoría:** Código y métricas.
+
+**Prompt utilizado (literal)**
+
+El prompt literal se indicó como un archivo adjunto compartido durante la
+conversación, pero ese archivo no está disponible entre los materiales del
+repositorio revisados para esta edición. Por tanto, no se reconstruye ni se
+presenta una paráfrasis como si fuera la instrucción literal. Debe incorporarse
+aquí el texto del archivo para que el registro cumpla este requisito del
+enunciado.
+
+**Respuesta de la IA (parte relevante)**
+
+Al solicitarle construir el flujo de optimización y evaluación de
+hiperparámetros para el modelo de probabilidad de incumplimiento (PD), la IA
+entregó el código sin incluir la evaluación de calibración mediante el puntaje
+de Brier y la curva de calibración. La omisión se detectó al revisar el código
+y el alcance de la evaluación solicitada. No se conserva aquí una cita textual
+de la respuesta original.
+
+**Cómo se sospechó y evidencia**
+
+La evaluación de un modelo de PD debe permitir examinar tanto la discriminación
+como la calidad de las probabilidades estimadas. La revisión del flujo mostró
+que faltaban el Brier y el diagnóstico gráfico de calibración; por eso se
+implementaron después. En el estado actual del repositorio,
+`src/credit_risk/pd/evaluation.py` calcula el Brier y construye la curva de
+calibración, mientras `src/credit_risk/pd/experiments.py` guarda la tabla por
+grupos y genera el gráfico. El informe de evaluación documenta la fórmula del
+Brier y la interpretación de la curva en
+`reports/pd_evaluation/informe_pd.md`.
+
+Esta evidencia permite verificar la corrección incorporada, pero el prompt y
+la respuesta literal originales no están adjuntos aquí; para presentar este
+hallazgo como una auditoría plenamente reproducible hay que conservarlos junto
+con el resultado de la revisión inicial.
+
+**Corrección**
+
+Se añadieron el cálculo del puntaje de Brier y la curva de calibración a la
+evaluación de PD, y se reportan junto con AUC, Gini, KS y log-loss. La curva
+permite comparar, por grupos de riesgo, la PD media predicha con la tasa de
+incumplimiento observada. La prueba final reporta que ambos modelos subestiman
+la tasa observada en varios grupos; por ello, el AUC por sí solo no describe
+la calidad de las probabilidades.
+
+**Lección aprendida**
+
+La revisión del código debe incluir la inspección sistemática de los
+elementos generados y una lista de verificación con los criterios esenciales
+para evaluar la implementación y la información reportada. Este procedimiento
+permite comprobar que el código cumple los requisitos del análisis y que los
+resultados presentados son coherentes y están respaldados por las métricas y
+los artefactos correspondientes.
+
+### Hallazgo: resultados actualizados sin revisar las descripciones de las fases
+
+**Categoría:** Código y reproducibilidad documental.
+
+**Prompt utilizado (literal)**
+
+> Actualiza los resultados de los markdown y las descripciones del notebook para que sean consistentes con los nuevos resultados que dio el codigo
+
+**Respuesta de la IA (parte relevante)**
+
+Al cambiar el número de ensayos de las fases de optimización, la IA actualizó
+los resultados en los Markdown, pero dejó sin actualizar la descripción de
+las fases. Así, las cifras nuevas y la explicación del procedimiento quedaron
+desincronizadas: quien lee el informe podía entender que se había ejecutado
+una búsqueda distinta de la que realmente produjo los resultados.
+
+**Cómo se sospechó y evidencia**
+
+La discrepancia se identificó al contrastar los conteos nuevos de ensayos con las
+descripciones de las fases. El resumen versionado de la búsqueda actual
+(`reports/pd_hyperparameter_search/resumen_optimizacion.json`) registra 150
+ensayos en la primera fase y 30 en la segunda (180 exitosos); el informe de
+PD también describe 150 y 30 ensayos. El caso reportado por el equipo es que,
+tras modificar esos conteos, se actualizaron los resultados pero no las
+descripciones correspondientes. Para documentar la versión previa y la nueva
+hace falta conservar ambas versiones de los Markdown/notebook o un diff; el
+estado actual por sí solo no permite reconstruir qué texto quedó desactualizado
+ni durante cuánto tiempo.
+
+**Corrección**
+
+Se deben cotejar y actualizar conjuntamente los conteos, resultados,
+descripciones de cada fase y conclusiones en los Markdown y en el notebook.
+El estado final documentado informa 150 ensayos iniciales y 30 de
+refinamiento; estos obtuvieron AUC de validación 0.67338 y 0.67471,
+respectivamente, según `reports/pd_evaluation/informe_pd.md`. Las descripciones
+deben explicar esos conteos y resultados, sin mantener cifras o afirmaciones
+de una búsqueda anterior.
+
+**Lección aprendida**
+
+Cuando cambian los experimentos, actualizar resultados y narrativa como una
+sola revisión. Antes de entregar, contrastar el notebook y los Markdown con el
+resumen de ejecución versionado y revisar que cada descripción de fase
+corresponda a los ensayos realmente ejecutados. Guardar el diff o la
+conversación original facilita demostrar el error y su corrección.
+
 ## 6. Referencias bibliográficas (Normas APA 7.ª edición)
 
 - Basel Committee on Banking Supervision. (2005). *An explanatory note on the Basel II IRB risk-weight functions*. Bank for International Settlements. https://www.bis.org/bcbs/irbriskweight.pdf
