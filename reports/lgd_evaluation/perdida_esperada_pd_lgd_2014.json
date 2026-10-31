@@ -16,5 +16,8 @@
   "nota_comparacion": "La pérdida esperada usa EAD de originación; la pérdida observada usa EAD al castigo. La diferencia de momento de exposición debe considerarse al interpretar la comparación.",
   "nota_horizonte_pd": "El objetivo PD se deriva de estados observados en el archivo y no de un horizonte fijo. La estimación conjunta es exploratoria; no constituye una provisión regulatoria.",
   "modelo_pd": "pd_mlp_final-seed202612",
-  "modelo_lgd": "artifacts/models/mlp_lgd.pt"
+  "modelo_lgd": "artifacts/models/mlp_lgd.pt",
+  "modelo_lgd_seed": 808,
+  "modelo_lgd_checkpoint_sha256": "7e5474090e6576d4149d614d2c927ac22ed46f6326b6f6becb12e89c10451668",
+  "estado_checkpoint": "histórico; el checkpoint actual cambió y requiere recalcularse con loan.csv"
 }

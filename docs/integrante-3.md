@@ -111,19 +111,19 @@ $$\theta_{t+1} = \theta_t - \eta_t \left( \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \e
 
 ## 4. Resultados experimentales actualizados
 
-Benchmark recalculado el 30/10/2026: cinco configuraciones, 31.98 s de búsqueda y treinta semillas (101–3030). Todos los modelos comparten matrices y particiones. La arquitectura elegida es [64, 32], con pérdida mse. El checkpoint 808 se elige por RMSE de validación 0.093988; solo después se evalúan las corridas en prueba. Detalle y política: [selección LGD](lgd-seleccion-validacion.md).
+Benchmark recalculado el 30/10/2026: cinco configuraciones, 23.85 s de búsqueda y treinta semillas (101–3030). Todos los modelos comparten matrices y particiones. La arquitectura elegida es [64, 32], con pérdida mse. El checkpoint 1212 se elige por RMSE de validación 0.093975; solo después se evalúan las corridas en prueba. El JSON registra en cada configuración paciencia, tamaño de lote, weight decay y activaciones, además de la configuración efectiva del benchmark. Detalle y política: [selección LGD](lgd-seleccion-validacion.md).
 
 | Modelo | Parámetros | MAE media ± DE | MAE mín–máx | RMSE media ± DE | RMSE mín–máx |
 |---|---:|---:|---:|---:|---:|
 | Lineal | 45 | 0.077110 | — | 0.086769 | — |
-| MLP, 30 semillas | 5185 | 0.077140 ± 0.000736 | 0.075655–0.079097 | 0.088763 ± 0.000703 | 0.087568–0.090620 |
+| MLP, 30 semillas | 5185 | 0.077056 ± 0.000659 | 0.075657–0.078373 | 0.088701 ± 0.000619 | 0.087570–0.089977 |
 
 Fuente: `artifacts/models/lgd_benchmark_results.json`, incluyendo `per_seed_metrics`.
-El entrenamiento de las treinta corridas acumuló 165.07 s; no incluye la búsqueda. La desviación se calcula con ddof=0.
+El entrenamiento de las treinta corridas acumuló 128.21 s; no incluye la búsqueda. La desviación se calcula con ddof=0.
 
 ### 4.1 Distribución
 
-La media observada es 0.945151; la media predicha del checkpoint seleccionado es 0.918395. La figura `reports/figures/distribucion_lgd_observada_vs_predicha.svg` se regeneró con ese modelo. Las métricas del checkpoint individual no se confunden con los promedios entre semillas.
+La media observada es 0.945151; la media predicha del checkpoint seleccionado es 0.918765. La figura `reports/figures/distribucion_lgd_observada_vs_predicha.svg` se regeneró con ese modelo. Las métricas del checkpoint individual no se confunden con los promedios entre semillas.
 
 ## 5. Discusión del benchmark actualizado
 
@@ -140,7 +140,7 @@ En concordancia con los marcos de Basilea y el ciclo de vida del crédito:
 
 ### 6.2. Alcance de la cuantificación
 
-El benchmark actualizado evalúa LGD condicionada a créditos castigados. No se presentan las pérdidas monetarias del checkpoint anterior como resultados del nuevo modelo. También se integraron por ID las predicciones PD y LGD para los 235.628 préstamos originados en 2014, usando `funded_amnt` como exposición al otorgamiento. La pérdida esperada estimada fue USD 774.349.671,31; entre 68.694 préstamos con resultado resuelto, la pérdida esperada fue USD 208.561.086,83 y la realizada estimada, USD 168.195.585,76. La comparación es exploratoria: la PD no corresponde a un horizonte fijo y las dos pérdidas usan exposiciones de momentos distintos. El resumen JSON y las predicciones por préstamo están en `reports/lgd_evaluation/`; el JSON registra el SHA-256 de `loan.csv` y el comando requiere ese archivo para reproducir los resultados.
+El benchmark actualizado evalúa LGD condicionada a créditos castigados. La integración versionada por ID puntuó los 235.628 préstamos originados en 2014 con PD y LGD reales, usando `funded_amnt` al otorgamiento. Sus cifras (pérdida esperada total de USD 774.349.671,31; USD 208.561.086,83 en la cohorte resuelta y USD 168.195.585,76 realizados) corresponden al checkpoint anterior, semilla 808, cuyo hash está registrado en `reports/lgd_evaluation/perdida_esperada_pd_lgd_2014.json`. El benchmark regenerado selecciona ahora la semilla 1212; el resultado de cartera debe recalcularse con `python -m credit_risk.lgd.portfolio --year 2014` cuando `loan.csv` esté disponible. La comparación sigue siendo exploratoria: PD no corresponde a un horizonte fijo y las pérdidas usan exposiciones de momentos distintos.
 
 
 ## 7. Instrucciones de reproducción, comandos en vivo y verificación de requisitos

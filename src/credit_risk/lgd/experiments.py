@@ -471,6 +471,18 @@ def ejecutar_experimento_completo(
             "n_seeds": seeds_count,
             "selected_loss": mejor_cfg["loss"],
             "selected_hidden_dims": mejor_cfg["hidden_dims"],
+            "effective_training_config": {
+                "activation": mejor_cfg["activation"],
+                "output_activation": mejor_cfg["output_activation"],
+                "learning_rate": mejor_cfg["lr"],
+                "weight_decay": mejor_cfg["weight_decay"],
+                "dropout": mejor_cfg["dropout"],
+                "loss_function": mejor_cfg["loss"],
+                "batch_size": mejor_cfg["batch_size"],
+                "max_epochs": mejor_cfg["epochs"],
+                "early_stopping_patience": mejor_cfg["patience"],
+                "optimizer": "AdamW",
+            },
             "checkpoint_selection": stats_30["checkpoint_selection"],
         },
         "mejor_mlp_individual": {
@@ -484,11 +496,13 @@ def ejecutar_experimento_completo(
         "distribucion_observada": resumen_distribucion(y["test"], "Observada"),
     }
 
-    results_file = (
-        f"lgd_{run_mode}_results.json" if run_mode != "custom"
-        else f"lgd{suffix}_results.json"
-    )
-    with open(modelos_dir / results_file, "w", encoding="utf-8") as f:
+    if benchmark_oficial:
+        results_path = raiz / config["artifacts"]["benchmark_results"]
+    elif run_mode == "demo":
+        results_path = modelos_dir / "lgd_demo_results.json"
+    else:
+        results_path = modelos_dir / f"lgd{suffix}_results.json"
+    with results_path.open("w", encoding="utf-8") as f:
         json.dump(benchmark_data, f, indent=4, ensure_ascii=False)
 
     print("\nArtefactos y figuras guardados exitosamente.")

@@ -244,7 +244,7 @@ Se usan `Charged Off` y `Does not meet the credit policy. Status:Charged Off`; s
 
 Los modelos usan las mismas matrices: train 2007–2012 (14.419 filas), validación 2013 (14.836) y prueba 2014 (13.981). El baseline es regresión lineal recortada a $[0,1]$. El MLP usa 44 entradas, capas de 64 y 32 unidades, BatchNorm, ReLU, dropout de 0,20 y salida sigmoide.
 
-El benchmark se repitió con cinco configuraciones y **30 semillas independientes** (101–3030, paso 101). Se seleccionó la arquitectura por RMSE de validación y, después, la semilla por ese mismo criterio. El checkpoint final es la **semilla 808**, con RMSE de validación **0.093988**. Todas las corridas se entrenan y valoran en validación antes de consultar prueba; los empates exactos se resuelven por la primera semilla del orden fijado. El JSON conserva métricas de cada corrida, la marca de selección y `test_used_for_selection=false`.
+El benchmark se repitió con cinco configuraciones y **30 semillas independientes** (101–3030, paso 101). Se seleccionó la arquitectura por RMSE de validación y, después, la semilla por ese mismo criterio. El checkpoint final es la **semilla 1212**, con RMSE de validación **0.093975**. Todas las corridas se entrenan y valoran en validación antes de consultar prueba; los empates exactos se resuelven por la primera semilla del orden fijado. El JSON conserva métricas de cada corrida y registra para cada arquitectura los parámetros efectivos de entrenamiento —incluidos paciencia, tamaño de lote y weight decay—, además de la marca de selección y `test_used_for_selection=false`.
 
 La Tabla 5 presenta esta ejecución completa. Sustituye el archivo anterior de cinco semillas. La corrección evita usar el ranking de prueba para escoger el checkpoint, pero no convierte la prueba 2014 ya consultada históricamente en un conjunto externo nuevo.
 
@@ -254,7 +254,7 @@ La Tabla 5 presenta esta ejecución completa. Sustituye el archivo anterior de c
 | Modelo | Parámetros | MAE media ± DE | MAE mín–máx | RMSE media ± DE | RMSE mín–máx |
 |---|---|---|---|---|---|
 | Lineal recortado | 45 | 0.07711 | — | 0.08677 | — |
-| MLP (30 semillas) | 5185 | 0.07714 ± 0.00074 | 0.07566–0.07910 | 0.08876 ± 0.00070 | 0.08757–0.09062 |
+| MLP (30 semillas) | 5185 | 0.07706 ± 0.00066 | 0.07566–0.07837 | 0.08870 ± 0.00062 | 0.08757–0.08998 |
 <!-- END LGD_METRICS -->
 
 ### 2.3 Distribución y aporte de la red
@@ -263,7 +263,7 @@ La Figura 6 se regeneró con el checkpoint seleccionado por validación y las pr
 
 <figure>
 <img src="../figures/distribucion_lgd_observada_vs_predicha.svg" alt="Distribución LGD observada y predicha">
-<figcaption><strong>Figura 6.</strong> Distribución LGD en prueba 2014, observada frente a baseline y MLP. <strong>Fuente:</strong> benchmark de 30 semillas, <code>lgd/experiments.py</code>; checkpoint 808 seleccionado por validación.</figcaption>
+<figcaption><strong>Figura 6.</strong> Distribución LGD en prueba 2014, observada frente a baseline y MLP. <strong>Fuente:</strong> benchmark de 30 semillas, <code>lgd/experiments.py</code>; checkpoint 1212 seleccionado por validación.</figcaption>
 </figure>
 
 Las treinta corridas presentan una diferencia pequeña de MAE y RMSE medio mayor que el baseline (Tabla 5). No muestran una ventaja clara del MLP para esta definición de LGD. La mayor complejidad no justifica afirmar superioridad universal.
@@ -272,7 +272,7 @@ Las treinta corridas presentan una diferencia pequeña de MAE y RMSE medio mayor
 
 La relación de riesgo es $E[L_i\mid x_i]\approx PD_i\,LGD_i\,EAD_i$, con LGD condicionada al incumplimiento (Basel Committee on Banking Supervision, 2005). Requiere horizonte y exposición compatibles; multiplicar medias de LGD y EAD aleatorias exige una aproximación adicional si son dependientes.
 
-Se usa `funded_amnt` como exposición en originación; $EAD_{obs}$ construye la etiqueta histórica de LGD. La integración por identificador aplica los modelos PD y LGD a la misma cohorte de préstamos originados en 2014 y calcula $PD_i\times LGD_i\times EAD_{0,i}$. Se puntuaron 235.628 préstamos; la PD media fue 0,22865, la LGD media predicha condicional al incumplimiento fue 0,91628 y la pérdida esperada total estimada fue USD 774.349.671,31.
+Se usa `funded_amnt` como exposición en originación; $EAD_{obs}$ construye la etiqueta histórica de LGD. La integración por identificador aplica los modelos PD y LGD a la misma cohorte de préstamos originados en 2014 y calcula $PD_i\times LGD_i\times EAD_{0,i}$. El artefacto histórico puntuó 235.628 préstamos; la PD media fue 0,22865, la LGD media predicha condicional al incumplimiento fue 0,91628 y la pérdida esperada total estimada fue USD 774.349.671,31. Ese cálculo corresponde al checkpoint LGD 808, cuyo hash queda registrado en el JSON. El benchmark fue regenerado y ahora selecciona la semilla 1212; como `loan.csv` no está disponible en este entorno, la integración de cartera aún debe recalcularse con ese checkpoint para actualizar la cifra.
 
 En las 68.694 observaciones con resultado resuelto (29,15 %), la pérdida esperada sumó USD 208.561.086,83 y la pérdida realizada estimada, USD 168.195.585,76. Estas cantidades no son directamente comparables: la primera usa exposición en originación y la segunda el principal pendiente al castigo. Además, el objetivo PD se deriva de estados observados sin un horizonte fijo. Por tanto, la integración es exploratoria y no constituye una provisión regulatoria ni una estimación validada para un horizonte contractual. Las predicciones por préstamo y el resumen están en [`reports/lgd_evaluation/`](../lgd_evaluation/); el JSON identifica con SHA-256 la copia de `loan.csv` usada para generarlos.
 
@@ -498,8 +498,8 @@ Los modelos de una tarea usan las mismas matrices y particiones; la arquitectura
 | Logística PD | 1 ajuste | 0.065 s | 45 |
 | MLP PD: búsqueda | 180 ensayos + 25 corridas de robustez | 1.994,85 s oficiales | 7.105 |
 | MLP PD: evaluación final | 30 semillas de una configuración | 137.51 s de ajuste | 7.105 |
-| Lineal LGD | 1 ajuste | 0.040 s | 45 |
-| MLP LGD: archivo guardado | 5 configuraciones + 30 semillas | 31.98 s búsqueda + 165.07 s ajustes | 5185 |
+| Lineal LGD | 1 ajuste | 0.032 s | 45 |
+| MLP LGD: archivo guardado | 5 configuraciones + 30 semillas | 23.85 s búsqueda + 128.21 s ajustes | 5185 |
 <!-- END COMPUTE -->
 
 El presupuesto oficial PD incluye 150 ensayos iniciales y 30 de refinamiento, más 25 corridas de robustez de candidatos. El resumen registra 1.994,85 s oficiales y 705,82 s de exploración descartada, total 2.700,67 s; se separan de los 30 ajustes finales. Para LGD, la sección 2.2 documenta cinco configuraciones y treinta corridas; el JSON incluye la selección por validación y todas las métricas por semilla.

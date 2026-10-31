@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_saved_lgd_checkpoint_matches_validation_selection():
     document = json.loads((ROOT / 'artifacts/models/lgd_benchmark_results.json').read_text(encoding='utf-8'))
+    search = document['busqueda_hiperparametros']
     stats = document['mlp_30_semillas']
     records = stats['per_seed_metrics']
     selection = stats['checkpoint_selection']
@@ -26,6 +27,24 @@ def test_saved_lgd_checkpoint_matches_validation_selection():
     assert selection['seed'] == expected['seed']
     assert [row['seed'] for row in records if row['selected']] == [expected['seed']]
     assert document['mejor_mlp_individual']['seed'] == expected['seed']
+
+    effective = document['run_metadata']['effective_training_config']
+    assert effective['batch_size'] > 0
+    assert effective['early_stopping_patience'] > 0
+    assert effective['weight_decay'] >= 0
+    assert effective['max_epochs'] > 0
+    assert len(search['todas_las_configuraciones']) == search['presupuesto_configuraciones']
+    for candidate in search['todas_las_configuraciones']:
+        config = candidate['config']
+        assert config['batch_size'] == effective['batch_size']
+        assert config['patience'] == effective['early_stopping_patience']
+        assert config['weight_decay'] == effective['weight_decay']
+        assert config['activation'] == effective['activation']
+        assert config['output_activation'] == effective['output_activation']
+    selected_config = document['mejor_mlp_individual']['configuracion']
+    assert selected_config['batch_size'] == effective['batch_size']
+    assert selected_config['patience'] == effective['early_stopping_patience']
+    assert selected_config['weight_decay'] == effective['weight_decay']
 
     for metric in ('mae', 'rmse'):
         values = [row[f'test_{metric}'] for row in records]

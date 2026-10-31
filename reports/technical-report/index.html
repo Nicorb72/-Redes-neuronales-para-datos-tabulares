@@ -553,7 +553,7 @@ discriminación debe leerse junto con la calibración.</p>
 <p>Se usan <code>Charged Off</code> y <code>Does not meet the credit policy. Status:Charged Off</code>; se excluyen <code>Default</code>, moras cuyo proceso de recuperación no terminó y exposiciones no positivas. Esta pérdida sobre principal no descuenta flujos ni incluye todos los intereses, costos o tiempos de cobranza. Las recuperaciones pueden seguir incompletas. No se presenta como LGD regulatoria definitiva (Basel Committee on Banking Supervision, 2005).</p>
 <h3>2.2 Comparación y evidencia</h3>
 <p>Los modelos usan las mismas matrices: train 2007–2012 (14.419 filas), validación 2013 (14.836) y prueba 2014 (13.981). El baseline es regresión lineal recortada a <span class="math-inline">\([0,1]\)</span>. El MLP usa 44 entradas, capas de 64 y 32 unidades, BatchNorm, ReLU, dropout de 0,20 y salida sigmoide.</p>
-<p>El benchmark se repitió con cinco configuraciones y <strong>30 semillas independientes</strong> (101–3030, paso 101). Se seleccionó la arquitectura por RMSE de validación y, después, la semilla por ese mismo criterio. El checkpoint final es la <strong>semilla 808</strong>, con RMSE de validación <strong>0.093988</strong>. Todas las corridas se entrenan y valoran en validación antes de consultar prueba; los empates exactos se resuelven por la primera semilla del orden fijado. El JSON conserva métricas de cada corrida, la marca de selección y <code>test_used_for_selection=false</code>.</p>
+<p>El benchmark se repitió con cinco configuraciones y <strong>30 semillas independientes</strong> (101–3030, paso 101). Se seleccionó la arquitectura por RMSE de validación y, después, la semilla por ese mismo criterio. El checkpoint final es la <strong>semilla 1212</strong>, con RMSE de validación <strong>0.093975</strong>. Todas las corridas se entrenan y valoran en validación antes de consultar prueba; los empates exactos se resuelven por la primera semilla del orden fijado. El JSON conserva métricas de cada corrida y registra para cada arquitectura los parámetros efectivos de entrenamiento —incluidos paciencia, tamaño de lote y weight decay—, además de la marca de selección y <code>test_used_for_selection=false</code>.</p>
 <p>La Tabla 5 presenta esta ejecución completa. Sustituye el archivo anterior de cinco semillas. La corrección evita usar el ranking de prueba para escoger el checkpoint, pero no convierte la prueba 2014 ya consultada históricamente en un conjunto externo nuevo.</p>
 <!-- BEGIN LGD_METRICS -->
 <div class="table-wrap"><table><caption><strong>Tabla 5. Resultados LGD respaldados por el JSON versionado.</strong> Fuente: <a href="../../artifacts/models/lgd_benchmark_results.json">lgd_benchmark_results.json</a>. La DE corresponde a las corridas registradas en ese JSON.</caption>
@@ -579,10 +579,10 @@ discriminación debe leerse junto con la calibración.</p>
 <tr>
 <td>MLP (30 semillas)</td>
 <td>5185</td>
-<td>0.07714 ± 0.00074</td>
-<td>0.07566–0.07910</td>
-<td>0.08876 ± 0.00070</td>
-<td>0.08757–0.09062</td>
+<td>0.07706 ± 0.00066</td>
+<td>0.07566–0.07837</td>
+<td>0.08870 ± 0.00062</td>
+<td>0.08757–0.08998</td>
 </tr>
 </tbody>
 </table></div>
@@ -591,12 +591,12 @@ discriminación debe leerse junto con la calibración.</p>
 <p>La Figura 6 se regeneró con el checkpoint seleccionado por validación y las predicciones del baseline sobre prueba 2014. Las predicciones se concentran cerca de la media y no reproducen toda la masa observada en uno. Una media condicional no tiene por qué reproducir la distribución marginal de la respuesta: son objetivos distintos.</p>
 <figure>
 <img src="../figures/distribucion_lgd_observada_vs_predicha.svg" alt="Distribución LGD observada y predicha">
-<figcaption><strong>Figura 6.</strong> Distribución LGD en prueba 2014, observada frente a baseline y MLP. <strong>Fuente:</strong> benchmark de 30 semillas, <code>lgd/experiments.py</code>; checkpoint 808 seleccionado por validación.</figcaption>
+<figcaption><strong>Figura 6.</strong> Distribución LGD en prueba 2014, observada frente a baseline y MLP. <strong>Fuente:</strong> benchmark de 30 semillas, <code>lgd/experiments.py</code>; checkpoint 1212 seleccionado por validación.</figcaption>
 </figure>
 <p>Las treinta corridas presentan una diferencia pequeña de MAE y RMSE medio mayor que el baseline (Tabla 5). No muestran una ventaja clara del MLP para esta definición de LGD. La mayor complejidad no justifica afirmar superioridad universal.</p>
 <h3>2.4 Pérdida esperada</h3>
 <p>La relación de riesgo es <span class="math-inline">\(E[L_i\mid x_i]\approx PD_i\,LGD_i\,EAD_i\)</span>, con LGD condicionada al incumplimiento (Basel Committee on Banking Supervision, 2005). Requiere horizonte y exposición compatibles; multiplicar medias de LGD y EAD aleatorias exige una aproximación adicional si son dependientes.</p>
-<p>Se usa <code>funded_amnt</code> como exposición en originación; <span class="math-inline">\(EAD_{obs}\)</span> construye la etiqueta histórica de LGD. La integración por identificador aplica los modelos PD y LGD a la misma cohorte de préstamos originados en 2014 y calcula <span class="math-inline">\(PD_i\times LGD_i\times EAD_{0,i}\)</span>. Se puntuaron 235.628 préstamos; la PD media fue 0,22865, la LGD media predicha condicional al incumplimiento fue 0,91628 y la pérdida esperada total estimada fue USD 774.349.671,31.</p>
+<p>Se usa <code>funded_amnt</code> como exposición en originación; <span class="math-inline">\(EAD_{obs}\)</span> construye la etiqueta histórica de LGD. La integración por identificador aplica los modelos PD y LGD a la misma cohorte de préstamos originados en 2014 y calcula <span class="math-inline">\(PD_i\times LGD_i\times EAD_{0,i}\)</span>. El artefacto histórico puntuó 235.628 préstamos; la PD media fue 0,22865, la LGD media predicha condicional al incumplimiento fue 0,91628 y la pérdida esperada total estimada fue USD 774.349.671,31. Ese cálculo corresponde al checkpoint LGD 808, cuyo hash queda registrado en el JSON. El benchmark fue regenerado y ahora selecciona la semilla 1212; como <code>loan.csv</code> no está disponible en este entorno, la integración de cartera aún debe recalcularse con ese checkpoint para actualizar la cifra.</p>
 <p>En las 68.694 observaciones con resultado resuelto (29,15 %), la pérdida esperada sumó USD 208.561.086,83 y la pérdida realizada estimada, USD 168.195.585,76. Estas cantidades no son directamente comparables: la primera usa exposición en originación y la segunda el principal pendiente al castigo. Además, el objetivo PD se deriva de estados observados sin un horizonte fijo. Por tanto, la integración es exploratoria y no constituye una provisión regulatoria ni una estimación validada para un horizonte contractual. Las predicciones por préstamo y el resumen están en <a href="../lgd_evaluation/"><code>reports/lgd_evaluation/</code></a>; el JSON identifica con SHA-256 la copia de <code>loan.csv</code> usada para generarlos.</p>
 <h3>2.5 Reproducción</h3>
 <p>Con las matrices guardadas: <code>python -m credit_risk.lgd.experiments --demo</code>; para benchmark: <code>python -m credit_risk.lgd.experiments --seeds 30</code>. La integración PD–LGD por ID se reproduce con <code>python -m credit_risk.lgd.portfolio --year 2014</code> y requiere <code>loan.csv</code>. Los parámetros de entrenamiento se pueden cambiar desde <code>configs/lgd_mlp_best.yaml</code> o por CLI. Por ejemplo:</p>
@@ -798,13 +798,13 @@ Fuente: elaboración propia con el MLP final y validación temporal.</caption>
 <tr>
 <td>Lineal LGD</td>
 <td>1 ajuste</td>
-<td>0.040 s</td>
+<td>0.032 s</td>
 <td>45</td>
 </tr>
 <tr>
 <td>MLP LGD: archivo guardado</td>
 <td>5 configuraciones + 30 semillas</td>
-<td>31.98 s búsqueda + 165.07 s ajustes</td>
+<td>23.85 s búsqueda + 128.21 s ajustes</td>
 <td>5185</td>
 </tr>
 </tbody>

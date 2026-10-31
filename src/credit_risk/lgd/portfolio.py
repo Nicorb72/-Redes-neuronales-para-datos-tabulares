@@ -69,7 +69,8 @@ def estimar_perdida_esperada(year: int = 2014) -> tuple[pd.DataFrame, dict]:
     if list(lgd_preprocessor.feature_names_in_) != FEATURES:
         raise ValueError("El preprocesador LGD no comparte el contrato de variables PD.")
     lgd_matrix = lgd_preprocessor.transform(raw_features)
-    lgd_model = LGDNeuralNetwork.load(root / "artifacts" / "models" / "mlp_lgd.pt", device="cpu")
+    lgd_model_path = root / "artifacts" / "models" / "mlp_lgd.pt"
+    lgd_model = LGDNeuralNetwork.load(lgd_model_path, device="cpu")
     if lgd_matrix.shape[1] != lgd_model.input_dim:
         raise ValueError("La dimensión de entrada no coincide con el modelo LGD guardado.")
     lgd_prediction = lgd_model.predict(lgd_matrix)
@@ -90,6 +91,8 @@ def estimar_perdida_esperada(year: int = 2014) -> tuple[pd.DataFrame, dict]:
         )
     with source_path.open("rb") as source_file:
         source_sha256 = hashlib.file_digest(source_file, "sha256").hexdigest()
+    with lgd_model_path.open("rb") as model_file:
+        lgd_model_sha256 = hashlib.file_digest(model_file, "sha256").hexdigest()
 
     predictions = pd.DataFrame({
         "loan_id": cohort["id"].astype(str),
@@ -127,7 +130,9 @@ def estimar_perdida_esperada(year: int = 2014) -> tuple[pd.DataFrame, dict]:
             "La estimación conjunta es exploratoria; no constituye una provisión regulatoria."
         ),
         "modelo_pd": pd_bundle.metadata["model_id"],
-        "modelo_lgd": "artifacts/models/mlp_lgd.pt",
+        "modelo_lgd": str(lgd_model_path.relative_to(root)),
+        "modelo_lgd_seed": int(lgd_model.seed),
+        "modelo_lgd_checkpoint_sha256": lgd_model_sha256,
     }
     return predictions, summary
 

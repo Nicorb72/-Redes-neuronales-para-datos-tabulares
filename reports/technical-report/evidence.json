@@ -10,7 +10,7 @@
     "artifacts/models/pd_bundle.json": "7de2b48c62a4b25f53b0b9e986a78bf8fff5cd98baf50905385e54bf043b28e6",
     "data/processed/X_validation_pd.npz": "46e7112db0b411dc3cfc6f506021b7ef49b8df8401fce3c5007f35e7e9384376",
     "reports/pd_evaluation/metricas_por_semilla.csv": "c37af227d5a44f6e7495ad1257e423a062ec77420657c4412fc0e7837d351ec2",
-    "artifacts/models/lgd_benchmark_results.json": "3be0b362842046c7d59f61d0e9e8e0681039e884f8435356e5ef1245e2435bc3",
+    "artifacts/models/lgd_benchmark_results.json": "d6310fd6a71a494f26d0370bf6747c821f54cf8a14122ac4cefdc60182355d20",
     "reports/pd_evaluation/resultados.json": "726db8fa79beaf74d5b2e7bc1e8a4a9f234c77699d8054f8ebbe0032bd0b5a1f",
     "reports/pd_hyperparameter_search/resumen_optimizacion.json": "7dfafe1ff57be562d6a2bf9f9783d56de35324b8f78b17810068a22e2df97cf3",
     "artifacts/models/pd_logistic.joblib": "05b482611eb9d7bc6fbb269d75fa71159e486e47b7a1a7c7c0f53fbb4eb7078a"
@@ -74,7 +74,7 @@
       "q25_raw": 8325.0,
       "q75_raw": 19999.999999999996,
       "pd_mean_q25": 0.1958448588848114,
-      "pd_mean_q75": 0.23820793628692627,
+      "pd_mean_q75": 0.23820796608924866,
       "mean_pd_change_pp": 4.236309230327606,
       "share_pd_increases": 0.9964,
       "logistic_coefficient_standardized": 0.1488096056452928

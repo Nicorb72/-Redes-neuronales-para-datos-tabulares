@@ -12,6 +12,9 @@ de prueba describen rendimiento y variabilidad; no deciden qué modelo guardar.
 
 - `checkpoint_selection`: criterio, partición, semilla y valor de validación.
 - `per_seed_metrics`: validación, prueba, tiempo y selección de cada corrida.
+- `run_metadata.effective_training_config` y el bloque `config` de cada
+  configuración evaluada: activaciones, tasa de aprendizaje, weight decay,
+  dropout, pérdida, batch size, épocas máximas y paciencia efectiva.
 - Estadísticas de prueba de todas las semillas; el checkpoint individual no
   tiene por qué ser el de menor error de prueba.
 
@@ -30,6 +33,9 @@ Las pruebas de regresión invierten a propósito el ranking de prueba y verifica
 que no cambia la selección; cubren empates, métricas no finitas y cero semillas.
 La prueba de integración carga el checkpoint y reproduce su MAE/RMSE en validación
 y prueba, además de verificar la consistencia de las treinta corridas guardadas.
+La integración de pérdida esperada tiene una prueba unitaria independiente con
+cohorte sintética para comprobar la alineación de predicciones por préstamo, la
+fórmula PD × LGD × EAD y los agregados sin requerir el CSV original.
 
 Esta corrección evita seleccionar la semilla por prueba. No convierte el conjunto
 de prueba ya utilizado históricamente en un holdout nuevo; para una evaluación
