@@ -153,7 +153,8 @@ def ejecutar_experimento_completo(demo: bool = False, n_seeds: int | None = None
             f"Se esperaban {config['input_dim']} variables procesadas; hay {X['train'].shape[1]}."
         )
 
-    output_dir = raiz / config["artifacts"]["output_dir"]
+    output_base = raiz / config["artifacts"]["output_dir"]
+    output_dir = output_base / "demo" if demo else output_base
     output_dir.mkdir(parents=True, exist_ok=True)
 
     baseline, baseline_validation_probability, baseline_test_probability = _evaluar_baseline(config, X, y)

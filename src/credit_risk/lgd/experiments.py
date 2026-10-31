@@ -314,15 +314,16 @@ def ejecutar_experimento_completo(
     modelos_dir.mkdir(parents=True, exist_ok=True)
     figures_dir.mkdir(parents=True, exist_ok=True)
 
-    baseline.save(modelos_dir / "baseline_lgd.joblib")
-    best_mlp.save(modelos_dir / "mlp_lgd.pt")
+    baseline.save(modelos_dir / ("baseline_lgd_demo.joblib" if demo else "baseline_lgd.joblib"))
+    best_mlp.save(modelos_dir / ("mlp_lgd_demo.pt" if demo else "mlp_lgd.pt"))
 
     # Guardar gráfica comparativa de distribución
+    fig_name = "distribucion_lgd_demo.svg" if demo else "distribucion_lgd_observada_vs_predicha.svg"
     generar_figura_distribucion_lgd(
         y["test"],
         preds_base,
         preds_mlp,
-        figures_dir / "distribucion_lgd_observada_vs_predicha.svg",
+        figures_dir / fig_name,
     )
 
     # 5. Guardar resumen consolidado de benchmark
@@ -347,7 +348,8 @@ def ejecutar_experimento_completo(
         "distribucion_observada": resumen_distribucion(y["test"], "Observada"),
     }
 
-    with open(modelos_dir / "lgd_benchmark_results.json", "w", encoding="utf-8") as f:
+    results_file = "lgd_demo_results.json" if demo else "lgd_benchmark_results.json"
+    with open(modelos_dir / results_file, "w", encoding="utf-8") as f:
         json.dump(benchmark_data, f, indent=4, ensure_ascii=False)
 
     print("\nArtefactos y figuras guardados exitosamente.")

@@ -48,6 +48,9 @@ Thumbs.db
 !/artifacts/models/pd_feature_names.json
 !/artifacts/models/pd_bundle.json
 !/artifacts/models/*lgd*
+/artifacts/models/*_demo.*
+/reports/pd_evaluation/demo/
+/reports/figures/*_demo.*
 
 # Archivos temporales
 /artifacts/prueba_data/
