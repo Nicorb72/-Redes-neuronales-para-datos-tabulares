@@ -274,7 +274,13 @@ Se propone `funded_amnt` como exposición conservadora en originación; $EAD_{ob
 
 ### 2.5 Reproducción
 
-Con las matrices guardadas: `python -m credit_risk.lgd.experiments --demo`; para benchmark: `python -m credit_risk.lgd.experiments --seeds 30`. En demo, las épocas se leen de `demo.epochs` en el YAML (15 por defecto) y `--epochs` las sobrescribe; `--patience`, `--batch-size` y `--weight-decay` se aplican tanto a la búsqueda como al entrenamiento final. Solo reconstruir datos requiere `loan.csv` y `python -m credit_risk.lgd.data`. Demo guarda salidas separadas; que exista el comando completo no acredita su entrega.
+Con las matrices guardadas: `python -m credit_risk.lgd.experiments --demo`; para benchmark: `python -m credit_risk.lgd.experiments --seeds 30`. Los parámetros de entrenamiento se pueden cambiar desde `configs/lgd_mlp_best.yaml` o por CLI. Por ejemplo:
+
+```console
+python -m credit_risk.lgd.experiments --demo --epochs 20 --patience 5 --batch-size 256 --weight-decay 0.0005
+```
+
+La demo usa 15 épocas por defecto, definidas en `demo.epochs`; `--epochs` cambia ese máximo. Paciencia, tamaño de lote y weight decay también se propagan a la búsqueda de arquitecturas y al entrenamiento final. La red usa la paciencia para early stopping, el tamaño de lote en el `DataLoader` y el decaimiento de pesos en AdamW. Solo reconstruir datos requiere `loan.csv` y `python -m credit_risk.lgd.data`. Demo guarda salidas separadas.
 
 
 
@@ -548,7 +554,7 @@ En la revisión del 30/10/2026, en una extracción limpia de main sin CSV y con 
 
 Los benchmarks se ejecutan con `python -m credit_risk.pd.experiments` y `python -m credit_risk.lgd.experiments --seeds 30`. Reentrenar PD exige exportar de nuevo el paquete según el README. Reconstruir matrices desde el original requiere CSV y los comandos `credit_risk.data.prepare_data` y `credit_risk.lgd.data`.
 
-Scorecard usa `configs/default.yaml` y PD usa `configs/pd_mlp_best.yaml`. LGD ofrece YAML y CLI, pero paciencia, lote y weight decay no se propagan completamente y demo fuerza 15 épocas: se debe corregir antes de defender esos controles. No se presenta `--epochs 20` como cambio efectivo en demo mientras persista ese comportamiento.
+Scorecard usa `configs/default.yaml` y PD usa `configs/pd_mlp_best.yaml`. Para LGD, paciencia, tamaño de lote y weight decay están disponibles en YAML y CLI y se propagan a la búsqueda y al entrenamiento final. La demo utiliza 15 épocas por defecto, no de forma fija: `--epochs` permite cambiar el máximo. Las pruebas unitarias cubren la resolución de épocas y la propagación de los parámetros.
 
 **Construcción del blog.** El Markdown es la fuente única; no editar HTML manualmente. El [README del reporte](README.md) explica cómo instalar `requirements-report.txt`, actualizar evidencia de inferencia sin entrenamiento y construir/verificar el HTML. `--check` detecta tablas derivadas o HTML desactualizados y referencias locales rotas.
 

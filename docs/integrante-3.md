@@ -150,7 +150,7 @@ El benchmark actualizado evalúa LGD condicionada a créditos castigados. No se 
 | Requisito evaluado | Estado | Implementación y verificación técnica |
 | :--- | :---: | :--- |
 | **Cada experimento se lanza con un solo comando** | **Cumple** | `python -m credit_risk.lgd.experiments` o con `--demo`. Carga automáticamente las matrices versionadas en Git o las autogenera desde `loan.csv` si no existieran, sin pasos previos obligatorios. |
-| **Parámetros modificables sin tocar código** | **Parcial** | YAML y CLI disponibles; queda corregir la propagación de paciencia, tamaño de lote y weight decay. Demo fuerza 15 épocas. |
+| **Parámetros modificables sin tocar código** | **Cumple en la implementación** | YAML y CLI permiten modificar paciencia (`early_stopping_patience` / `--patience`), tamaño de lote (`batch_size` / `--batch-size`) y decaimiento de pesos (`weight_decay` / `--weight-decay`); se propagan a la búsqueda y al entrenamiento final. La demo usa 15 épocas por defecto (`demo.epochs`) y permite cambiar el máximo con `--epochs`. Las pruebas cubren la resolución de épocas y el paso de parámetros a los modelos. |
 | **Demostración en menos de 2 minutos** | **Cumple (Medido)** | **37,19 s** en clon limpio. Entorno medido: CPU AMD Ryzen 7 3700U (4c/8t), 6.7 GB RAM, Linux Debian x86_64. |
 | **Cacería de la alucinación (15 %)** | **Cumple** | Consolidada en `docs/caceria_alucinaciones.md` y Sección 4 del reporte técnico, con aportes en LGD (H1, H2, H5). |
 

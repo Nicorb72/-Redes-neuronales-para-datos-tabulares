@@ -165,6 +165,7 @@ def test_benchmark_lgd_aplica_parametros_configurables(monkeypatch):
     class ModeloFalso:
         def __init__(self, **kwargs):
             self.kwargs = kwargs
+            self.seed = kwargs["seed"]
             self.n_parameters = 1
             self.fit_time_sec = 0.01
             modelos.append(self)
