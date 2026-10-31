@@ -75,259 +75,159 @@ Los siguientes comandos se ejecutan desde la raíz con el entorno activado.
 
 ## Ejecución
 
-### Flujo recomendado: reproducir desde un clon limpio, sin CSV
+### 1. Clonar el repositorio
 
-Este recorrido usa los archivos versionados y no requiere descargar `loan.csv`.
+Desde la carpeta donde quieras guardar el proyecto:
 
-- El módulo de datos documenta el número de filas y variables, el periodo, la
-  fecha de descarga, el diccionario consultado y cómo genera los datos
-  procesados desde el archivo original.
-- PD modela la clase positiva como incumplimiento (`1`). Los estados sin
-  resultado definitivo se excluyen según la consigna; no se deben etiquetar
-  como buenos.
-- LGD documenta la fórmula, los campos usados y sus limitaciones. La
-  exposición al incumplimiento (EAD) debe definirse explícitamente antes de
-  combinar los modelos como `pérdida esperada = PD × LGD × EAD`.
-- Las familias de modelos que se comparen usan las mismas particiones y el
-  mismo preprocesamiento. Reporten el presupuesto de búsqueda, tiempos,
-  complejidad y, para la configuración final de cada red, resultados sobre
-  al menos 30 semillas.
-- Las semillas, hiperparámetros y parámetros de scorecard deben poder
-  cambiarse desde configuración o línea de comandos, no editando la lógica
-  del modelo. `configs/default.yaml` propone una partición temporal,
-  configuración de scorecard (odds buenas:malas) y semilla, conectada al
-  modelo final PD mediante el manifiesto de artefactos.
-- Los modelos guardados permiten abrir la app y regenerar figuras sin
-  reentrenar. Documenten el procedimiento de regeneración cuando se integren
-  los experimentos.
-
-## Datos, modelos y artefactos
-
-`data/raw/` se excluye de Git por tamaño. Se versionan las matrices train y
-validación PD necesarias para inferencia e interpretación, sus etiquetas de
-validación y el paquete del modelo final. El archivo original y los artefactos
-LGD siguen teniendo sus propias reglas. Las excepciones explícitas de
-`.gitignore` evitan incluir archivos temporales junto a las entregas finales.
-
-No incluyan credenciales, tokens ni datos personales. No suban datasets,
-modelos o figuras que no sean necesarios para reproducir el trabajo.
-
-## Reproducibilidad y entrega
-
-Cada experimento principal se lanza con un **único comando** desde la raíz del repositorio, con parámetros configurables externamente en archivos YAML o por línea de comandos, y demostraciones rápidas medidas en menos de dos minutos:
-
-### 1. Experimento de PD (Probabilidad de Incumplimiento)
-```bash
-# Corrida completa (30 semillas)
-python -m credit_risk.pd.experiments
-
-# Demostración rápida (< 2 minutos, 21.14 s medidos en CPU local)
-python -m credit_risk.pd.experiments --demo
-```
-Configuración en `configs/pd_mlp_best.yaml` y `configs/default.yaml`.
-
-### 2. Experimento de LGD (Pérdida Dado el Incumplimiento - Integrante 3)
-```bash
-# Corrida completa (30 semillas)
-python -m credit_risk.lgd.experiments --seeds 30
-
-# Demostración rápida (< 2 minutos, 37.19 s medidos en CPU local)
-python -m credit_risk.lgd.experiments --demo
-
-# Modificación de parámetros en vivo (sin editar código)
-python -m credit_risk.lgd.experiments --demo --hidden-dims 128,64 --lr 0.005 --epochs 20
-```
-Configuración en `configs/lgd_mlp_best.yaml`. Las matrices procesadas están versionadas en Git o se autogeneran si no estuvieran presentes.
-
-### 3. Aplicación web y scorecard
-```bash
-# Verificación de artefactos
-python run_app.py --check
-
-# Inicio de la aplicación
-python run_app.py
-```
-
-### 4. Cacería de la alucinación (15 % grupal)
-Documentada en la Sección 4 del reporte técnico y detallada con prompts literales, respuestas y evidencias en [`docs/caceria_alucinaciones.md`](docs/caceria_alucinaciones.md). Cubre 5 hallazgos técnicos en las 5 categorías exigidas por la rúbrica.
-
-## Pruebas
-
-Ejecuten la suite completa de pruebas desde la raíz del repositorio con:
-
-```bash
-python -m pytest -v
-1. Clonar el repositorio y entrar en su carpeta:
+**Windows PowerShell**
 
 ```powershell
 git clone https://github.com/Nicorb72/-Redes-neuronales-para-datos-tabulares.git
 Set-Location .\-Redes-neuronales-para-datos-tabulares
 ```
 
-2. Instalar las dependencias siguiendo la sección [Instalación](#instalación).
-   Luego, desde la raíz, configurar el acceso al código:
+**macOS/Linux**
+
+```bash
+git clone https://github.com/Nicorb72/-Redes-neuronales-para-datos-tabulares.git
+cd ./-Redes-neuronales-para-datos-tabulares
+```
+
+Con Python 3.11 instalado, crea el entorno virtual e instala las dependencias
+siguiendo los comandos de la sección [Instalación](#instalación). Mantén esa
+terminal activa o vuelve a activar el entorno virtual si abres otra.
+
+Ejecuta los siguientes comandos desde la raíz del repositorio y con el entorno
+virtual activado. Los módulos bajo `src/` necesitan que esa carpeta esté en
+`PYTHONPATH`.
+
+**Windows PowerShell**
 
 ```powershell
 $env:PYTHONPATH = "src"
 ```
 
-3. Regenerar las dos figuras EDA. Si no está el CSV, se usan los conteos del
-   resumen versionado:
-
-```powershell
-python -m credit_risk.data.generate_eda_figures
-```
-
-4. Verificar el paquete PD y las matrices incluidas en el clon:
-
-```powershell
-python run_app.py --check
-```
-
-Debe aparecer `PD listo`. Para ejecutar la aplicación:
-
-```powershell
-python run_app.py
-```
-
-Abrir `http://127.0.0.1:8501` y detener el servidor con `Ctrl+C`.
-
-5. Ejecutar las pruebas:
-
-```powershell
-python -m pip install -r requirements-test.txt
-python -m pytest -q
-```
-
-### Reentrenar y evaluar PD usando las matrices versionadas
-
-Este paso tampoco requiere el CSV: lee las matrices PD de train, validation y
-test que están en el repositorio y ejecuta la regresión logística y el MLP con
-30 semillas. Puede tardar varios minutos. Escribe resultados en
-`reports/pd_evaluation/` y actualiza el modelo y el preprocesador en
-`artifacts/models/`.
-
-```powershell
-$env:PYTHONPATH = "src"
-python -m credit_risk.pd.experiments
-```
-
-Al regenerar el modelo o el preprocesador, hay que reconstruir el manifiesto
-del paquete PD antes de iniciar la app. Usa el comando de [Exportar el paquete
-PD](#exportar-el-paquete-pd) y luego vuelve a ejecutar `python run_app.py
---check`.
-
-### Reconstruir matrices PD desde el CSV original (opcional)
-
-Este recorrido reproduce la preparación desde los datos originales y **sí
-requiere** el archivo de Lending Club en `data/raw/loan/loan.csv`. El resumen
-EDA no contiene registros ni variables predictoras y no sirve para este paso.
-Descarga el archivo desde [Credit Risk Analysis en
-Kaggle](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset) y
-colócalo en esa ruta. La copia de referencia del proyecto se descargó el
-24/10/2026; no se registró un identificador de versión o checksum de Kaggle.
-Conserva la procedencia de la copia que utilices y no asumas que una descarga
-posterior producirá matrices idénticas.
-
-```powershell
-$env:PYTHONPATH = "src"
-python -m credit_risk.data.prepare_data
-```
-
-Este comando recalcula las cuatro particiones PD y sobrescribe las matrices,
-etiquetas y el preprocesador en `data/processed/` y `artifacts/models/`.
-**No lo ejecutes si solo quieres usar el clon limpio**: además de requerir el
-CSV, reemplazar el preprocesador puede dejar desactualizado el manifiesto del
-modelo existente. Para completar una reconstrucción desde la fuente, continúa
-con el entrenamiento PD, exporta de nuevo el paquete y valida la app como se
-describe arriba.
-
-En macOS/Linux, configura una vez la variable y ejecuta el mismo módulo:
+**macOS/Linux**
 
 ```bash
 export PYTHONPATH=src
-python -m credit_risk.data.prepare_data
 ```
 
-El preprocesador se ajusta únicamente con train.
+### 2. Comprobar el clon y abrir la aplicación
 
-### Regenerar las figuras de datos
+El clon incluye los artefactos PD y las matrices procesadas; no necesita
+`loan.csv` para estos pasos. Valida primero el paquete y luego inicia la app:
 
-El comando usa el CSV para recalcular conteos si está disponible; si no, usa
-el resumen versionado para generar las dos figuras principales de PD. Los
-archivos se escriben en `reports/figures/`.
+```console
+python run_app.py --check
+python run_app.py
+```
 
-```powershell
-$env:PYTHONPATH = "src"
+El primer comando debe mostrar `PD listo`. La aplicación estará disponible en
+`http://127.0.0.1:8501`; detenla con `Ctrl+C`. Para usar otro puerto, ejecuta
+`python run_app.py --port 8502`.
+
+### 3. Regenerar las figuras EDA
+
+El comando usa `loan.csv` si está disponible; de lo contrario, utiliza los
+conteos guardados en `data/processed/eda_pd_resumen.json`. En ambos casos
+genera las dos figuras principales de PD en `reports/figures/`.
+
+```console
 python -m credit_risk.data.generate_eda_figures
 ```
 
-### Ejecutar experimentos LGD (Comando único, parámetros externos y demo < 2 min)
+### 4. Ejecutar los experimentos
 
-Las matrices procesadas de LGD están versionadas en Git (`data/processed/*_lgd.*`), por lo que los experimentos de LGD se ejecutan directamente con un solo comando en un clon limpio sin necesidad de `loan.csv`:
+Los experimentos usan las matrices versionadas y no requieren el CSV. El
+modo completo de PD y LGD evalúa 30 semillas; `--demo` ejecuta una corrida
+reducida para una comprobación rápida. Los hiperparámetros se encuentran en
+`configs/pd_mlp_best.yaml` y `configs/lgd_mlp_best.yaml`.
 
-```powershell
-$env:PYTHONPATH = "src"
-# Demostración rápida (< 2 minutos, ~37 s medidos en CPU local con 5 semillas)
-python -m credit_risk.lgd.experiments --demo
+**PD — corrida completa o demo**
 
-# Corrida completa del benchmark (30 semillas)
+```console
+python -m credit_risk.pd.experiments
+python -m credit_risk.pd.experiments --demo
+```
+
+**LGD — corrida completa, demo o parámetros alternativos**
+
+```console
 python -m credit_risk.lgd.experiments --seeds 30
-
-# Modificación de hiperparámetros en vivo sin tocar código
+python -m credit_risk.lgd.experiments --demo
 python -m credit_risk.lgd.experiments --demo --hidden-dims 128,64 --lr 0.005 --epochs 20
 ```
 
-Los hiperparámetros están externalizados en `configs/lgd_mlp_best.yaml`. Si las matrices faltaran y estuviera presente `loan.csv`, el script las reconstruye automáticamente. Si se desea reconstruir las matrices desde la fuente de manera explícita: `python -m credit_risk.lgd.data`.
+La corrida completa de PD puede tardar varios minutos. El experimento LGD
+reconstruye sus matrices si faltan y encuentra `loan.csv`; en ese caso, sí
+necesitarás el archivo en `data/raw/loan/loan.csv`. Los resultados LGD se
+guardan en `artifacts/models/` y las figuras en `reports/figures/`.
 
-Los resultados y modelos LGD se guardan bajo `artifacts/models/` y las figuras bajo `reports/figures/`.
+### 5. Actualizar el paquete PD después de entrenar
 
-### Exportar el paquete PD
+Después de una corrida completa de PD —descrita en el paso 4—, reconstruye el
+manifiesto antes de iniciar la app. La exportación calcula los hashes y valida
+el paquete. Este paso también es necesario después de reconstruir las matrices
+PD en el paso 6.
 
-Después de cambiar o regenerar el modelo PD, su preprocesador o las matrices de
-referencia, ejecuta este comando para reconstruir el manifiesto. Calcula los
-hashes y valida el paquete:
-
-```powershell
-$env:PYTHONPATH = "src"
+```console
 python -m credit_risk.scorecard.export --model artifacts/models/pd_mlp_final.pt --model-format pd_mlp --model-id pd_mlp_final-seed202612 --training-data "Matrices PD train 2007-2012" --reference-population "90347 creditos etiquetados de train 2007-2012"
+python run_app.py --check
 ```
 
-### Interpretabilidad PD
+### 6. Reconstruir matrices desde el CSV original (opcional)
 
-Con el paquete PD y las matrices y etiquetas de validación:
+Solo necesitas este paso si quieres rehacer las matrices desde los registros
+originales. Descarga `loan.csv` desde [Credit Risk Analysis en
+Kaggle](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset) y
+colócalo en `data/raw/loan/loan.csv`. El resumen EDA no contiene los registros
+ni las variables predictoras. La copia de referencia se descargó el
+24/10/2026, pero no se registraron su versión ni checksum; conserva la
+procedencia de la copia usada, pues otra descarga podría producir resultados
+distintos.
 
-```powershell
-$env:PYTHONPATH = "src"
+```console
+python -m credit_risk.data.prepare_data
+```
+
+El comando recalcula las cuatro particiones PD y sobrescribe matrices,
+etiquetas y preprocesador. El preprocesador se ajusta solo con train. Después,
+ejecuta la corrida completa de PD del paso 4 y actualiza el paquete según el
+paso 5. Para preparar las matrices LGD explícitamente, ejecuta
+`python -m credit_risk.lgd.data`.
+
+### 7. Interpretabilidad PD
+
+Con el paquete PD y las matrices y etiquetas de validación disponibles:
+
+```console
 python -m credit_risk.scorecard.interpretability --seed 42 --repeats 10 --max-rows 5000
 ```
 
 Los resultados se guardan en `reports/interpretability/` como JSON, CSV y SVG.
 
-### Aplicación web
+### 8. Pruebas y lint
 
-Validar el paquete y arrancar Streamlit:
+Instala las dependencias de desarrollo y ejecuta la suite desde la raíz:
 
-```powershell
-python run_app.py --check
-python run_app.py
-```
-
-La aplicación se abre en `http://127.0.0.1:8501`. Para cambiar el puerto:
-
-```powershell
-python run_app.py --port 8502
-```
-
-El enlace al reporte y al video promocional aparecen en la barra lateral.
-
-### Pruebas y lint
-
-```powershell
+```console
 python -m pip install -r requirements-test.txt
-python -m pytest -q
+python -m pytest -v
 python -m ruff check src tests
 ```
+
+## Datos, modelos y artefactos
+
+`data/raw/` se excluye de Git por tamaño. El repositorio incluye matrices
+procesadas y artefactos de PD y LGD para reproducir los experimentos sin el
+CSV, además del paquete PD para la aplicación. No incluyas credenciales,
+tokens, datos personales ni archivos temporales en el repositorio.
+
+## Cacería de la alucinación
+
+Los hallazgos se documentan en la sección 5 del [reporte técnico](reports/technical-report/index.md)
+y en [`docs/caceria_alucinaciones.md`](docs/caceria_alucinaciones.md).
 
 ## Estructura del repositorio
 
