@@ -18,8 +18,8 @@ scorecard:
 
 app:
   pd_bundle: artifacts/models/pd_bundle.json
-  report_url: https://nicorb72.github.io/-Redes-neuronales-para-datos-tabulares/technical-report/
-  video_url: null  # Reemplazar por el enlace real cuando se publique.
+  report_url: https://nicorb72.github.io/-Redes-neuronales-para-datos-tabulares/reports/technical-report/
+  video_url: "https://www.youtube.com/watch?v=TijgcPZNboU&feature=youtu.be"
 
 demo:
   max_rows: 5000
