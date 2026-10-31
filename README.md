@@ -20,11 +20,15 @@ promedio de 0,6694 ± 0,0043 y Brier de 0,1818 ± 0,0010. La regresión
 logística obtuvo AUC de 0,6648 y Brier de 0,1872. El modelo final guardado
 corresponde a la semilla 202612.
 
-Para LGD, los resultados reportados en `docs/integrante-3.md` corresponden a
-13.981 préstamos castigados en la prueba de 2014. La regresión lineal obtuvo
-MAE 0,0771 y RMSE 0,0868; el MLP de 30 semillas obtuvo MAE 0,0771 ± 0,0007
-y RMSE 0,0887 ± 0,0007. Estos resultados describen pérdidas condicionadas a
-incumplimiento; no corresponden a una estimación ex-ante de PD × LGD × EAD.
+El benchmark LGD completo usa 13.981 créditos castigados de prueba 2014 y
+30 semillas. La regresión lineal obtiene MAE 0.0771 y RMSE
+0.0868; el MLP obtiene MAE 0.0771 ± 0.0007
+y RMSE 0.0888 ± 0.0007. El checkpoint guardado, semilla
+808, se selecciona por el menor RMSE de validación, sin usar test para
+seleccionar. Las métricas por semilla y la decisión quedan en
+`artifacts/models/lgd_benchmark_results.json` y se explican en
+[selección LGD](docs/lgd-seleccion-validacion.md). Estas son pérdidas condicionadas
+a incumplimiento, no una evaluación ex-ante de PD × LGD × EAD.
 
 La scorecard usa puntaje base 600, odds buenas:malas de 50:1 y PDO de 20.
 La aplicación presenta PD, puntaje, percentil respecto a la referencia de

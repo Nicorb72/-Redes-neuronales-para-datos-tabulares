@@ -137,3 +137,68 @@ def test_metricas_distribucion_y_errores():
     assert dist["media"] == pytest.approx(float(np.mean(y_true)))
     assert dist["min"] == 0.5
     assert dist["max"] == 1.0
+
+@pytest.mark.parametrize("validation_errors,expected_seed", [([0.3, 0.2, 0.4], 202), ([0.2, 0.2, 0.4], 101)])
+@pytest.mark.parametrize("test_errors", [[0.01, 0.9, 0.5], [0.9, 0.01, 0.5]])
+def test_checkpoint_selection_ignores_test(monkeypatch, validation_errors, expected_seed, test_errors):
+    from credit_risk.lgd import experiments
+
+    validation, test = object(), object()
+    seen_validation = []
+
+    class FakeModel:
+        def __init__(self, **kwargs):
+            self.seed = kwargs["seed"]
+            self.n_parameters = 17
+            self.fit_time_sec = 0.5
+
+        def fit(self, *args, **kwargs):
+            return self
+
+        def evaluate(self, X, y):
+            index = self.seed // 101 - 1
+            if X is validation:
+                seen_validation.append(self.seed)
+                return validation_errors[index], validation_errors[index]
+            assert X is test
+            # Todas las corridas se entrenan y valoran antes de consultar test.
+            assert seen_validation == [101, 202, 303]
+            return test_errors[index], test_errors[index]
+
+    monkeypatch.setattr(experiments, "LGDNeuralNetwork", FakeModel)
+    config = dict(hidden_dims=[4], dropout=0, lr=0.001, loss="mse", epochs=1)
+    stats, model = experiments.ejecutar_30_semillas_mlp(
+        config, None, None, validation, None, test, None, n_seeds=3
+    )
+    assert model.seed == expected_seed
+    assert stats["checkpoint_selection"]["seed"] == expected_seed
+    assert stats["checkpoint_selection"]["split"] == "validation"
+    assert stats["checkpoint_selection"]["test_used_for_selection"] is False
+    selected = [row["seed"] for row in stats["per_seed_metrics"] if row["selected"]]
+    assert selected == [expected_seed]
+    assert stats["rmse"]["media"] == pytest.approx(np.mean(test_errors))
+
+
+def test_checkpoint_selection_rejects_empty_or_nonfinite_validation(monkeypatch):
+    from credit_risk.lgd import experiments
+
+    with pytest.raises(ValueError, match="al menos una semilla"):
+        experiments.ejecutar_30_semillas_mlp({}, None, None, None, None, None, None, n_seeds=0)
+
+    validation = object()
+
+    class InvalidModel:
+        def __init__(self, **kwargs):
+            self.seed = kwargs["seed"]
+
+        def fit(self, *args, **kwargs):
+            return self
+
+        def evaluate(self, X, y):
+            assert X is validation  # No consultar prueba tras una validación inválida.
+            return 0.1, np.nan
+
+    monkeypatch.setattr(experiments, "LGDNeuralNetwork", InvalidModel)
+    config = dict(hidden_dims=[4], dropout=0, lr=0.001, loss="mse", epochs=1)
+    with pytest.raises(ValueError, match="validación no finitas"):
+        experiments.ejecutar_30_semillas_mlp(config, None, None, validation, None, object(), None, n_seeds=1)

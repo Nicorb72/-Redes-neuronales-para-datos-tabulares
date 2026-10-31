@@ -109,49 +109,27 @@ $$\theta_{t+1} = \theta_t - \eta_t \left( \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \e
 
 ---
 
-## 4. Resultados experimentales y regla de comparación justa
+## 4. Resultados experimentales actualizados
 
-Siguiendo estrictamente las pautas de evaluación:
-- **Mismos datos y particiones:** Entrenamiento 2007–2012 ($N=14.419$), Validación 2013 ($N=14.836$) y Prueba 2014 ($N=13.981$).
-- **Mismo preprocesamiento:** 15 características previas al desembolso (11 numéricas y 4 categóricas), transformador ajustado únicamente en el conjunto de entrenamiento de LGD ($D=44$ características codificadas).
-- **Presupuesto de búsqueda explícito:** Se evaluaron sistemáticamente 5 arquitecturas que variaron profundidad, funciones de pérdida (MSE, Huber, BCE) y tasas de aprendizaje, con un tiempo total de búsqueda de 31.04 segundos. La arquitectura óptima seleccionada fue `MLP [64, 32]`, activación ReLU, salida Sigmoide, dropout 0.20, optimizador AdamW ($lr=0.001$, $\lambda=10^{-4}$) y pérdida MSE.
-- **30 corridas independientes:** La configuración final del MLP se entrenó con 30 semillas aleatorias independientes.
+Benchmark recalculado el 30/10/2026: cinco configuraciones, 31.98 s de búsqueda y treinta semillas (101–3030). Todos los modelos comparten matrices y particiones. La arquitectura elegida es [64, 32], con pérdida mse. El checkpoint 808 se elige por RMSE de validación 0.093988; solo después se evalúan las corridas en prueba. Detalle y política: [selección LGD](lgd-seleccion-validacion.md).
 
-### Tabla 1. Comparación de desempeño en el conjunto de prueba independiente (Año 2014, $N=13.981$)
+| Modelo | Parámetros | MAE media ± DE | MAE mín–máx | RMSE media ± DE | RMSE mín–máx |
+|---|---:|---:|---:|---:|---:|
+| Lineal | 45 | 0.077110 | — | 0.086769 | — |
+| MLP, 30 semillas | 5185 | 0.077140 ± 0.000736 | 0.075655–0.079097 | 0.088763 ± 0.000703 | 0.087568–0.090620 |
 
-| Modelo | Parámetros entrenables | Tiempo de cómputo | MAE (Media ± Desv. Est.) | MAE [Mín, Máx] | RMSE (Media ± Desv. Est.) | RMSE [Mín, Máx] |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Regresión Lineal (Baseline)** | **45** | **0.050 s** | **0.0771** | [0.0771, 0.0771] | **0.0868** | [0.0868, 0.0868] |
-| **Red Neuronal MLP (30 semillas)** | **5.185** | **~120 s (total)** | **0.0771 ± 0.0007** | [0.0757, 0.0790] | **0.0887 ± 0.0007** | [0.0877, 0.0905] |
+Fuente: `artifacts/models/lgd_benchmark_results.json`, incluyendo `per_seed_metrics`.
+El entrenamiento de las treinta corridas acumuló 165.07 s; no incluye la búsqueda. La desviación se calcula con ddof=0.
 
-### 4.1. Análisis distribucional (Observada vs. Predicha)
-La distribución empírica de LGD observada presenta características altamente no gaussianas:
-- **Media observada:** 0.9452 | **Desviación estándar:** 0.0811
-- **Mediana observada:** 1.0000 | **Percentil 25:** 0.8601
-- **Masa puntual en pérdida total:** El **62.74%** de los créditos castigados en 2014 tienen `LGD = 1.0` (cero recuperaciones netas).
+### 4.1 Distribución
 
-Comportamiento de los modelos:
-- **Baseline lineal:** Media predicha = 0.9173, Desv. Est. = 0.0143, Estadístico Kolmogorov-Smirnov $KS = 0.6276$ ($p < 10^{-15}$).
-- **Red Neuronal MLP:** Media predicha = 0.9234, Desv. Est. = 0.0245, Distancia de Wasserstein = 0.0575, $KS = 0.6272$.
-- **Gráfica de distribución:** La figura comparativa ha sido generada por código y guardada en formato vectorial en:  
-  `reports/figures/distribucion_lgd_observada_vs_predicha.svg`.
+La media observada es 0.945151; la media predicha del checkpoint seleccionado es 0.918395. La figura `reports/figures/distribucion_lgd_observada_vs_predicha.svg` se regeneró con ese modelo. Las métricas del checkpoint individual no se confunden con los promedios entre semillas.
 
----
+## 5. Discusión del benchmark actualizado
 
-## 5. Discusión crítica: ¿Qué aportó la Red Neuronal frente al Baseline?
+El MLP tiene 5185 parámetros frente a 45 de la regresión lineal. Su MAE promedio es parecido y su RMSE promedio mayor; no hay ventaja clara que justifique afirmar superioridad de la red. Las predicciones de media condicional no necesariamente reproducen la distribución marginal de pérdidas. La inferencia causal o las explicaciones definitivas sobre el bajo poder predictivo requieren análisis adicional.
 
-El análisis de los resultados evidencia conclusiones fundamentales sobre el modelado con redes neuronales en datos tabulares de riesgo de crédito:
-
-1. **Paridad de desempeño a pesar de un orden de magnitud mayor de complejidad:**  
-   El MLP requiere **5.185 parámetros entrenables** frente a solo **45 parámetros** de la regresión lineal (una razón de complejidad de 115 a 1). Sin embargo, el error absoluto medio (MAE) es idéntico (0.0771), y la regresión lineal incluso supera ligeramente al MLP en RMSE (0.0868 frente a 0.0887).
-2. **Naturaleza del fenómeno de recuperación:**  
-   Las 15 variables disponibles en el momento de la originación (ingresos, razón deuda-ingreso, empleo, historial crediticio) contienen información predictiva valiosa para determinar si un cliente incumplirá (PD), pero carecen casi por completo de poder predictivo sobre *cuánto dinero se recuperará una vez ocurrido el default*. Las recuperaciones dependen de variables ex-post no observadas al solicitar el crédito: la capacidad operativa de la agencia de cobro, la existencia de bienes embargables y las condiciones macroeconómicas del año de liquidación.
-3. **Colapso hacia la media condicional:**  
-   Dado que el 62.7% de los clientes no genera recuperación alguna y la información predictiva de entrada es débil, tanto la regresión lineal como la red neuronal minimizadora de MSE aprenden a predecir valores concentrados estrechamente alrededor de la media muestral condicional (~0.91 - 0.94). La red neuronal no logra reproducir la bimodalidad o la masa en 1.0 porque cualquier intento de predecir valores extremos sin suficiente soporte en $X$ penaliza severamente el error cuadrático.
-4. **Veredicto:**  
-   En esta tarea de regresión tabular, **la red neuronal no aporta ventajas operativas ni predictivas sobre el modelo de referencia lineal**. El modelo lineal es 2.400 veces más rápido de entrenar, determinístico, matemáticamente transparente y no presenta variabilidad entre semillas aleatorias.
-
----
+La selección de semilla se corrige para usar validación. Como prueba 2014 se consultó históricamente, la corrección no la convierte retrospectivamente en un holdout nuevo. Una evaluación externa requiere reservar otro periodo.
 
 ## 6. Pérdida Esperada ($E[L] = PD \times LGD \times EAD$)
 
@@ -160,16 +138,10 @@ En concordancia con los marcos de Basilea y el ciclo de vida del crédito:
 - **EAD al Otorgamiento ($EAD_0$):** Al momento de suscripción, el momento del impago es incierto. Para créditos a plazo fijo de consumo, la exposición máxima contractual comprometida es $EAD_0 = \text{funded\_amnt}$.
 - **EAD al Incumplimiento ($EAD_{obs}$):** Para la cartera en seguimiento moratorio, la exposición real no amortizada es $EAD_{obs} = \text{funded\_amnt} - \text{total\_rec\_prncp}$.
 
-### 6.2. Cuantificación económica en la cartera de prueba (Test 2014)
-Evaluando los 13.981 créditos castigados de la cohorte 2014:
-- **Exposición total comprometida ($EAD_{obs}$):** **$178.668.119,71 USD**
-- **Pérdida esperada estimada por el modelo:** **$163.408.908,93 USD** (Tasa de pérdida esperada: **91,46%**)
-- **Pérdida real observada:** **$168.195.585,76 USD** (Tasa de pérdida real: **94,14%**)
-- **Error absoluto medio (MAE) en pérdida por préstamo:** **$979,53 USD**
+### 6.2. Alcance de la cuantificación
 
-El modelo de riesgo estima la pérdida agregada de la cartera con un margen de error inferior al 2.7% relativo frente a la pérdida real, proveyendo un insumo financiero sólido para la constitución de provisiones contables.
+El benchmark actualizado evalúa LGD condicionada a créditos castigados. No se presentan las pérdidas monetarias del checkpoint anterior como resultados del nuevo modelo. La integración PD × LGD × EAD sobre los mismos créditos sigue pendiente; no basta con multiplicar LGD por exposición en una cohorte ya incumplida.
 
----
 
 ## 7. Instrucciones de reproducción, comandos en vivo y verificación de requisitos
 
@@ -178,7 +150,7 @@ El modelo de riesgo estima la pérdida agregada de la cartera con un margen de e
 | Requisito evaluado | Estado | Implementación y verificación técnica |
 | :--- | :---: | :--- |
 | **Cada experimento se lanza con un solo comando** | **Cumple** | `python -m credit_risk.lgd.experiments` o con `--demo`. Carga automáticamente las matrices versionadas en Git o las autogenera desde `loan.csv` si no existieran, sin pasos previos obligatorios. |
-| **Parámetros modificables sin tocar código** | **Cumple** | Hiperparámetros base en `configs/lgd_mlp_best.yaml`. Banderas CLI disponibles: `--hidden-dims`, `--lr`, `--epochs`, `--dropout`, `--loss`, `--seeds`, `--patience`, `--batch-size`. |
+| **Parámetros modificables sin tocar código** | **Parcial** | YAML y CLI disponibles; queda corregir la propagación de paciencia, tamaño de lote y weight decay. Demo fuerza 15 épocas. |
 | **Demostración en menos de 2 minutos** | **Cumple (Medido)** | **37,19 s** en clon limpio. Entorno medido: CPU AMD Ryzen 7 3700U (4c/8t), 6.7 GB RAM, Linux Debian x86_64. |
 | **Cacería de la alucinación (15 %)** | **Cumple** | Consolidada en `docs/caceria_alucinaciones.md` y Sección 4 del reporte técnico, con aportes en LGD (H1, H2, H5). |
 
@@ -188,8 +160,8 @@ El modelo de riesgo estima la pérdida agregada de la cartera con un margen de e
 # 1. Demostración rápida en vivo (< 2 minutos, 37.19 s medidos)
 PYTHONPATH=src python -m credit_risk.lgd.experiments --demo
 
-# 2. Modificación en vivo (3 minutos): cambiar arquitectura, tasa de aprendizaje y épocas sin tocar código
-PYTHONPATH=src python -m credit_risk.lgd.experiments --demo --hidden-dims 128,64 --lr 0.005 --epochs 20
+# 2. Modificación en vivo (3 minutos): cambiar arquitectura y tasa de aprendizaje sin tocar código
+PYTHONPATH=src python -m credit_risk.lgd.experiments --demo --hidden-dims 128,64 --lr 0.005
 
 # 3. Benchmark completo de 30 semillas (usando configs/lgd_mlp_best.yaml)
 PYTHONPATH=src python -m credit_risk.lgd.experiments --seeds 30
@@ -198,7 +170,7 @@ PYTHONPATH=src python -m credit_risk.lgd.experiments --seeds 30
 PYTHONPATH=src python -m credit_risk.lgd.data
 
 # 5. Suite completa de pruebas unitarias de LGD
-pytest tests/test_lgd.py -v
+pytest tests/test_lgd.py tests/test_lgd_checkpoint_integration.py -v
 ```
 
 ---
