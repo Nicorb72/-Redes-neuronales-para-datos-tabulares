@@ -62,16 +62,17 @@ def render(config_path=None):
         st.error(f"Configuración inválida: {exc}")
         return
     app = config.get("app", {})
+    links = st.columns(2)
+    if app.get("report_url"):
+        links[0].link_button("Leer el blog del proyecto", app["report_url"], use_container_width=True)
+    else:
+        links[0].caption("Blog del proyecto: enlace pendiente.")
+    if app.get("video_url"):
+        links[1].link_button("Ver el video promocional", app["video_url"], use_container_width=True)
+    else:
+        links[1].caption("Video promocional: enlace pendiente.")
     with st.sidebar:
         st.header("Acerca del proyecto")
-        if app.get("report_url"):
-            st.link_button("Leer el reporte técnico", app["report_url"])
-        else:
-            st.caption("Reporte técnico: enlace pendiente.")
-        if app.get("video_url"):
-            st.link_button("Ver el video", app["video_url"])
-        else:
-            st.caption("Video promocional: enlace pendiente.")
         st.write(f"Puntaje base: {card.base_score:g}")
         st.write(f"Odds buenas:malas: {card.base_good_to_bad_odds:g}:1")
         st.write(f"Puntos al duplicar las odds: {card.points_to_double_good_to_bad_odds:g}")

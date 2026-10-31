@@ -1,14 +1,12 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="es">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta
-      name="description"
-      content="Reporte técnico sobre riesgo de crédito con redes neuronales para datos tabulares."
-    >
-    <title>Riesgo de crédito | Reporte técnico</title>
-    <style>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="Reporte técnico sobre riesgo de crédito con redes neuronales para datos tabulares." name="description"/>
+<title>Riesgo de crédito | Reporte técnico</title>
+<style>
       :root {
         color-scheme: light;
         font-family: Inter, "Segoe UI", Arial, sans-serif;
@@ -204,6 +202,17 @@
         line-height: 1.65;
       }
 
+      .prompt-evidence {
+        margin: 18px 0 28px;
+        padding: 16px 22px;
+        border-left: 3px solid #176b87;
+        border-radius: 0 8px 8px 0;
+        background: #eaf3f8;
+      }
+
+      .prompt-evidence p { margin: 0 0 12px; }
+      .prompt-evidence p:last-child { margin-bottom: 0; }
+
       code {
         overflow-wrap: anywhere;
         color: #244b62;
@@ -246,145 +255,144 @@
         }
       }
     </style>
-  </head>
-  <body>
-    <div class="topbar" aria-hidden="true"></div>
-    <main>
-      <p class="eyebrow">Reporte técnico · Proyecto académico</p>
-      <h1>Riesgo de crédito con redes neuronales para datos tabulares</h1>
-      <p class="subtitle">
+</head>
+<body>
+<div aria-hidden="true" class="topbar"></div>
+<main>
+<p class="eyebrow">Reporte técnico · Proyecto académico</p>
+<h1>Riesgo de crédito con redes neuronales para datos tabulares</h1>
+<p class="subtitle">
         Estimación de la probabilidad de incumplimiento (PD) y la pérdida dado
         incumplimiento (LGD), con modelos de aprendizaje automático, una
         scorecard y una aplicación web.
       </p>
-
-      <hr class="rule">
-
-      <section aria-labelledby="team-heading">
-        <h2 id="team-heading">Integrantes</h2>
-        <ol class="team">
-          <li>
-            <div>
-              <span class="name">Nicole Guaranguay</span>
-              <span class="role">Datos y análisis</span>
-            </div>
-          </li>
-          <li>
-            <div>
-              <span class="name">Nicolas Ruiz</span>
-              <span class="role">Clasificación: probabilidad de incumplimiento (PD)</span>
-            </div>
-          </li>
-          <li>
-            <div>
-              <span class="name">Sara Acevedo</span>
-              <span class="role">Regresión: pérdida dado incumplimiento (LGD)</span>
-            </div>
-          </li>
-          <li>
-            <div>
-              <span class="name">Sebastián Cataño</span>
-              <span class="role">Scorecard, interpretación y aplicación web</span>
-            </div>
-          </li>
-          <li>
-            <div>
-              <span class="name">Ivan Dario Gomez Cabrera</span>
-              <span class="role">Integración, reproducibilidad y reporte</span>
-            </div>
-          </li>
-        </ol>
-      </section>
-
-      <section aria-labelledby="data-heading">
-        <h2 id="data-heading">1. Preparación de datos para PD</h2>
-        <h3>1.1 Conjunto de datos y objetivo</h3>
-        <p>
+<nav aria-label="Enlaces del proyecto">
+<p><strong>Enlaces del proyecto:</strong>
+<a href="https://rna-trabajo-2.streamlit.app/">Aplicación web</a> ·
+<a href="https://youtu.be/TijgcPZNboU">Video promocional</a> ·
+<a href="https://github.com/Nicorb72/-Redes-neuronales-para-datos-tabulares">Repositorio en GitHub</a>
+</p>
+</nav>
+<hr class="rule"/>
+<section aria-labelledby="team-heading">
+<h2 id="team-heading">Integrantes</h2>
+<ol class="team">
+<li>
+<div>
+<span class="name">Nicole Guaranguay</span>
+<span class="role">Datos y análisis</span>
+</div>
+</li>
+<li>
+<div>
+<span class="name">Nicolas Ruiz</span>
+<span class="role">Clasificación: probabilidad de incumplimiento (PD)</span>
+</div>
+</li>
+<li>
+<div>
+<span class="name">Sara Acevedo</span>
+<span class="role">Regresión: pérdida dado incumplimiento (LGD)</span>
+</div>
+</li>
+<li>
+<div>
+<span class="name">Sebastián Cataño</span>
+<span class="role">Scorecard, interpretación y aplicación web</span>
+</div>
+</li>
+<li>
+<div>
+<span class="name">Ivan Dario Gomez Cabrera</span>
+<span class="role">Integración, reproducibilidad y reporte</span>
+</div>
+</li>
+</ol>
+</section>
+<section aria-labelledby="data-heading">
+<h2 id="data-heading">1. Preparación de datos para PD</h2>
+<h3>1.1 Conjunto de datos y objetivo</h3>
+<p>
           El módulo de datos utiliza el archivo <code>loan.csv</code> del
           conjunto
           <a href="https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset">
             Credit Risk Analysis de Kaggle</a>.
           Su README reporta <strong>887.379 préstamos</strong>, originados
           entre junio de 2007 y diciembre de 2015. El archivo original no se
-          incluye en GitHub por su tamaño. La fecha de descarga debe registrarse
-          cuando se consolide la versión del conjunto usada por el equipo.
+          incluye en GitHub por su tamaño. El equipo descargó la copia de
+          referencia el <strong>24 de octubre de 2026</strong>; el identificador
+          de versión y el checksum de esa copia no quedaron registrados.
         </p>
-        <p>
+<p>
           La variable <code>default_flag</code> se deriva de
           <code>loan_status</code>: los pagos confirmados se codifican como 0,
           los incumplimientos como 1 y los estados sin resultado definitivo
           quedan sin etiqueta. Estos últimos no se consideran buenos pagadores
           ni se utilizan para entrenar PD.
         </p>
-
-        <div class="table-wrap">
-          <table>
-            <caption>Tabla 1. Codificación de <code>loan_status</code> para PD. Fuente: <code>src/credit_risk/data/preprocessing.py</code>.</caption>
-            <thead>
-              <tr><th scope="col">Etiqueta</th><th scope="col">Estados de <code>loan_status</code></th></tr>
-            </thead>
-            <tbody>
-              <tr><td>0 — Buen pagador</td><td><code>Fully Paid</code>; <code>Does not meet the credit policy. Status:Fully Paid</code></td></tr>
-              <tr><td>1 — Mal pagador</td><td><code>Charged Off</code>; <code>Default</code>; <code>Late (31-120 days)</code>; <code>Does not meet the credit policy. Status:Charged Off</code></td></tr>
-              <tr><td>Sin etiqueta</td><td><code>Current</code>; <code>Issued</code>; <code>In Grace Period</code>; <code>Late (16-30 days)</code></td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p>
+<div class="table-wrap">
+<table>
+<caption>Tabla 1. Codificación de <code>loan_status</code> para PD. Fuente: <code>src/credit_risk/data/preprocessing.py</code>.</caption>
+<thead>
+<tr><th scope="col">Etiqueta</th><th scope="col">Estados de <code>loan_status</code></th></tr>
+</thead>
+<tbody>
+<tr><td>0 — Buen pagador</td><td><code>Fully Paid</code>; <code>Does not meet the credit policy. Status:Fully Paid</code></td></tr>
+<tr><td>1 — Mal pagador</td><td><code>Charged Off</code>; <code>Default</code>; <code>Late (31-120 days)</code>; <code>Does not meet the credit policy. Status:Charged Off</code></td></tr>
+<tr><td>Sin etiqueta</td><td><code>Current</code>; <code>Issued</code>; <code>In Grace Period</code>; <code>Late (16-30 days)</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>
           Según los conteos documentados por el módulo, hay
           <strong>209.711</strong> préstamos etiquetados como buenos,
           <strong>58.819</strong> como malos y <strong>618.849</strong> sin
           etiqueta. La Figura 1 muestra esta distribución; los registros sin
           etiqueta se mantienen separados de las clases de entrenamiento.
         </p>
-
-        <figure>
-          <img src="../figures/distribucion_etiquetas_pd.svg" alt="Gráfico de barras: 209.711 préstamos buenos, 58.819 malos y 618.849 sin etiqueta.">
-          <figcaption>
-            <strong>Figura 1.</strong> Conteo documentado de etiquetas para PD.
+<figure>
+<img alt="Gráfico de barras: 209.711 préstamos buenos, 58.819 malos y 618.849 sin etiqueta." src="../figures/distribucion_etiquetas_pd.svg"/>
+<figcaption>
+<strong>Figura 1.</strong> Conteo documentado de etiquetas para PD.
             <strong>Fuente:</strong> conteos registrados en
-            <code>src/credit_risk/data/README.md</code>; gráfico elaborado para
-            este reporte. El archivo original no estaba disponible en este clon
-            para recalcularlos.
+            <code>src/credit_risk/data/README.md</code>; figura regenerable
+            desde el resumen versionado. Sin el CSV original no se recalculan
+            los conteos.
           </figcaption>
-        </figure>
-
-        <h3>1.2 Particiones cronológicas</h3>
-        <p>
-          <code>asignar_particiones</code> conserva los préstamos con etiqueta
+</figure>
+<h3>1.2 Particiones cronológicas</h3>
+<p>
+<code>asignar_particiones</code> conserva los préstamos con etiqueta
           válida y los separa por año de originación: entrenamiento entre
           2007 y 2012, validación en 2013, prueba en 2014 y un conjunto
           complementario para 2015. La Tabla 2 presenta los tamaños reportados
           y la Figura 2 los compara visualmente.
         </p>
-
-        <div class="table-wrap">
-          <table>
-            <caption>Tabla 2. Particiones temporales reportadas para PD. Fuente: <code>src/credit_risk/data/README.md</code>.</caption>
-            <thead>
-              <tr><th scope="col">Partición</th><th scope="col">Año(s) de originación</th><th scope="col">Registros</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Entrenamiento</td><td>2007–2012</td><td>90.347</td></tr>
-              <tr><td>Validación</td><td>2013</td><td>73.194</td></tr>
-              <tr><td>Prueba</td><td>2014</td><td>74.154</td></tr>
-              <tr><td>Complementario</td><td>2015</td><td>30.835</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <figure>
-          <img src="../figures/particiones_temporales_pd.svg" alt="Gráfico de barras con los tamaños reportados de entrenamiento, validación, prueba y conjunto complementario de 2015.">
-          <figcaption>
-            <strong>Figura 2.</strong> Tamaño de las particiones temporales
+<div class="table-wrap">
+<table>
+<caption>Tabla 2. Particiones temporales reportadas para PD. Fuente: <code>src/credit_risk/data/README.md</code>.</caption>
+<thead>
+<tr><th scope="col">Partición</th><th scope="col">Año(s) de originación</th><th scope="col">Registros</th></tr>
+</thead>
+<tbody>
+<tr><td>Entrenamiento</td><td>2007–2012</td><td>90.347</td></tr>
+<tr><td>Validación</td><td>2013</td><td>73.194</td></tr>
+<tr><td>Prueba</td><td>2014</td><td>74.154</td></tr>
+<tr><td>Complementario</td><td>2015</td><td>30.835</td></tr>
+</tbody>
+</table>
+</div>
+<figure>
+<img alt="Gráfico de barras con los tamaños reportados de entrenamiento, validación, prueba y conjunto complementario de 2015." src="../figures/particiones_temporales_pd.svg"/>
+<figcaption>
+<strong>Figura 2.</strong> Tamaño de las particiones temporales
             reportadas para PD. <strong>Fuente:</strong> conteos registrados
-            en <code>src/credit_risk/data/README.md</code>; gráfico elaborado
-            para este reporte. El archivo original no estaba disponible en
-            este clon para recalcularlos.
+            en <code>src/credit_risk/data/README.md</code>; figura regenerable
+            desde el resumen versionado. Sin el CSV original no se recalculan
+            los conteos.
           </figcaption>
-        </figure>
-
-        <p>
+</figure>
+<p>
           La partición por originación no constituye por sí sola una validación
           histórica estricta: el estado final de algunos préstamos pudo
           conocerse después de su fecha de originación. Además, el README del
@@ -394,14 +402,13 @@
           incumplimiento por año y puede generar sesgo de selección entre
           préstamos etiquetados.
         </p>
-
-        <h3>1.3 Variables y transformaciones</h3>
-        <p>La implementación prepara 15 variables predictoras de entrada:</p>
-        <ul>
-          <li><strong>Numéricas (11):</strong> <code>loan_amnt</code>, <code>annual_inc</code>, <code>dti</code>, <code>delinq_2yrs</code>, <code>inq_last_6mths</code>, <code>open_acc</code>, <code>pub_rec</code>, <code>revol_bal</code>, <code>revol_util</code>, <code>total_acc</code> y <code>antiguedad_crediticia_meses</code>.</li>
-          <li><strong>Categóricas (4):</strong> <code>term</code>, <code>purpose</code>, <code>emp_length</code> y <code>home_ownership</code>.</li>
-        </ul>
-        <p>
+<h3>1.3 Variables y transformaciones</h3>
+<p>La implementación prepara 15 variables predictoras de entrada:</p>
+<ul>
+<li><strong>Numéricas (11):</strong> <code>loan_amnt</code>, <code>annual_inc</code>, <code>dti</code>, <code>delinq_2yrs</code>, <code>inq_last_6mths</code>, <code>open_acc</code>, <code>pub_rec</code>, <code>revol_bal</code>, <code>revol_util</code>, <code>total_acc</code> y <code>antiguedad_crediticia_meses</code>.</li>
+<li><strong>Categóricas (4):</strong> <code>term</code>, <code>purpose</code>, <code>emp_length</code> y <code>home_ownership</code>.</li>
+</ul>
+<p>
           La antigüedad crediticia se calcula como la diferencia en meses entre
           <code>earliest_cr_line</code> y <code>issue_d</code>; valores
           negativos se consideran faltantes. El preprocesamiento imputa las
@@ -412,7 +419,7 @@
           README del módulo reporta 44 características después de la
           codificación.
         </p>
-        <p>
+<p>
           La revisión documentada no identificó IDs de préstamo duplicados y
           señala 44.825 valores faltantes en <code>emp_length</code> (5,05 %).
           Los valores financieros extremos se conservan inicialmente, por lo
@@ -421,211 +428,259 @@
           desembolso, pero el propio módulo advierte que no verifica por
           completo la disponibilidad temporal de cada variable.
         </p>
-
-        <h3>1.4 Implementación y reproducción</h3>
-        <p>
+<h3>1.5 Implementación y reproducción</h3>
+<p>
           El flujo está dividido en <code>load_data.py</code> (carga del CSV),
           <code>preprocessing.py</code> (objetivo, fechas, variables y
           transformador), <code>prepare_data.py</code> (particiones y
           matrices) y <code>eda.py</code> (resúmenes y funciones de análisis
-          exploratorio). Desde la raíz del repositorio, con las dependencias
-          instaladas y <code>loan.csv</code> en <code>data/raw/loan/</code>, la
-          preparación se ejecuta en PowerShell:
+          exploratorio). El repositorio incluye las matrices PD procesadas de
+          train, validation y test, sus etiquetas, el preprocesador y el
+          paquete del modelo. Por eso un clon limpio puede ejecutar los
+          experimentos PD y la aplicación sin descargar el CSV. Este recorrido
+          reproduce desde los artefactos versionados; no vuelve a construir
+          las matrices desde los registros originales.
         </p>
-        <pre><code>$env:PYTHONPATH = "src"
+<p>
+          Para reconstruir las matrices desde la fuente, se requiere una copia
+          de <code>loan.csv</code> en <code>data/raw/loan/loan.csv</code>. Desde
+          la raíz, en PowerShell:
+        </p>
+<pre><code>$env:PYTHONPATH = "src"
 python -m credit_risk.data.prepare_data</code></pre>
-        <p>
-          El flujo guarda matrices dispersas <code>X_*.npz</code>, etiquetas
-          <code>y_*.npy</code>, el preprocesador
-          <code>preprocesador_pd.joblib</code> y los nombres de variables
-          transformadas <code>columnas_pd.json</code>. Estos artefactos locales
-          están excluidos de Git en la configuración actual; el equipo debe
-          decidir cuáles datos procesados y modelos finales necesarios para
-          reproducir o servir el proyecto deben versionarse.
+<p>
+          Este comando regenera matrices dispersas <code>X_*.npz</code>,
+          etiquetas <code>y_*.npy</code>, el preprocesador
+          <code>pd_preprocessor.joblib</code> y los nombres de variables
+          transformadas <code>pd_feature_names.json</code>. Ajusta el
+          preprocesador solo con train y sobrescribe los artefactos
+          correspondientes. La copia de referencia se descargó el 24/10/2026,
+          pero su identificador de versión y checksum no se registraron; otra
+          descarga podría no reconstruir exactamente los mismos datos. Después de regenerar los datos, se
+          debe reentrenar PD, exportar de nuevo el paquete y validar la
+          aplicación; los pasos detallados están en el
+          <a href="../../README.md">README del repositorio</a>.
         </p>
-
-        <aside class="notice">
-          <strong>Estado de las figuras.</strong> El módulo
+<aside class="notice">
+<strong>Estado de las figuras.</strong> El módulo
           <code>eda.py</code> contiene funciones para graficar los conteos de
           etiquetas y las particiones temporales. Se regeneran con
           <code>python -m credit_risk.data.generate_eda_figures</code> desde la
-          raíz, tras configurar <code>PYTHONPATH=src</code> y disponer del CSV
-          original. En este clon no está el CSV, por lo que las Figuras 1 y 2
-          muestran los conteos documentados en el README del módulo, sin
-          recálculo independiente. Deben regenerarse y contrastarse con el
-          archivo fuente antes de presentar los conteos como verificados.
+          raíz. Si el CSV está disponible, se recalculan a partir de él; si no,
+          se usa <code>data/processed/eda_pd_resumen.json</code> para regenerar
+          las dos figuras principales de PD. La ruta del resumen reproduce las
+          figuras con los conteos registrados, pero no recalcula esos conteos
+          ni permite reconstruir el preprocesamiento.
         </aside>
-      </section>
-
-      <section aria-labelledby="lgd-heading">
-        <h2 id="lgd-heading">2. Pérdida dado incumplimiento (LGD)</h2>
-
-        <h3>2.1 Definición y justificación de la variable objetivo</h3>
-        <p>
+<h3>1.6 Resultados de PD en prueba temporal</h3>
+<p>
+          La comparación final usa la partición de prueba de 2014. La regresión
+          logística sirve como referencia y el MLP se ejecutó con 30 semillas
+          (202612–202641); por ello, los valores del MLP se presentan como
+          media y desviación estándar entre corridas.
+        </p>
+<div class="table-wrap">
+<table>
+<caption>Tabla 3. Desempeño de PD en la prueba temporal de 2014. Fuente: <a href="../pd_evaluation/informe_pd.md">informe de evaluación PD</a>; métricas calculadas sobre la misma partición.</caption>
+<thead>
+<tr><th scope="col">Métrica</th><th scope="col">Regresión logística</th><th scope="col">MLP: media ± desviación estándar (30 semillas)</th></tr>
+</thead>
+<tbody>
+<tr><td>AUC</td><td>0.66476</td><td>0.66941 ± 0.00435</td></tr>
+<tr><td>Gini</td><td>0.32953</td><td>0.33883 ± 0.00870</td></tr>
+<tr><td>KS</td><td>0.24085</td><td>0.24698 ± 0.00726</td></tr>
+<tr><td>Brier</td><td>0.18725</td><td>0.18180 ± 0.00096</td></tr>
+<tr><td>Log-loss</td><td>0.56357</td><td>0.54471 ± 0.00267</td></tr>
+</tbody>
+</table>
+</div>
+<p>
+          El AUC medio del MLP supera al de la regresión logística en 0.00465 y
+          su Brier medio es 0.00545 menor; ambas diferencias favorecen al MLP,
+          pero son moderadas. La desviación entre semillas refleja la
+          variabilidad de entrenamiento en una partición fija, no un intervalo
+          de confianza ni una prueba de significancia. Además, la tasa de
+          incumplimiento aumenta de 16.30 % en entrenamiento a 26.22 % en
+          prueba, por lo que el cambio temporal de la población y las
+          limitaciones de las etiquetas también deben considerarse. Estos
+          resultados no bastan para afirmar que la ventaja del MLP sea
+          estadísticamente concluyente o que se mantenga en otros periodos. La
+          evaluación también reporta subestimación de la tasa observada en
+          varios grupos de riesgo, especialmente en los de mayor PD predicha;
+          por ello, la discriminación debe leerse junto con la calibración.
+        </p>
+</section>
+<section aria-labelledby="lgd-heading">
+<h2 id="lgd-heading">2. Pérdida dado incumplimiento (LGD)</h2>
+<h3>2.1 Definición y justificación de la variable objetivo</h3>
+<p>
           Cuando un deudor incurre en impago, la entidad financiera usualmente activa procesos de cobranza y liquidación. La pérdida dado incumplimiento (<em>Loss Given Default</em>, LGD) mide la proporción económica de la deuda impagada que finalmente no logra recuperarse.
         </p>
-        <p>
+<p>
           A partir del diccionario oficial <code>LCDataDictionary.xlsx</code> (hoja <code>LoanStats</code>):
         </p>
-        <ul>
-          <li><code>funded_amnt</code>: Monto total financiado y desembolsado.</li>
-          <li><code>total_rec_prncp</code>: Capital amortizado previamente por el deudor.</li>
-          <li><code>recoveries</code>: Recuperaciones brutas posteriores al castigo contable.</li>
-          <li><code>collection_recovery_fee</code>: Comisiones de cobranza judicial y extrajudicial.</li>
-        </ul>
-        <p>
+<ul>
+<li><code>funded_amnt</code>: Monto total financiado y desembolsado.</li>
+<li><code>total_rec_prncp</code>: Capital amortizado previamente por el deudor.</li>
+<li><code>recoveries</code>: Recuperaciones brutas posteriores al castigo contable.</li>
+<li><code>collection_recovery_fee</code>: Comisiones de cobranza judicial y extrajudicial.</li>
+</ul>
+<p>
           Para cada crédito en castigo <em>i</em>, la exposición observada en el impago (<em>EAD<sub>obs, i</sub></em>) y la recuperación neta (<em>R<sub>i</sub></em>) son:
         </p>
-        <pre><code>EAD_obs = funded_amnt - total_rec_prncp
+<pre><code>EAD_obs = funded_amnt - total_rec_prncp
 R = recoveries - collection_recovery_fee
 LGD = clip(1 - R / EAD_obs, 0, 1)</code></pre>
-        <p>
+<p>
           Solo los créditos castigados (<code>Charged Off</code> y <code>Does not meet the credit policy. Status:Charged Off</code>, 46.009 préstamos) poseen un proceso de recuperación reconocido y exposición definitiva (<code>out_prncp = 0</code>). Los préstamos en <code>Default</code> y moras tempranas aún conservan saldo vivo pendiente de cobro y se excluyen para no introducir sesgo de pérdidas truncadas.
         </p>
-
-        <h3>2.2 Modelos evaluados y comparación justa</h3>
-        <p>
+<h3>2.2 Modelos evaluados y comparación justa</h3>
+<p>
           Siguiendo la regla de comparación justa:
         </p>
-        <ul>
-          <li><strong>Mismos datos y particiones:</strong> Entrenamiento 2007–2012 (14.419), Validación 2013 (14.836) y Prueba 2014 (13.981).</li>
-          <li><strong>Mismo preprocesamiento:</strong> 15 variables de solicitud antes del desembolso (11 numéricas y 4 categóricas), imputadas y codificadas con transformador ajustado exclusivamente en entrenamiento (44 columnas).</li>
-          <li><strong>Modelo de referencia (Baseline):</strong> Regresión lineal con proyección al rango admisible [0, 1] (45 parámetros entrenables).</li>
-          <li><strong>Red neuronal (MLP):</strong> Arquitectura optimizada tras evaluar sistemáticamente 5 combinaciones en 31,04 segundos. La arquitectura final seleccionada posee dos capas ocultas [64, 32], activación ReLU, regularización por Dropout (<em>p</em> = 0,20), decaimiento de pesos AdamW (&lambda; = 10<sup>-4</sup>), parada temprana (paciencia 8) y <strong>capa de salida con activación Sigmoide</strong> para garantizar matemáticamente que las predicciones pertenezcan al intervalo acotado (0, 1). La función de pérdida minimizada es el Error Cuadrático Medio (MSE), formalmente derivada como el estimador de máxima verosimilitud bajo perturbaciones gaussianas.</li>
-          <li><strong>Protocolo de 30 semillas:</strong> El MLP final se entrenó con 30 semillas aleatorias independientes.</li>
-        </ul>
-
-        <p>
-          <strong>Tabla 3. Desempeño en el conjunto de prueba independiente (Año 2014, 13.981 préstamos).</strong><br>
-          <strong>Fuente:</strong> resultados consignados en <code>docs/integrante-3.md</code>; el resumen JSON del benchmark no está incluido en este clon.
+<ul>
+<li><strong>Mismos datos y particiones:</strong> Entrenamiento 2007–2012 (14.419), Validación 2013 (14.836) y Prueba 2014 (13.981).</li>
+<li><strong>Mismo preprocesamiento:</strong> 15 variables de solicitud antes del desembolso (11 numéricas y 4 categóricas), imputadas y codificadas con transformador ajustado exclusivamente en entrenamiento (44 columnas).</li>
+<li><strong>Modelo de referencia (Baseline):</strong> Regresión lineal con proyección al rango admisible [0, 1] (45 parámetros entrenables).</li>
+<li><strong>Red neuronal (MLP):</strong> Arquitectura optimizada tras evaluar sistemáticamente 5 combinaciones en 31,04 segundos. La arquitectura final seleccionada posee dos capas ocultas [64, 32], activación ReLU, regularización por Dropout (<em>p</em> = 0,20), decaimiento de pesos AdamW (λ = 10<sup>-4</sup>), parada temprana (paciencia 8) y <strong>capa de salida con activación Sigmoide</strong> para garantizar matemáticamente que las predicciones pertenezcan al intervalo acotado (0, 1). La función de pérdida minimizada es el Error Cuadrático Medio (MSE), formalmente derivada como el estimador de máxima verosimilitud bajo perturbaciones gaussianas.</li>
+<li><strong>Protocolo de 30 semillas:</strong> El MLP final se entrenó con 30 semillas aleatorias independientes.</li>
+</ul>
+<p>
+<strong>Tabla 4. Desempeño en el conjunto de prueba independiente (Año 2014, 13.981 préstamos).</strong><br/>
+<strong>Fuente:</strong> resultados consignados en <code>docs/integrante-3.md</code>; el resumen JSON del benchmark no está incluido en este clon.
         </p>
-        <table>
-          <thead>
-            <tr>
-              <th>Modelo</th>
-              <th>Parámetros</th>
-              <th>Tiempo de ajuste</th>
-              <th>MAE (Media ± Desv. Est.)</th>
-              <th>MAE [Mín, Máx]</th>
-              <th>RMSE (Media ± Desv. Est.)</th>
-              <th>RMSE [Mín, Máx]</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Regresión Lineal (Baseline)</strong></td>
-              <td>45</td>
-              <td>0,05 s</td>
-              <td>0,0771</td>
-              <td>[0,0771, 0,0771]</td>
-              <td>0,0868</td>
-              <td>[0,0868, 0,0868]</td>
-            </tr>
-            <tr>
-              <td><strong>Red Neuronal MLP (30 semillas)</strong></td>
-              <td>5.185</td>
-              <td>~120 s</td>
-              <td>0,0771 ± 0,0007</td>
-              <td>[0,0757, 0,0790]</td>
-              <td>0,0887 ± 0,0007</td>
-              <td>[0,0877, 0,0905]</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3>2.3 Comparación de distribuciones (Observada vs. Predicha)</h3>
-        <p>
+<table>
+<thead>
+<tr>
+<th>Modelo</th>
+<th>Parámetros</th>
+<th>Tiempo de ajuste</th>
+<th>MAE (Media ± Desv. Est.)</th>
+<th>MAE [Mín, Máx]</th>
+<th>RMSE (Media ± Desv. Est.)</th>
+<th>RMSE [Mín, Máx]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Regresión Lineal (Baseline)</strong></td>
+<td>45</td>
+<td>0,05 s</td>
+<td>0,0771</td>
+<td>[0,0771, 0,0771]</td>
+<td>0,0868</td>
+<td>[0,0868, 0,0868]</td>
+</tr>
+<tr>
+<td><strong>Red Neuronal MLP (30 semillas)</strong></td>
+<td>5.185</td>
+<td>~120 s</td>
+<td>0,0771 ± 0,0007</td>
+<td>[0,0757, 0,0790]</td>
+<td>0,0887 ± 0,0007</td>
+<td>[0,0877, 0,0905]</td>
+</tr>
+</tbody>
+</table>
+<h3>2.3 Comparación de distribuciones (Observada vs. Predicha)</h3>
+<p>
           La distribución observada en prueba revela una pronunciada concentración: el <strong>62,74 %</strong> de los créditos castigados exhiben pérdida total (<code>LGD = 1.0</code>, cero recuperaciones netas), con una media de 0,9452. Como se aprecia en la <strong>Figura 3</strong>, tanto el modelo lineal como el MLP colapsan sus predicciones hacia la media condicional (~0,91 - 0,92), debido a que las características registradas en el momento de la originación poseen un poder explicativo muy limitado sobre los cobros judiciales posteriores al impago.
         </p>
-
-        <figure>
-          <img
-            src="../figures/distribucion_lgd_observada_vs_predicha.svg"
-            alt="Gráfica de densidad e histograma comparando LGD observada contra Baseline lineal y MLP."
-          >
-          <figcaption>
-            <strong>Figura 3.</strong> Distribución de LGD observada vs. predicciones del Modelo Lineal y Red Neuronal MLP en prueba (2014).
+<figure>
+<img alt="Gráfica de densidad e histograma comparando LGD observada contra Baseline lineal y MLP." src="../figures/distribucion_lgd_observada_vs_predicha.svg"/>
+<figcaption>
+<strong>Figura 3.</strong> Distribución de LGD observada vs. predicciones del Modelo Lineal y Red Neuronal MLP en prueba (2014).
             <strong>Fuente:</strong> generada por <code>src/credit_risk/lgd/experiments.py</code>.
           </figcaption>
-        </figure>
-
-        <h3>2.4 Exposición y pérdida en la cohorte castigada</h3>
-        <p>
+</figure>
+<h3>2.4 Exposición y pérdida en la cohorte castigada</h3>
+<p>
           En la originación, la exposición ex-ante propuesta es <em>EAD<sub>0</sub> = funded_amnt</em>. Para los préstamos castigados, la exposición observada se calcula como <em>EAD<sub>obs</sub> = funded_amnt - total_rec_prncp</em>.
         </p>
-        <p>
+<p>
           El informe experimental del integrante 3 consigna para los 13.981 préstamos castigados de prueba (2014): exposición observada total de <strong>$178.668.119,71 USD</strong>, pérdida calculada con LGD predicha de <strong>$163.408.908,93 USD</strong> (91,46 % de exposición), pérdida observada de <strong>$168.195.585,76 USD</strong> (94,14 %) y MAE de <strong>$979,53 USD</strong> por préstamo. Estos valores describen la magnitud de pérdida dentro de una cohorte condicionada a incumplimiento; <strong>no son una estimación ex-ante de pérdida esperada PD × LGD × EAD</strong>, porque PD no varía ni se aplica en esa cohorte.
         </p>
-        <p>
-          <code>src/credit_risk/lgd/expected_loss.py</code> implementa la operación genérica <em>PD × LGD × EAD</em> y tiene pruebas unitarias. Sin embargo, <code>src/credit_risk/lgd/experiments.py</code> no integra un modelo PD ni invoca esa función. Para estimar pérdida esperada antes del incumplimiento, falta integrar predicciones PD reales con las predicciones LGD y definir EAD coherente con el momento de decisión.
+<p>
+<code>src/credit_risk/lgd/expected_loss.py</code> implementa la operación genérica <em>PD × LGD × EAD</em> y tiene pruebas unitarias. Sin embargo, <code>src/credit_risk/lgd/experiments.py</code> no integra un modelo PD ni invoca esa función. Para estimar pérdida esperada antes del incumplimiento, falta integrar predicciones PD reales con las predicciones LGD y definir EAD coherente con el momento de decisión.
         </p>
-
-        <h3>2.5 Procedimiento reproducible de LGD</h3>
-        <p>
+<h3>2.5 Procedimiento reproducible de LGD</h3>
+<p>
           Con <code>loan.csv</code> en <code>data/raw/loan/loan.csv</code> y las dependencias completas instaladas, estos comandos de PowerShell preparan las matrices, ejecutan una demostración, el benchmark completo y las pruebas:
         </p>
-        <pre><code>$env:PYTHONPATH = "src"
+<pre><code>$env:PYTHONPATH = "src"
 python -m credit_risk.lgd.data
 python -m credit_risk.lgd.experiments --demo
 python -m credit_risk.lgd.experiments --seeds 30
 python -m pytest tests/test_lgd.py -v</code></pre>
-        <p>
+<p>
           La preparación produce <code>X_&lt;split&gt;_lgd.npz</code>, <code>y_&lt;split&gt;_lgd.npy</code>, <code>ead_&lt;split&gt;_lgd.npy</code> y el transformador LGD. El experimento completo guarda la regresión lineal, el MLP, <code>lgd_benchmark_results.json</code> y la Figura 3. <code>--demo</code> usa dos arquitecturas y cinco semillas; el modo completo evalúa cinco configuraciones y 30 semillas por defecto. El informe del integrante registra aproximadamente 120 segundos para el benchmark, pero ese tiempo no se ha verificado en una máquina limpia en este clon.
         </p>
-
-        <h3>2.6 Discusión: ¿Qué aportó la red neuronal en LGD?</h3>
-        <p>
+<h3>2.6 Discusión: ¿Qué aportó la red neuronal en LGD?</h3>
+<p>
           Los resultados consignados muestran que multiplicar aproximadamente por 115 los parámetros entrenables (de 45 a 5.185) no redujo el MAE (0,0771 para ambos modelos); el RMSE reportado es ligeramente menor para la regresión lineal (0,0868 frente a 0,0887 para el MLP). La red neuronal incorpora mayor costo y variabilidad sin mejora reportada en estas métricas. La conclusión se limita a esta tarea, definición de LGD, cohorte y partición de prueba.
         </p>
-        <aside class="notice">
-          <strong>Trazabilidad de resultados:</strong> las métricas y cifras anteriores están consignadas en <code>docs/integrante-3.md</code>. El código genera <code>artifacts/models/lgd_benchmark_results.json</code>, pero ese JSON, las matrices procesadas, el CSV y los modelos no están presentes en este clon. La figura sí está versionada. Por tanto, las cifras aún no se han recalculado independientemente desde <code>loan.csv</code>.
+<aside class="notice">
+<strong>Trazabilidad de resultados:</strong> las métricas y cifras anteriores están consignadas en <code>docs/integrante-3.md</code>. El código genera <code>artifacts/models/lgd_benchmark_results.json</code>, pero ese JSON, las matrices procesadas, el CSV y los modelos no están presentes en este clon. La figura sí está versionada. Por tanto, las cifras aún no se han recalculado independientemente desde <code>loan.csv</code>.
         </aside>
-      </section>
-
-      <section aria-labelledby="scorecard-heading">
-        <h2 id="scorecard-heading">3. Scorecard, interpretación y aplicación</h2>
-        <h3>3.1 Escala de scorecard</h3>
-        <p>
+</section>
+<section aria-labelledby="scorecard-heading">
+<h2 id="scorecard-heading">3. Scorecard, interpretación y aplicación</h2>
+<h3>3.1 Escala de scorecard</h3>
+<p>
           Sea <em>p = P(default_flag = 1 | x)</em> la probabilidad de incumplimiento y <em>O = (1 − p) / p</em> las odds buenas:malas. La escala se define como <em>S = A + B ln(O)</em>. Para que duplicar las odds sume los puntos definidos (PDO), <em>B = PDO / ln(2)</em>; si <em>S<sub>0</sub></em> es el puntaje para odds de referencia <em>O<sub>0</sub></em>, entonces <em>A = S<sub>0</sub> − B ln(O<sub>0</sub>)</em>.
         </p>
-        <pre><code>S(p) = S0 + (PDO / ln(2)) × [ln(1-p) - ln(p) - ln(O0)]
+<pre><code>S(p) = S0 + (PDO / ln(2)) × [ln(1-p) - ln(p) - ln(O0)]
 S0 = 600; O0 = 50:1; PDO = 20</code></pre>
-        <p>
+<p>
           Los valores 600, 50:1 y 20 son parámetros de escala, no métricas del modelo. Un puntaje mayor indica menor PD. Solo se recorta la probabilidad para convertirla a puntaje en los extremos; la PD presentada no cambia. El percentil compara el puntaje con la población de referencia de train y no es una probabilidad de aprobación ni representa la población actual.
         </p>
-
-        <h3>3.2 Interpretabilidad</h3>
-        <p>
+<h3>3.2 Interpretabilidad</h3>
+<p>
           La importancia por permutación agrupada se calcula en validación temporal con el modelo congelado. Las columnas one-hot de cada variable categórica se permutan juntas y se mide el incremento del Brier respecto del modelo sin permutar. La importancia mide dependencia predictiva en la muestra; no indica por sí sola la dirección del efecto. Correlaciones, combinaciones fuera de distribución y el tamaño de la muestra limitan su interpretación.
         </p>
-
-        <h3>3.3 Contrato y procedimientos de integración</h3>
-        <p>
+<h3>3.3 Contrato y procedimientos de integración</h3>
+<p>
           La aplicación espera las 15 variables originales, un preprocesador ajustado con train, un clasificador <code>predict_proba</code> que identifique las clases 0 y 1, y la matriz transformada de train para el percentil. <code>pd_bundle.json</code> registra metadatos y SHA-256 de los artefactos; la carga verifica clase positiva, dimensiones, columnas y hashes. No entrena ni descarga un modelo.
         </p>
-        <p><strong>Procedimiento documentado por el integrante 4 (PowerShell, raíz del repositorio):</strong></p>
-        <pre><code>python -m pip install -r requirements-test.txt
-$env:PYTHONPATH = "src"
-python -m credit_risk.scorecard.export --model artifacts/models/pd_mlp_final.pt --model-format pd_mlp --model-id pd_mlp_final-seed202612 --training-data "Matrices PD train 2007-2012" --reference-population "90347 creditos etiquetados de train 2007-2012"
+<p><strong>Procedimiento en PowerShell, desde la raíz del repositorio:</strong></p>
+<pre><code>$env:PYTHONPATH = "src"
 python run_app.py --check
 python run_app.py</code></pre>
-        <p>
-          Los nombres de modelo, corrida y versión de train del ejemplo son marcadores que deben reemplazarse por artefactos reales. Tras tener el paquete, la importancia se genera con:
+<p>El paquete y su manifiesto ya están versionados. <code>--check</code> verifica su integridad y compatibilidad sin abrir el servidor. Si se regeneran los datos o el modelo, se debe exportar de nuevo el paquete y repetir la comprobación:</p>
+<pre><code>python -m credit_risk.scorecard.export --model artifacts/models/pd_mlp_final.pt --model-format pd_mlp --model-id pd_mlp_final-seed202612 --training-data "Matrices PD train 2007-2012" --reference-population "90347 creditos etiquetados de train 2007-2012"
+python run_app.py --check</code></pre>
+<p>La exportación calcula los hashes del modelo, preprocesador, columnas y matriz de referencia. Para regenerar la interpretación:</p>
+<pre><code>python -m credit_risk.scorecard.interpretability --repeats 10 --max-rows 5000</code></pre>
+<p>
+          La app local usa <code>http://127.0.0.1:8501</code> y permite cambiar puerto o configuración. Si los artefactos faltan o son incompatibles, muestra un error de integración en lugar de producir predicciones ficticias. GitHub Pages publica el reporte estático; la aplicación Python requiere un servidor propio y aún no tiene una URL pública. El video promocional está enlazado en el <a href="../../README.md">README</a>.
         </p>
-        <pre><code>python -m credit_risk.scorecard.interpretability --repeats 10 --max-rows 5000</code></pre>
-        <p>
-          La app local usa <code>http://127.0.0.1:8501</code> y permite cambiar puerto o configuración. Sin paquete PD muestra “Integración pendiente”, no predicciones ficticias. El paquete PD real y la matriz de referencia están integrados; <code>python run_app.py --check</code> verifica su compatibilidad antes de abrir la app. GitHub Pages publica solo el blog estático, no la app Python; la URL pública de la aplicación sigue pendiente.
-        </p>
-        <p>
+<p>
           La guía completa del contrato, scorecard, aplicación y límites está en <a href="../../docs/integrante-4.md">docs/integrante-4.md</a>. Se mantienen las pruebas sintéticas y se añaden pruebas con el checkpoint publicado, datos reales y comparación contra las métricas de validación del integrante 2.
         </p>
-        <h3>3.4 Integración y resultados reales</h3>
-        <p>La app carga <code>pd_mlp_final.pt</code>, semilla 202612, con su preprocesador y 44 columnas, sin reentrenar. Utiliza 90.347 filas train para percentiles y 73.194 filas de validación. Las métricas reproducidas coinciden con el reporte PD: AUC ≈ 0,67306135 y Brier ≈ 0,16586667, con tolerancia absoluta 2e-6.</p>
-        <p>Como se observa en la Tabla I4-1 y la Figura I4-1, plazo, ingreso anual y utilización rotativa presentan las mayores importancias en la muestra de 5.000 filas de validación, con semilla 42 y 10 permutaciones. El ranking describe dependencia predictiva y no indica dirección ni causalidad.</p>
-        <div class="table-wrap"><table><caption>Tabla I4-1. Cinco mayores incrementos de Brier al permutar variables. Fuente: elaboración propia con MLP final y validación temporal.</caption><thead><tr><th>Variable</th><th>Incremento medio de Brier</th><th>DE entre permutaciones</th></tr></thead><tbody><tr><td>term</td><td>0.006147</td><td>0.000543</td></tr><tr><td>annual_inc</td><td>0.005259</td><td>0.000651</td></tr><tr><td>revol_util</td><td>0.003100</td><td>0.000681</td></tr><tr><td>loan_amnt</td><td>0.001849</td><td>0.000208</td></tr><tr><td>open_acc</td><td>0.001357</td><td>0.000268</td></tr></tbody></table></div>
-        <figure><img src="../interpretability/pd_permutation.svg" alt="Importancia por permutación agrupada de las 15 variables PD" style="max-width:100%;height:auto"><figcaption>Figura I4-1. Importancia por permutación agrupada de PD. Fuente: elaboración propia con MLP final, validación temporal y semilla 42. La DE describe variación entre permutaciones, no incertidumbre poblacional.</figcaption></figure>
-        <p><a href="../interpretability/pd_permutation.csv">Tabla completa</a> · <a href="../interpretability/pd_permutation.json">Trazabilidad de la corrida</a>.</p>
-      </section>
+<h3>3.4 Integración y resultados reales</h3>
+<p>La app carga <code>pd_mlp_final.pt</code>, semilla 202612, con su preprocesador y 44 columnas, sin reentrenar. Utiliza 90.347 filas train para percentiles y 73.194 filas de validación. Las métricas reproducidas coinciden con el reporte PD: AUC ≈ 0,67306135 y Brier ≈ 0,16586667, con tolerancia absoluta 2e-6.</p>
+<p>Como se observa en la Tabla I4-1 y la Figura I4-1, plazo, ingreso anual y utilización rotativa presentan las mayores importancias en la muestra de 5.000 filas de validación, con semilla 42 y 10 permutaciones. El ranking describe dependencia predictiva y no indica dirección ni causalidad.</p>
+<div class="table-wrap"><table><caption>Tabla I4-1. Cinco mayores incrementos de Brier al permutar variables. Fuente: elaboración propia con MLP final y validación temporal.</caption><thead><tr><th>Variable</th><th>Incremento medio de Brier</th><th>DE entre permutaciones</th></tr></thead><tbody><tr><td>term</td><td>0.006147</td><td>0.000543</td></tr><tr><td>annual_inc</td><td>0.005259</td><td>0.000651</td></tr><tr><td>revol_util</td><td>0.003100</td><td>0.000681</td></tr><tr><td>loan_amnt</td><td>0.001849</td><td>0.000208</td></tr><tr><td>open_acc</td><td>0.001357</td><td>0.000268</td></tr></tbody></table></div>
+<figure><img alt="Importancia por permutación agrupada de las 15 variables PD" src="../interpretability/pd_permutation.svg" style="max-width:100%;height:auto"/><figcaption>Figura I4-1. Importancia por permutación agrupada de PD. Fuente: elaboración propia con MLP final, validación temporal y semilla 42. La DE describe variación entre permutaciones, no incertidumbre poblacional.</figcaption></figure>
+<p><a href="../interpretability/pd_permutation.csv">Tabla completa</a> · <a href="../interpretability/pd_permutation.json">Trazabilidad de la corrida</a>.</p>
+</section>
+<section aria-labelledby="reproduction-heading">
+<h2 id="reproduction-heading">4. Cómo reproducir el proyecto</h2>
+<p>Hay dos recorridos distintos. Para usar un clon limpio no hace falta el CSV: las matrices y el paquete PD están versionados. En PowerShell, desde la raíz y con las dependencias instaladas:</p>
+<pre><code>$env:PYTHONPATH = "src"
+python -m credit_risk.data.generate_eda_figures
+python run_app.py --check
+python -m pytest -q
+python run_app.py</code></pre>
+<p>El primer comando regenera las dos figuras EDA desde el resumen versionado si no encuentra <code>loan.csv</code>; <code>--check</code> verifica los artefactos y la última línea inicia la aplicación local.</p>
+<p>Para repetir la evaluación PD completa desde las matrices versionadas (30 semillas por defecto), ejecuta:</p>
+<pre><code>$env:PYTHONPATH = "src"
+python -m credit_risk.pd.experiments</code></pre>
+<p>Este proceso actualiza los resultados y artefactos del modelo; luego se debe exportar de nuevo el paquete PD antes de volver a comprobar o iniciar la app. El README contiene el comando de exportación y el <a href="../../README.md">flujo completo de ejecución</a>.</p>
+<p>En cambio, <code>python -m credit_risk.data.prepare_data</code> reconstruye las matrices PD desde <code>loan.csv</code>, y <code>python -m credit_risk.lgd.data</code> prepara las matrices LGD desde el mismo archivo. Ambos requieren que el usuario obtenga el CSV de Kaggle y lo coloque en <code>data/raw/loan/loan.csv</code>. El resumen EDA solo contiene conteos y no reemplaza los registros, predictores ni variables objetivo necesarios para esos pasos. La copia de referencia se descargó el 24/10/2026; como no se registraron su identificador de versión ni checksum, la reproducción desde otra descarga puede no ser idéntica.</p>
+</section>
+<section aria-labelledby="ai-audit-heading" id="caceria-alucinacion">
+<h2 id="ai-audit-heading">5. Cacería de la alucinación</h2>
 
       <section aria-labelledby="caceria-heading">
         <h2 id="caceria-heading">4. Cacería de la alucinación (15 % grupal)</h2>
@@ -729,7 +784,70 @@ python run_app.py</code></pre>
         </ul>
       </section>
 
-      <footer>Reporte técnico en desarrollo · Riesgo de crédito</footer>
-    </main>
-  </body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3>Hallazgo: fallo de reproducibilidad en la generación de figuras del EDA</h3>
+<p><strong>Categoría:</strong> Código y reproducibilidad.</p>
+<h4>Contexto</h4>
+<p>Cuando terminé las figuras del análisis exploratorio, el generador funcionaba en mi computador porque allí tenía <code>loan.csv</code>, pero ese archivo estaba excluido de GitHub. Un clon limpio no podía ejecutarlo sin conseguir primero el CSV.</p>
+<h4>Prompt presentado para el caso (versión revisada)</h4>
+<blockquote class="prompt-evidence"><p>Estoy trabajando en las gráficas del análisis exploratorio de Lending Club. En mi computador funcionan, pero al clonar el repositorio en otro equipo presentan errores porque necesitan <code>loan.csv</code>, que no está en GitHub por su tamaño.</p><p>¿Cómo puedo modificar el código para generar las gráficas sin depender del CSV original y comprobar que funciona en un clon limpio?</p></blockquote>
+<h4>Respuesta de la IA</h4>
+<p>ChatGPT propuso utilizar <code>data/processed/eda_pd_resumen.json</code> para regenerar las figuras cuando faltara <code>loan.csv</code>. Recomendó ejecutar:</p>
+<pre><code>$env:PYTHONPATH = "src"
+python -m credit_risk.data.generate_eda_figures</code></pre>
+<p>La alternativa intentaba abrir directamente el resumen:</p>
+<pre><code>ruta = raiz / "data" / "processed" / "eda_pd_resumen.json"
+with open(ruta, encoding="utf-8") as archivo:
+    resumen = json.load(archivo)</code></pre>
+<p>La respuesta también había indicado crear el JSON y añadir una excepción a <code>.gitignore</code>. El problema fue que el código no comprobaba la existencia de ese archivo antes de intentar leerlo.</p>
+<h4>Error encontrado y evidencia</h4>
+<p>Al ocultar temporalmente el CSV y ejecutar el generador, apareció un error real:</p>
+<pre><code>FileNotFoundError: [Errno 2] No such file or directory:
+...\data\processed\eda_pd_resumen.json
+Error al generar las figuras sin el CSV.</code></pre>
+<p>El cálculo no fallaba: la ejecución alternativa dependía de un archivo que no estaba en el entorno de prueba.</p>
+<figure><img alt="Captura de VS Code: FileNotFoundError al buscar el resumen JSON sin loan.csv" loading="lazy" src="figures/error_generacion_eda_sin_csv.png"/><figcaption>Fallo real al intentar regenerar las figuras sin el CSV original.</figcaption></figure>
+<h4>Corrección técnica</h4>
+<p>Crear y versionar <code>data/processed/eda_pd_resumen.json</code> con los conteos verificados e incluir una excepción en <code>.gitignore</code> para que el clon limpio pueda usarlo. La corrección ya está aplicada: el resumen se versionó y se agregó la excepción.</p>
+<pre><code>{
+  "total_creditos": 887379,
+  "etiquetas": {"buenos": 209711, "malos": 58819, "sin_etiqueta": 618849},
+  "particiones": {"train": 90347, "validation": 73194, "test": 74154, "supplementary_2015": 30835}
+}</code></pre>
+<p>El resumen permite reproducir las dos figuras principales de PD; reconstruir todo el preprocesamiento requiere <code>loan.csv</code>. Sin el CSV ni el resumen, el comando falló como se documentó. Después de versionar el JSON, el mismo comando generó correctamente las dos figuras en el clon; una prueba automatizada también verifica esta ruta alternativa. Esto reproduce las figuras con los conteos registrados, pero no recalcula esos conteos ni reemplaza el CSV para repetir el preprocesamiento completo.</p>
+<h4>Resultado y aprendizaje</h4>
+<p>La ejecución documentada demostró un fallo real de integración: el código recomendado intentaba leer una dependencia inexistente. La causa se corrigió al versionar el resumen e incluirlo en Git; el comando y la prueba automatizada verifican que las figuras se generen sin el CSV. Es un error de solución de código incompleta, no una cifra inventada. Aprendí a comprobar las dependencias en el entorno de entrega antes de aceptar una recomendación de IA como reproducible.</p>
+</section>
+<section aria-labelledby="refs-heading">
+<h2 id="refs-heading">6. Referencias bibliográficas (Normas APA 7.ª edición)</h2>
+<ul>
+<li>Basel Committee on Banking Supervision. (2005). <em>An explanatory note on the Basel II IRB risk-weight functions</em>. Bank for International Settlements. <a href="https://www.bis.org/bcbs/irbriskweight.pdf">https://www.bis.org/bcbs/irbriskweight.pdf</a></li>
+<li>Loshchilov, I., &amp; Hutter, F. (2019). Decoupled weight decay regularization. En <em>International Conference on Learning Representations (ICLR)</em>. <a href="https://openreview.net/forum?id=Bkg6RiCqY7">https://openreview.net/forum?id=Bkg6RiCqY7</a></li>
+<li>Papke, L. E., &amp; Wooldridge, J. M. (1996). Econometric methods for fractional response variables with an application to 401(k) plan participation rates. <em>Journal of Applied Econometrics, 11</em>(6), 619–632. <a href="https://doi.org/10.1002/(SICI)1099-1255(199611)11:6&lt;619::AID-JAE418&gt;3.0.CO;2-1">https://doi.org/10.1002/(SICI)1099-1255(199611)11:6&lt;619::AID-JAE418&gt;3.0.CO;2-1</a></li>
+<li>Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., &amp; Salakhutdinov, R. (2014). Dropout: A simple way to prevent neural networks from overfitting. <em>Journal of Machine Learning Research, 15</em>(56), 1929–1958. <a href="https://www.jmlr.org/papers/v15/srivastava14a.html">https://www.jmlr.org/papers/v15/srivastava14a.html</a></li>
+<li>Fisher, A., Rudin, C., &amp; Dominici, F. (2019). All models are wrong, but many are useful: Learning a variable’s importance by studying an entire class of prediction models simultaneously. <em>Journal of Machine Learning Research, 20</em>(177), 1–81. <a href="https://www.jmlr.org/papers/v20/18-760.html">https://www.jmlr.org/papers/v20/18-760.html</a></li>
+<li>scikit-learn developers. (s. f.). <em>Permutation importance with multicollinear or correlated features</em> (versión 1.5.2). <a href="https://scikit-learn.org/1.5/auto_examples/inspection/plot_permutation_importance_multicollinear.html">https://scikit-learn.org/1.5/auto_examples/inspection/plot_permutation_importance_multicollinear.html</a></li>
+</ul>
+</section>
+<footer>Reporte técnico en desarrollo · Riesgo de crédito</footer>
+</main>
+</body>
 </html>

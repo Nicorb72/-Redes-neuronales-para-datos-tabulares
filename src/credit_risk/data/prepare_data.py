@@ -213,10 +213,12 @@ def guardar_matrices_pd(X, y, preprocesador):
 
         print(f"Archivos guardados: {nombre}")
 
-    # Guardar preprocesador ajustado
+    # Guardar el preprocesador y las columnas en las rutas canónicas del
+    # paquete PD. Los experimentos cargan estos mismos archivos junto con
+    # las matrices para evitar diferencias entre preparación y entrenamiento.
     joblib.dump(
         preprocesador,
-        carpeta_modelos / "preprocesador_pd.joblib"
+        carpeta_modelos / "pd_preprocessor.joblib"
     )
 
     # Guardar nombres de características
@@ -225,7 +227,7 @@ def guardar_matrices_pd(X, y, preprocesador):
     )
 
     with open(
-        carpeta_modelos / "columnas_pd.json",
+        carpeta_modelos / "pd_feature_names.json",
         "w",
         encoding="utf-8"
     ) as archivo:
@@ -237,6 +239,58 @@ def guardar_matrices_pd(X, y, preprocesador):
         )
 
     print("\nTodos los archivos fueron guardados.")
+
+
+def cargar_matrices_pd(conjuntos=("train", "validation", "test")):
+    """Carga matrices PD procesadas sin acceder al CSV original.
+
+    Las matrices se generan con :func:`preparar_matrices_pd` y se guardan
+    mediante :func:`guardar_matrices_pd`. Retorna matrices dispersas CSR,
+    etiquetas enteras y el preprocesador ajustado en train.
+    """
+    from credit_risk.data.load_data import obtener_raiz_proyecto
+
+    raiz = obtener_raiz_proyecto()
+    carpeta_datos = raiz / "data" / "processed"
+    carpeta_modelos = raiz / "artifacts" / "models"
+    X, y = {}, {}
+
+    for nombre in conjuntos:
+        if nombre not in {"train", "validation", "test", "supplementary_2015"}:
+            raise ValueError(f"Partición PD no reconocida: {nombre}")
+        ruta_X = carpeta_datos / f"X_{nombre}_pd.npz"
+        ruta_y = carpeta_datos / f"y_{nombre}_pd.npy"
+        if not ruta_X.is_file() or not ruta_y.is_file():
+            raise FileNotFoundError(
+                f"Faltan artefactos procesados de {nombre}: {ruta_X} y/o {ruta_y}. "
+                "Genérelos una vez con `python -m credit_risk.data.prepare_data`."
+            )
+        X[nombre] = sparse.load_npz(ruta_X).tocsr()
+        y[nombre] = np.load(ruta_y, allow_pickle=False)
+        if X[nombre].shape[0] != y[nombre].shape[0]:
+            raise ValueError(f"Dimensiones incompatibles entre X e y de {nombre}.")
+        if y[nombre].ndim != 1 or not np.isin(y[nombre], [0, 1]).all():
+            raise ValueError(f"Las etiquetas de {nombre} deben ser un vector binario 0/1.")
+
+    ruta_preprocesador = carpeta_modelos / "pd_preprocessor.joblib"
+    ruta_columnas = carpeta_modelos / "pd_feature_names.json"
+    if not ruta_preprocesador.is_file() or not ruta_columnas.is_file():
+        raise FileNotFoundError(
+            "Falta el preprocesador PD o su lista de columnas. "
+            "Genere los artefactos con `python -m credit_risk.data.prepare_data`."
+        )
+    preprocesador = joblib.load(ruta_preprocesador)
+    nombres = json.loads(ruta_columnas.read_text(encoding="utf-8"))
+    n_features = len(nombres)
+    for nombre, matriz in X.items():
+        if matriz.shape[1] != n_features:
+            raise ValueError(
+                f"La matriz {nombre} tiene {matriz.shape[1]} columnas; "
+                f"el preprocesador declara {n_features}."
+            )
+    if nombres != list(preprocesador.get_feature_names_out()):
+        raise ValueError("Los nombres de columnas no corresponden al preprocesador PD.")
+    return X, y, preprocesador
 
 def main():
     """

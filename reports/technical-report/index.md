@@ -8,6 +8,10 @@ incumplen, la pérdida dado incumplimiento (LGD). El equipo prepara una
 comparación entre modelos de referencia y redes neuronales, una scorecard y
 una aplicación para presentar resultados.
 
+**Enlaces del proyecto:** [Aplicación web](https://rna-trabajo-2.streamlit.app/) ·
+[Video promocional](https://youtu.be/TijgcPZNboU) ·
+[Repositorio en GitHub](https://github.com/Nicorb72/-Redes-neuronales-para-datos-tabulares).
+
 ## Integrantes
 
 1. **Nicole Guaranguay** — Datos y análisis.
@@ -24,8 +28,11 @@ El módulo de datos utiliza el archivo `loan.csv` del conjunto
 [Credit Risk Analysis de Kaggle](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset).
 El README del módulo reporta **887.379 préstamos**, originados entre junio de
 2007 y diciembre de 2015. El archivo original no está incluido en GitHub por
-su tamaño. La fecha de descarga debe registrarse cuando se consolide la
-versión del conjunto usada por el equipo.
+su tamaño. El equipo descargó la copia de referencia el **24 de octubre de
+2026**; el identificador de versión y el checksum de esa copia no quedaron
+registrados.
+El diccionario de referencia es `data/raw/LCDataDictionary.xlsx`, hoja
+`LoanStats`, incluido con el dataset.
 
 La variable `default_flag` se deriva de `loan_status`: los pagos confirmados
 se codifican como 0, los incumplimientos como 1 y los estados sin resultado
@@ -48,7 +55,7 @@ debe permanecer separada de las clases de entrenamiento.
 
 <figure>
   <img src="../figures/distribucion_etiquetas_pd.svg" alt="Gráfico de barras con 209.711 préstamos buenos, 58.819 malos y 618.849 sin etiqueta.">
-  <figcaption><strong>Figura 1.</strong> Conteo documentado de etiquetas para PD. <strong>Fuente:</strong> conteos registrados en <code>src/credit_risk/data/README.md</code>; gráfico elaborado para este reporte. El archivo original no estaba disponible en este clon para recalcularlos.</figcaption>
+  <figcaption><strong>Figura 1.</strong> Conteo documentado de etiquetas para PD. <strong>Fuente:</strong> conteos registrados en <code>src/credit_risk/data/README.md</code>; figura regenerable desde el resumen versionado. Sin el CSV original no se recalculan los conteos.</figcaption>
 </figure>
 
 ### 1.2 Particiones cronológicas
@@ -70,7 +77,7 @@ La **Figura 2** compara el tamaño reportado de cada partición.
 
 <figure>
   <img src="../figures/particiones_temporales_pd.svg" alt="Gráfico de barras con los tamaños reportados de entrenamiento, validación, prueba y conjunto complementario de 2015.">
-  <figcaption><strong>Figura 2.</strong> Tamaño de las particiones temporales reportadas para PD. <strong>Fuente:</strong> conteos registrados en <code>src/credit_risk/data/README.md</code>; gráfico elaborado para este reporte. El archivo original no estaba disponible en este clon para recalcularlos.</figcaption>
+  <figcaption><strong>Figura 2.</strong> Tamaño de las particiones temporales reportadas para PD. <strong>Fuente:</strong> conteos registrados en <code>src/credit_risk/data/README.md</code>; figura regenerable desde el resumen versionado. Sin el CSV original no se recalculan los conteos.</figcaption>
 </figure>
 
 La partición por originación no constituye por sí sola una validación
@@ -105,35 +112,89 @@ los modelos. La auditoría de fuga excluye predictores evidentes de resultados
 posteriores al desembolso, pero el propio módulo advierte que no verifica por
 completo la disponibilidad temporal de cada variable.
 
-### 1.4 Implementación y reproducción
+
+### 1.4 Hipótesis derivadas del análisis descriptivo
+
+A partir del EDA del subconjunto de **268.530 créditos etiquetados** se formularon tres hipótesis de asociación con el riesgo de incumplimiento:
+
+| Hipótesis | Fundamento descriptivo observado | Estado de la comprobación |
+|---|---|---|
+| **H1.** Una mayor relación deuda-ingreso (`dti`) se asocia con una mayor frecuencia de incumplimiento. | Mediana de `dti`: 18,55 en malos pagadores y 15,74 en buenos pagadores. | Compatible con el análisis descriptivo; falta contrastar con la interpretación de los modelos. |
+| **H2.** Un mayor ingreso anual declarado (`annual_inc`) se asocia con menor frecuencia de incumplimiento. | Mediana de ingresos: 57.000 USD/año en malos pagadores y 64.000 USD/año en buenos pagadores. | Compatible con el análisis descriptivo; falta contrastar con la interpretación de los modelos. |
+| **H3.** Un mayor monto solicitado (`loan_amnt`) se asocia con una mayor frecuencia de incumplimiento. | Mediana del préstamo: 13.000 USD en malos pagadores y 12.000 USD en buenos pagadores. | Compatible con el análisis descriptivo; falta contrastar con la interpretación de los modelos. |
+
+Estas son hipótesis **exploratorias de asociación**, no relaciones causales demostradas. Las diferencias de medianas entre grupos aportan evidencia inicial, pero la evaluación definitiva requiere contrastar los resultados con el análisis de variables de los modelos y considerar las diferencias de cobertura de etiquetas por año. No se declaran confirmadas o rechazadas por los modelos sin contrastar explícitamente esa evidencia.
+
+**Fuente:** cálculos descriptivos del módulo `src/credit_risk/data/eda.py` sobre préstamos etiquetados. Las definiciones de variables corresponden a `LCDataDictionary.xlsx`, hoja `LoanStats`.
+
+### 1.5 Implementación y reproducción
 
 El flujo está dividido en `load_data.py` (carga del CSV),
 `preprocessing.py` (objetivo, fechas, variables y transformador),
 `prepare_data.py` (particiones y matrices) y `eda.py` (resúmenes y funciones
-de análisis exploratorio). Desde la raíz del repositorio, con las
-dependencias instaladas y `loan.csv` en `data/raw/loan/`, la preparación se
-ejecuta en PowerShell:
+de análisis exploratorio). El repositorio incluye las matrices PD procesadas de train, validation y test,
+sus etiquetas, el preprocesador y el paquete del modelo. Por eso un clon limpio
+puede ejecutar los experimentos PD y la aplicación sin descargar el CSV. Este
+recorrido reproduce desde los artefactos versionados; no vuelve a construir
+las matrices desde los registros originales.
+
+Para reconstruir las matrices desde la fuente, se requiere una copia de
+`loan.csv` en `data/raw/loan/loan.csv`. Desde la raíz, en PowerShell:
 
 ```powershell
 $env:PYTHONPATH = "src"
 python -m credit_risk.data.prepare_data
 ```
 
-El flujo guarda matrices dispersas `X_*.npz`, etiquetas `y_*.npy`, el
-preprocesador `preprocesador_pd.joblib` y los nombres de variables
-transformadas `columnas_pd.json`. Estos artefactos locales están excluidos de
-Git en la configuración actual; el equipo debe decidir cuáles datos
-procesados y modelos finales necesarios para reproducir o servir el proyecto
-deben versionarse.
+Este comando regenera matrices dispersas `X_*.npz`, etiquetas `y_*.npy`, el
+preprocesador `pd_preprocessor.joblib` y los nombres de variables
+transformadas `pd_feature_names.json`. Ajusta el preprocesador solo con train
+y sobrescribe los artefactos correspondientes. La copia de referencia se
+descargó el 24/10/2026, pero su identificador de versión y checksum no se
+registraron; una descarga distinta podría no reconstruir exactamente los
+mismos datos. Después de regenerar los datos,
+se debe reentrenar PD, exportar de nuevo el paquete y validar la aplicación;
+los pasos detallados están en el [README del repositorio](../../README.md).
 
 **Estado de las figuras.** El módulo `eda.py` contiene funciones para
 graficar los conteos de etiquetas y las particiones temporales. Se regeneran
-con `python -m credit_risk.data.generate_eda_figures` desde la raíz, tras
-configurar `PYTHONPATH=src` y disponer del CSV original. En este clon no está
-el CSV, por lo que las Figuras 1 y 2 muestran los conteos documentados en el
-README del módulo, sin recálculo independiente. Deben regenerarse y
-contrastarse con el archivo fuente antes de presentar los conteos como
-verificados.
+con `python -m credit_risk.data.generate_eda_figures` desde la raíz. Si el CSV
+está disponible, se recalculan a partir de él; si no, se usa
+`data/processed/eda_pd_resumen.json` para regenerar las dos figuras principales
+de PD. La ruta del resumen reproduce las figuras con los conteos registrados,
+pero no recalcula esos conteos ni permite reconstruir el preprocesamiento.
+
+### 1.6 Resultados de PD en prueba temporal
+
+La comparación final usa la partición de prueba de 2014. La regresión
+logística sirve como referencia y el MLP se ejecutó con 30 semillas
+(202612–202641); por ello, los valores del MLP se presentan como media y
+desviación estándar entre corridas.
+
+**Tabla 3. Desempeño de PD en la prueba temporal de 2014.**<br>
+**Fuente:** [informe de evaluación PD](../pd_evaluation/informe_pd.md),
+con métricas calculadas sobre la misma partición.
+
+| Métrica | Regresión logística | MLP: media ± desviación estándar (30 semillas) |
+| --- | ---: | ---: |
+| AUC | 0.66476 | 0.66941 ± 0.00435 |
+| Gini | 0.32953 | 0.33883 ± 0.00870 |
+| KS | 0.24085 | 0.24698 ± 0.00726 |
+| Brier | 0.18725 | 0.18180 ± 0.00096 |
+| Log-loss | 0.56357 | 0.54471 ± 0.00267 |
+
+El AUC medio del MLP supera al de la regresión logística en 0.00465 y su
+Brier medio es 0.00545 menor; ambas diferencias favorecen al MLP, pero son
+moderadas. La desviación entre semillas refleja la variabilidad de
+entrenamiento en una partición fija, no un intervalo de confianza ni una
+prueba de significancia. Además, la tasa de incumplimiento aumenta de 16.30 %
+en entrenamiento a 26.22 % en prueba, por lo que el cambio temporal de la
+población y las limitaciones de las etiquetas también deben considerarse.
+Estos resultados no bastan para afirmar que la ventaja del MLP sea
+estadísticamente concluyente o que se mantenga en otros periodos. La
+evaluación también reporta subestimación de la tasa observada en varios
+grupos de riesgo, especialmente en los de mayor PD predicha; por ello, la
+discriminación debe leerse junto con la calibración.
 
 ## 2. Pérdida dado incumplimiento (LGD)
 
@@ -168,7 +229,7 @@ Siguiendo la regla de comparación justa:
 - **Red neuronal (MLP):** Arquitectura optimizada tras evaluar sistemáticamente 5 combinaciones en 31.04 segundos. La arquitectura final seleccionada posee dos capas ocultas `[64, 32]`, activación ReLU, regularización por Dropout ($p=0.20$), decaimiento de pesos AdamW ($\lambda=10^{-4}$), parada temprana (paciencia 8) y **capa de salida con activación Sigmoide** para garantizar matemáticamente que las predicciones pertenezcan al intervalo acotado $(0, 1)$. La función de pérdida minimizada es el Error Cuadrático Medio (MSE), formalmente derivada como el estimador de máxima verosimilitud bajo perturbaciones gaussianas.
 - **Protocolo de 30 semillas:** El MLP final se entrenó con 30 semillas aleatorias independientes.
 
-**Tabla 3. Desempeño en el conjunto de prueba independiente (Año 2014, $N=13.981$).**<br>
+**Tabla 4. Desempeño en el conjunto de prueba independiente (Año 2014, $N=13.981$).**<br>
 **Fuente:** cálculo experimental documentado en `src/credit_risk/lgd/experiments.py`.
 
 | Modelo | Parámetros | Tiempo de ajuste | MAE (Media ± Desv. Est.) | MAE [Mín, Máx] | RMSE (Media ± Desv. Est.) | RMSE [Mín, Máx] |
@@ -240,7 +301,7 @@ lineal (0,0868 frente a 0,0887 para el MLP). La red neuronal incorpora mayor
 costo y variabilidad sin una mejora reportada en estas métricas. La conclusión
 se limita a esta tarea, definición de LGD, cohorte y partición de prueba.
 
-> **Trazabilidad:** los valores de la Tabla 3 y de esta sección se encuentran
+> **Trazabilidad:** los valores de la Tabla 4 y de esta sección se encuentran
 > en el informe `docs/integrante-3.md`. El código experimental guarda
 > `artifacts/models/lgd_benchmark_results.json`, pero dicho JSON, las matrices
 > procesadas y los modelos no están presentes en este clon. La figura
@@ -299,27 +360,33 @@ modelos serializados.
 **Procedimiento documentado por el integrante 4 (PowerShell, raíz del repo):**
 
 ```powershell
-python -m pip install -r requirements-test.txt
 $env:PYTHONPATH = "src"
-python -m credit_risk.scorecard.export --model artifacts/models/pd_mlp_final.pt --model-format pd_mlp --model-id pd_mlp_final-seed202612 --training-data "Matrices PD train 2007-2012" --reference-population "90347 creditos etiquetados de train 2007-2012"
 python run_app.py --check
 python run_app.py
 ```
 
-El manifiesto ya está versionado. El comando de exportación permite regenerarlo
-al cambiar los artefactos; comprueba el preprocesador, las columnas, el modelo y
-la matriz train por SHA-256. Para regenerar la interpretación:
+El paquete y su manifiesto ya están versionados. `--check` verifica su
+integridad y compatibilidad sin abrir el servidor. Si se regeneran los datos o
+el modelo, se debe exportar de nuevo el paquete y repetir la comprobación:
+
+```powershell
+python -m credit_risk.scorecard.export --model artifacts/models/pd_mlp_final.pt --model-format pd_mlp --model-id pd_mlp_final-seed202612 --training-data "Matrices PD train 2007-2012" --reference-population "90347 creditos etiquetados de train 2007-2012"
+python run_app.py --check
+```
+
+La exportación calcula los hashes del modelo, preprocesador, columnas y
+matriz de referencia. Para regenerar la interpretación:
 
 ```powershell
 python -m credit_risk.scorecard.interpretability --repeats 10 --max-rows 5000
 ```
 
-La app se ejecuta en `http://127.0.0.1:8501`; acepta `--port`, `--config`
-y `--check`. El paquete PD real y las matrices de referencia están versionados.
-`python run_app.py --check` comprueba su compatibilidad sin abrir navegador.
-Si faltan o son incompatibles, muestra integración pendiente. GitHub Pages
-publica el reporte estático; la aplicación Python requiere un servidor propio.
-Su URL pública y el enlace al video siguen pendientes.
+La app se ejecuta localmente en `http://127.0.0.1:8501`; acepta `--port`,
+`--config` y `--check`. También está publicada en
+[rna-trabajo-2.streamlit.app](https://rna-trabajo-2.streamlit.app/). Si los
+artefactos faltan o son incompatibles, muestra un error de integración en
+lugar de producir predicciones ficticias. GitHub Pages publica el reporte
+estático.
 
 ### 3.4 Integración y resultados reales
 
@@ -376,6 +443,127 @@ El detalle técnico completo de cada hallazgo (con prompts literales, respuestas
 | Scorecard / app | Fórmula, contrato, exportación, comprobación y arranque local (sección 3) | Paquete PD real, matrices y pruebas integrados. App local con inferencia; comprobable mediante `python run_app.py --check`. |
 | Cacería de alucinaciones | Registro estructurado de 5 hallazgos en 5 categorías (sección 4) | Consolidada en el reporte y detallada en `docs/caceria_alucinaciones.md`. |
 | Integración / reporte | Este reporte y los pasos de ejecución anteriores | Verificación en clon limpio documentada, ejecución garantizada < 2 minutos; publicación web y video promocional pendientes. |
+
+## 4. Cómo reproducir el proyecto
+
+Hay dos recorridos distintos. Para usar un clon limpio no hace falta el CSV:
+las matrices y el paquete PD están versionados. En PowerShell, desde la raíz y
+con las dependencias instaladas:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m credit_risk.data.generate_eda_figures
+python run_app.py --check
+python -m pytest -q
+python run_app.py
+```
+
+El primer comando regenera las dos figuras EDA desde el resumen versionado si
+no encuentra `loan.csv`; `--check` verifica los artefactos y la última línea
+inicia la aplicación local.
+
+Para repetir la evaluación PD completa desde las matrices versionadas (30
+semillas por defecto), ejecuta:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m credit_risk.pd.experiments
+```
+
+Este proceso actualiza los resultados y artefactos del modelo; luego se debe
+exportar de nuevo el paquete PD con el comando de la sección 3.3 antes de
+volver a comprobar o iniciar la app. El
+[README](../../README.md) contiene el flujo completo de ejecución.
+
+En cambio, `python -m credit_risk.data.prepare_data` reconstruye las matrices
+PD desde `loan.csv`, y `python -m credit_risk.lgd.data` prepara las matrices
+LGD desde el mismo archivo. Ambos requieren que el usuario obtenga el CSV de
+Kaggle y lo coloque en `data/raw/loan/loan.csv`. El resumen EDA solo contiene
+conteos y no reemplaza los registros, predictores ni variables objetivo
+necesarios para esos pasos. La copia de referencia se descargó el 24/10/2026;
+como no se registraron su identificador de versión ni checksum, la reproducción
+desde otra descarga puede no ser idéntica.
+
+## 5. Cacería de la alucinación
+
+### Hallazgo: fallo de reproducibilidad en la generación de figuras del EDA
+
+**Categoría:** Código y reproducibilidad.
+
+**Contexto**
+
+Cuando terminé las figuras del análisis exploratorio de Lending Club, el generador funcionaba en mi computador porque allí tenía `loan.csv`. Sin embargo, ese archivo estaba excluido de GitHub por su tamaño. Al pensar en la entrega, me di cuenta de que alguien que clonara el repositorio no podría ejecutar el mismo proceso sin conseguir primero el CSV.
+
+**Prompt presentado para el caso (versión revisada)**
+
+> Estoy trabajando en las gráficas del análisis exploratorio de Lending Club. En mi computador funcionan, pero al clonar el repositorio en otro equipo presentan errores porque necesitan `loan.csv`, que no está en GitHub por su tamaño.
+>
+> ¿Cómo puedo modificar el código para generar las gráficas sin depender del CSV original y comprobar que funciona en un clon limpio?
+
+**Respuesta de la IA (fragmentos relevantes de la conversación)**
+
+ChatGPT propuso generar las figuras desde un archivo pequeño de estadísticas, `data/processed/eda_pd_resumen.json`, cuando `loan.csv` no estuviera disponible, y recomendó ejecutar:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m credit_risk.data.generate_eda_figures
+```
+
+En el código alternativo, la función intentaba abrir directamente el resumen:
+
+```python
+ruta = raiz / "data" / "processed" / "eda_pd_resumen.json"
+with open(ruta, encoding="utf-8") as archivo:
+    resumen = json.load(archivo)
+```
+
+La respuesta también había indicado crear ese JSON y añadir una excepción a `.gitignore`. El fallo ocurrió porque la nueva ruta de ejecución dependía de que ese archivo ya estuviera creado y disponible; el código no comprobaba su existencia ni daba una indicación útil para recuperarlo.
+
+**Error encontrado y evidencia**
+
+Para comprobar la ejecución sin el CSV, lo oculté temporalmente y ejecuté el generador. El programa se detuvo con:
+
+```text
+FileNotFoundError: [Errno 2] No such file or directory:
+...\data\processed\eda_pd_resumen.json
+Error al generar las figuras sin el CSV.
+```
+
+El problema no era el cálculo de los conteos, sino una dependencia necesaria para la alternativa propuesta que no estaba disponible en el entorno de prueba. La solución de IA no había quedado lista para ejecutarse tal como estaba en ese momento.
+
+![Error observado al generar las figuras sin el CSV](figures/error_generacion_eda_sin_csv.png)
+
+*Figura. Captura de VS Code con el fallo real de la generación alternativa sin `loan.csv`.*
+
+**Corrección técnica**
+
+La corrección consiste en crear y versionar `data/processed/eda_pd_resumen.json` con las estadísticas ya verificadas del dataset y permitir su inclusión en Git mediante una excepción en `.gitignore`. Los datos esenciales son:
+
+```json
+{
+  "total_creditos": 887379,
+  "etiquetas": {"buenos": 209711, "malos": 58819, "sin_etiqueta": 618849},
+  "particiones": {"train": 90347, "validation": 73194, "test": 74154, "supplementary_2015": 30835}
+}
+```
+
+La generación desde el resumen permite reconstruir las **dos figuras principales de PD** sin el CSV, mientras que repetir el preprocesamiento completo continúa requiriendo `loan.csv`. Es importante conservar la ruta y los nombres del JSON en sincronía con el generador.
+
+Se creó el archivo con estos valores y se actualizó `.gitignore`. Después se
+ejecutó el comando recomendado en el clon disponible, donde no están ni el CSV
+ni el resumen antes de aplicar la corrección: la ejecución inicial falló como
+se documenta arriba. Con el resumen versionado, el mismo comando generó las dos
+figuras correctamente. La prueba automatizada también comprueba esa ruta
+alternativa. Esto verifica la regeneración de las figuras con los conteos
+registrados, pero no permite recalcularlos ni sustituye el CSV para repetir el
+preprocesamiento completo.
+
+**Resultado y aprendizaje**
+
+La prueba documentada evidenció un fallo real de integración de la recomendación de ChatGPT: el mecanismo alternativo intentaba leer un archivo inexistente. La causa se corrigió al versionar el resumen y permitir su inclusión en Git; el comando y la prueba automatizada verifican que las figuras se generen sin el CSV. No se trata de una cifra inventada por la IA, sino de una **solución de código incompleta respecto a sus dependencias**, que solo se hizo evidente al probarla sin el archivo original. Este caso muestra por qué las recomendaciones de código también deben verificarse en el entorno real de entrega.
+
+---
+
 
 ## 6. Referencias bibliográficas (Normas APA 7.ª edición)
 

@@ -14,7 +14,7 @@ import pandas as pd
 import yaml
 
 from credit_risk.data.load_data import obtener_raiz_proyecto
-from credit_risk.data.prepare_data import preparar_matrices_pd
+from credit_risk.data.prepare_data import cargar_matrices_pd
 from credit_risk.pd.baseline import BaselinePD
 from credit_risk.pd.evaluation import (
     calcular_metricas_pd,
@@ -146,7 +146,8 @@ def ejecutar_experimento_completo(demo: bool = False, n_seeds: int | None = None
     device = seleccionar_dispositivo()
     print(f"Dispositivo: {device}; semillas: {semillas[0]}–{semillas[-1]}", flush=True)
 
-    X, y, preprocessor = preparar_matrices_pd()
+    # Los experimentos consumen el snapshot versionado; no requieren el CSV.
+    X, y, preprocessor = cargar_matrices_pd()
     if X["train"].shape[1] != int(config["input_dim"]):
         raise ValueError(
             f"Se esperaban {config['input_dim']} variables procesadas; hay {X['train'].shape[1]}."

@@ -1,0 +1,14 @@
+{
+  "total_creditos": 887379,
+  "etiquetas": {
+    "buenos": 209711,
+    "malos": 58819,
+    "sin_etiqueta": 618849
+  },
+  "particiones": {
+    "train": 90347,
+    "validation": 73194,
+    "test": 74154,
+    "supplementary_2015": 30835
+  }
+}

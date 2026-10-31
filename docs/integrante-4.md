@@ -214,7 +214,7 @@ Referencias APA 7:
 ## Pendientes para la entrega académica
 
 - Publicar la aplicación en un servidor Python/Streamlit y comprobar su URL.
-- Configurar el enlace real del video promocional y verificar la publicación del reporte.
+- El enlace del video promocional está configurado en la app; el reporte se publica en GitHub Pages.
 - Repetir la demostración en otra máquina; el ensayo local no sustituye esa prueba.
 - Integrar LGD/EAD si el equipo acuerda mostrar pérdida esperada; no bloquea PD/scorecard.
 - Mantener en el reporte las limitaciones temporales y de selección del conjunto.

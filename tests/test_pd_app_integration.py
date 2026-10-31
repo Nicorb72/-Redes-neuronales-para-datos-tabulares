@@ -83,6 +83,17 @@ def test_web_uses_real_model():
     app.run(timeout=30)
     assert not app.exception
     assert not app.warning
+    links = app.get("link_button")
+    assert [link.proto.label for link in links] == [
+        "Leer el blog del proyecto",
+        "Ver el video promocional",
+    ]
+    assert links[0].proto.url == (
+        "https://nicorb72.github.io/-Redes-neuronales-para-datos-tabulares/reports/technical-report/"
+    )
+    assert links[1].proto.url == (
+        "https://www.youtube.com/watch?v=TijgcPZNboU&feature=youtu.be"
+    )
     app.button[0].click().run(timeout=30)
     assert not app.exception
     assert len(app.metric) == 3
@@ -90,3 +101,13 @@ def test_web_uses_real_model():
     app.button[1].click().run(timeout=30)
     assert not app.exception
     assert len(app.metric) == 6
+
+
+def test_cloud_entrypoint_uses_saved_model():
+    app = AppTest.from_file(str(ROOT / "deploy/streamlit_app.py"))
+    app.run(timeout=30)
+    assert not app.exception
+    assert not app.warning
+    app.button[0].click().run(timeout=30)
+    assert not app.exception
+    assert len(app.metric) == 3
