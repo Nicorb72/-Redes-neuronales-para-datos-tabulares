@@ -275,7 +275,7 @@ una aplicación para presentar resultados.</p>
 <p><strong>Enlaces del proyecto:</strong> <a href="https://rna-trabajo-2.streamlit.app/">Aplicación web</a> ·
 <a href="https://youtu.be/TijgcPZNboU">Video promocional</a> ·
 <a href="https://github.com/Nicorb72/-Redes-neuronales-para-datos-tabulares">Repositorio en GitHub</a>.</p>
-<nav aria-label="Contenido"><strong>Contenido del reporte</strong><ol><li><a href="#seccion-1">Integrantes</a></li><li><a href="#seccion-2">1. Datos, caso de uso y probabilidad de incumplimiento</a></li><li><a href="#seccion-3">2. Pérdida dado incumplimiento (LGD)</a></li><li><a href="#seccion-4">3. Scorecard, interpretación y aplicación</a></li><li><a href="#seccion-5">4. Fundamentación matemática y comparación justa</a></li><li><a href="#seccion-6">5. Cierre de hipótesis, discusión y aprendizajes</a></li><li><a href="#seccion-7">6. Reproducción y ejecución</a></li><li><a href="#seccion-8">7. Uso de inteligencia artificial</a></li><li><a href="#seccion-9">8. Cacería de la alucinación</a></li><li><a href="#seccion-10">9. Estado de entrega y límites</a></li><li><a href="#seccion-11">10. Referencias</a></li></ol></nav><h2 id="seccion-1">Integrantes</h2>
+<nav aria-label="Contenido"><strong>Contenido del reporte</strong><ol><li><a href="#seccion-1">Integrantes</a></li><li><a href="#seccion-2">1. Datos, caso de uso y probabilidad de incumplimiento</a></li><li><a href="#seccion-3">2. Pérdida dado incumplimiento (LGD)</a></li><li><a href="#seccion-4">3. Scorecard, interpretación y aplicación</a></li><li><a href="#seccion-5">4. Fundamentación matemática y comparación justa</a></li><li><a href="#seccion-6">5. Cierre de hipótesis, discusión y aprendizajes</a></li><li><a href="#seccion-7">6. Reproducción y ejecución</a></li><li><a href="#seccion-8">7. Uso de inteligencia artificial</a></li><li><a href="#seccion-9">8. Cacería de la alucinación</a></li><li><a href="#seccion-10">9. Referencias</a></li></ol></nav><h2 id="seccion-1">Integrantes</h2>
 <ol>
 <li><strong>Nicole Guaranguay</strong> — Datos y análisis.</li>
 <li><strong>Nicolas Ruiz</strong> — Clasificación: probabilidad de incumplimiento (PD).</li>
@@ -293,8 +293,10 @@ una aplicación para presentar resultados.</p>
 El README del módulo reporta <strong>887.379 préstamos</strong>, originados entre junio de
 2007 y diciembre de 2015. El archivo original no está incluido en GitHub por
 su tamaño. El equipo descargó la copia de referencia el <strong>24 de octubre de
-2026</strong>; el identificador de versión y el checksum de esa copia no quedaron
-registrados.
+2026</strong>; al momento de la descarga no quedaron registrados el identificador de
+versión ni el checksum. La integración PD–LGD regenerada registra en su JSON
+el SHA-256 de la copia local usada para esa ejecución; no permite inferir por
+sí sola si coincide con cada archivo empleado en experimentos históricos.
 Las definiciones se toman del diccionario del proveedor (Lending Club, s. f.; Ranadeep, s. f.). El diccionario de referencia es <code>data/raw/LCDataDictionary.xlsx</code>, hoja
 <code>LoanStats</code>, incluido con el dataset.</p>
 <p>La variable <code>default_flag</code> se deriva de <code>loan_status</code>: los pagos confirmados
@@ -594,9 +596,10 @@ discriminación debe leerse junto con la calibración.</p>
 <p>Las treinta corridas presentan una diferencia pequeña de MAE y RMSE medio mayor que el baseline (Tabla 5). No muestran una ventaja clara del MLP para esta definición de LGD. La mayor complejidad no justifica afirmar superioridad universal.</p>
 <h3>2.4 Pérdida esperada</h3>
 <p>La relación de riesgo es <span class="math-inline">\(E[L_i\mid x_i]\approx PD_i\,LGD_i\,EAD_i\)</span>, con LGD condicionada al incumplimiento (Basel Committee on Banking Supervision, 2005). Requiere horizonte y exposición compatibles; multiplicar medias de LGD y EAD aleatorias exige una aproximación adicional si son dependientes.</p>
-<p>Se propone <code>funded_amnt</code> como exposición conservadora en originación; <span class="math-inline">\(EAD_{obs}\)</span> construye la etiqueta histórica. Los cálculos dentro de créditos ya castigados no equivalen a pérdida esperada ex-ante. <code>lgd/expected_loss.py</code> implementa la multiplicación, pero el experimento aún no conecta los dos modelos sobre créditos alineados. <strong>La integración y evaluación de pérdida esperada siguen pendientes.</strong></p>
+<p>Se usa <code>funded_amnt</code> como exposición en originación; <span class="math-inline">\(EAD_{obs}\)</span> construye la etiqueta histórica de LGD. La integración por identificador aplica los modelos PD y LGD a la misma cohorte de préstamos originados en 2014 y calcula <span class="math-inline">\(PD_i\times LGD_i\times EAD_{0,i}\)</span>. Se puntuaron 235.628 préstamos; la PD media fue 0,22865, la LGD media predicha condicional al incumplimiento fue 0,91628 y la pérdida esperada total estimada fue USD 774.349.671,31.</p>
+<p>En las 68.694 observaciones con resultado resuelto (29,15 %), la pérdida esperada sumó USD 208.561.086,83 y la pérdida realizada estimada, USD 168.195.585,76. Estas cantidades no son directamente comparables: la primera usa exposición en originación y la segunda el principal pendiente al castigo. Además, el objetivo PD se deriva de estados observados sin un horizonte fijo. Por tanto, la integración es exploratoria y no constituye una provisión regulatoria ni una estimación validada para un horizonte contractual. Las predicciones por préstamo y el resumen están en <a href="../lgd_evaluation/"><code>reports/lgd_evaluation/</code></a>; el JSON identifica con SHA-256 la copia de <code>loan.csv</code> usada para generarlos.</p>
 <h3>2.5 Reproducción</h3>
-<p>Con las matrices guardadas: <code>python -m credit_risk.lgd.experiments --demo</code>; para benchmark: <code>python -m credit_risk.lgd.experiments --seeds 30</code>. Los parámetros de entrenamiento se pueden cambiar desde <code>configs/lgd_mlp_best.yaml</code> o por CLI. Por ejemplo:</p>
+<p>Con las matrices guardadas: <code>python -m credit_risk.lgd.experiments --demo</code>; para benchmark: <code>python -m credit_risk.lgd.experiments --seeds 30</code>. La integración PD–LGD por ID se reproduce con <code>python -m credit_risk.lgd.portfolio --year 2014</code> y requiere <code>loan.csv</code>. Los parámetros de entrenamiento se pueden cambiar desde <code>configs/lgd_mlp_best.yaml</code> o por CLI. Por ejemplo:</p>
 <pre><code class="language-console">python -m credit_risk.lgd.experiments --demo --epochs 20 --patience 5 --batch-size 256 --weight-decay 0.0005
 </code></pre>
 <p>La demo usa 15 épocas por defecto, definidas en <code>demo.epochs</code>; <code>--epochs</code> cambia ese máximo. Paciencia, tamaño de lote y weight decay también se propagan a la búsqueda de arquitecturas y al entrenamiento final. La red usa la paciencia para early stopping, el tamaño de lote en el <code>DataLoader</code> y el decaimiento de pesos en AdamW. Solo reconstruir datos requiere <code>loan.csv</code> y <code>python -m credit_risk.lgd.data</code>. Demo guarda salidas separadas.</p>
@@ -872,7 +875,7 @@ python run_app.py --check
 python -m pytest -q
 python run_app.py
 </code></pre>
-<p>En la revisión del 30/10/2026, en una extracción limpia de main sin CSV y con el entorno existente, PD demo tardó 30,16 s, LGD demo 71,88 s, el paquete pasó <code>--check</code> y hubo 60 pruebas aprobadas y una omitida. Son mediciones de esa máquina, no una instalación independiente ni garantías universales. La prueba integral en otra computadora sigue siendo parte del cierre.</p>
+<p>En una revisión previa del 30/10/2026, en una extracción limpia de main sin CSV y con el entorno existente, PD demo tardó 30,16 s, LGD demo 71,88 s, el paquete pasó <code>--check</code> y hubo 60 pruebas aprobadas y una omitida. En la verificación posterior a la integración PD–LGD, la suite registró 70 pruebas aprobadas; el reporte pasó <code>scripts/build_report.py --check</code> y la cohorte 2014 se regeneró desde el CSV identificado en su JSON. Son mediciones de esa máquina, no una instalación independiente ni garantías universales. La prueba integral en otra computadora sigue siendo parte del cierre.</p>
 <p>Los benchmarks se ejecutan con <code>python -m credit_risk.pd.experiments</code> y <code>python -m credit_risk.lgd.experiments --seeds 30</code>. Reentrenar PD exige exportar de nuevo el paquete según el README. Reconstruir matrices desde el original requiere CSV y los comandos <code>credit_risk.data.prepare_data</code> y <code>credit_risk.lgd.data</code>.</p>
 <p>Scorecard usa <code>configs/default.yaml</code> y PD usa <code>configs/pd_mlp_best.yaml</code>. Para LGD, paciencia, tamaño de lote y weight decay están disponibles en YAML y CLI y se propagan a la búsqueda y al entrenamiento final. La demo utiliza 15 épocas por defecto, no de forma fija: <code>--epochs</code> permite cambiar el máximo. Las pruebas unitarias cubren la resolución de épocas y la propagación de los parámetros.</p>
 <p><strong>Construcción del blog.</strong> El Markdown es la fuente única; no editar HTML manualmente. El <a href="README.md">README del reporte</a> explica cómo instalar <code>requirements-report.txt</code>, actualizar evidencia de inferencia sin entrenamiento y construir/verificar el HTML. <code>--check</code> detecta tablas derivadas o HTML desactualizados y referencias locales rotas.</p>
@@ -1077,73 +1080,18 @@ hace falta conservar ambas versiones de los Markdown/notebook o un diff; el
 estado actual por sí solo no permite reconstruir qué texto quedó desactualizado
 ni durante cuánto tiempo.</p>
 <p><strong>Corrección</strong></p>
-<p>Se deben cotejar y actualizar conjuntamente los conteos, resultados,
-descripciones de cada fase y conclusiones en los Markdown y en el notebook.
-El estado final documentado informa 150 ensayos iniciales y 30 de
-refinamiento; estos obtuvieron AUC de validación 0.67338 y 0.67471,
-respectivamente, según <code>reports/pd_evaluation/informe_pd.md</code>. Las descripciones
-deben explicar esos conteos y resultados, sin mantener cifras o afirmaciones
-de una búsqueda anterior.</p>
+<p>Se actualizaron conjuntamente los conteos, resultados y descripciones: el
+notebook ahora indica 150 ensayos iniciales y 30 de refinamiento, en
+concordancia con el JSON de búsqueda y el informe PD. Los mejores AUC de
+validación fueron 0.67338 y 0.67471, respectivamente. El texto histórico
+desactualizado no se puede reconstruir sin la versión previa o un diff.</p>
 <p><strong>Lección aprendida</strong></p>
 <p>Cuando cambian los experimentos, actualizar resultados y narrativa como una
 sola revisión. Antes de entregar, contrastar el notebook y los Markdown con el
 resumen de ejecución versionado y revisar que cada descripción de fase
 corresponda a los ensayos realmente ejecutados. Guardar el diff o la
 conversación original facilita demostrar el error y su corrección.</p>
-<h2 id="seccion-10">9. Estado de entrega y límites</h2>
-<p>La Tabla 11 separa implementación y verificación final. La revisión LGD incorpora treinta entrenamientos y selección del checkpoint por validación. La integración de ambos modelos para pérdida esperada sigue pendiente.</p>
-<div class="table-wrap"><table><caption><strong>Tabla 11. Estado observado y pendientes.</strong> Fuente: revisión del repositorio y pruebas del 30/10/2026.</caption>
-<thead>
-<tr>
-<th>Componente</th>
-<th>Evidencia</th>
-<th>Cierre pendiente</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Datos</td>
-<td>Matrices PD/LGD, EAD LGD, transformadores y EDA sin CSV.</td>
-<td>La reconstrucción exacta desde otra descarga no está garantizada: falta checksum original.</td>
-</tr>
-<tr>
-<td>PD</td>
-<td>Treinta semillas, calibración, presupuesto y checkpoint final.</td>
-<td>Validación temporal adicional y calibración antes de uso real.</td>
-</tr>
-<tr>
-<td>LGD</td>
-<td>Baseline, MLP, cinco configuraciones y JSON con treinta semillas.</td>
-<td>Selección por validación corregida y comprobada; queda una evaluación externa futura sobre datos no usados históricamente.</td>
-</tr>
-<tr>
-<td>Pérdida esperada</td>
-<td>Función y pruebas.</td>
-<td>Integrar PD/LGD reales y EAD en los mismos créditos.</td>
-</tr>
-<tr>
-<td>Scorecard y app</td>
-<td>Inferencia, percentil, simulación y URL pública.</td>
-<td>Verificar rama desplegada y enlaces reporte/video en la app servida.</td>
-</tr>
-<tr>
-<td>Reporte</td>
-<td>Fuente única, matemáticas y tablas derivadas de evidencia.</td>
-<td>Incorporar los resultados que resuelvan los pendientes anteriores.</td>
-</tr>
-<tr>
-<td>Cacería e IA</td>
-<td>Cinco casos declarados y casos detallados con límites.</td>
-<td>Conservar registros originales y completar evidencia parcial.</td>
-</tr>
-<tr>
-<td>Videos y sustentación</td>
-<td>Enlace promocional disponible.</td>
-<td>Duración y participación de todos, cinco videos individuales y ensayo integral en otra máquina.</td>
-</tr>
-</tbody>
-</table></div>
-<h2 id="seccion-11">10. Referencias</h2>
+<h2 id="seccion-10">9. Referencias</h2>
 <p>Las fuentes se citan junto a los métodos que sustentan; los resultados propios remiten a archivos del repositorio. Las entradas siguen orden alfabético y formato APA 7. Las definiciones de negocio proceden del diccionario distribuido con el dataset.</p>
 <ul>
 <li>Basel Committee on Banking Supervision. (2005). <em>An explanatory note on the Basel II IRB risk weight functions</em>. Bank for International Settlements. <a href="https://www.bis.org/bcbs/irbriskweight.pdf">https://www.bis.org/bcbs/irbriskweight.pdf</a></li>

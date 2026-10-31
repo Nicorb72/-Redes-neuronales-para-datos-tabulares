@@ -1,0 +1,20 @@
+{
+  "cohorte_originacion": 2014,
+  "fuente_csv": "data/raw/loan/loan.csv",
+  "fuente_csv_sha256": "f01652b585e7f355d8749d0814b40068030241d201c6a31e6c9a3cb736eecccb",
+  "n_prestamos_puntuados": 235628,
+  "n_prestamos_con_resultado_resuelto": 68694,
+  "cobertura_resultados_resueltos": 0.2915358106846385,
+  "pd_media_predicha": 0.22864639789403945,
+  "lgd_media_predicha": 0.916278064250946,
+  "ead_originacion_total_usd": 3503830175.0,
+  "perdida_esperada_total_cohorte_usd": 774349671.3144135,
+  "perdida_esperada_cohorte_resuelta_usd": 208561086.8264435,
+  "perdida_realizada_cohorte_resuelta_usd": 168195585.75869992,
+  "ead_ex_ante": "funded_amnt al momento de originación",
+  "ead_realizada": "principal pendiente al castigo para Charged Off; cero para Fully Paid",
+  "nota_comparacion": "La pérdida esperada usa EAD de originación; la pérdida observada usa EAD al castigo. La diferencia de momento de exposición debe considerarse al interpretar la comparación.",
+  "nota_horizonte_pd": "El objetivo PD se deriva de estados observados en el archivo y no de un horizonte fijo. La estimación conjunta es exploratoria; no constituye una provisión regulatoria.",
+  "modelo_pd": "pd_mlp_final-seed202612",
+  "modelo_lgd": "artifacts/models/mlp_lgd.pt"
+}

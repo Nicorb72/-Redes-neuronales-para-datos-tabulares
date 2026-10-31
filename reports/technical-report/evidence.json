@@ -74,7 +74,7 @@
       "q25_raw": 8325.0,
       "q75_raw": 19999.999999999996,
       "pd_mean_q25": 0.1958448588848114,
-      "pd_mean_q75": 0.23820796608924866,
+      "pd_mean_q75": 0.23820793628692627,
       "mean_pd_change_pp": 4.236309230327606,
       "share_pd_increases": 0.9964,
       "logistic_coefficient_standardized": 0.1488096056452928

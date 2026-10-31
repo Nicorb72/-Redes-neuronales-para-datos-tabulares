@@ -36,8 +36,10 @@ El módulo de datos utiliza el archivo `loan.csv` del conjunto
 El README del módulo reporta **887.379 préstamos**, originados entre junio de
 2007 y diciembre de 2015. El archivo original no está incluido en GitHub por
 su tamaño. El equipo descargó la copia de referencia el **24 de octubre de
-2026**; el identificador de versión y el checksum de esa copia no quedaron
-registrados.
+2026**; al momento de la descarga no quedaron registrados el identificador de
+versión ni el checksum. La integración PD–LGD regenerada registra en su JSON
+el SHA-256 de la copia local usada para esa ejecución; no permite inferir por
+sí sola si coincide con cada archivo empleado en experimentos históricos.
 Las definiciones se toman del diccionario del proveedor (Lending Club, s. f.; Ranadeep, s. f.). El diccionario de referencia es `data/raw/LCDataDictionary.xlsx`, hoja
 `LoanStats`, incluido con el dataset.
 
@@ -270,11 +272,13 @@ Las treinta corridas presentan una diferencia pequeña de MAE y RMSE medio mayor
 
 La relación de riesgo es $E[L_i\mid x_i]\approx PD_i\,LGD_i\,EAD_i$, con LGD condicionada al incumplimiento (Basel Committee on Banking Supervision, 2005). Requiere horizonte y exposición compatibles; multiplicar medias de LGD y EAD aleatorias exige una aproximación adicional si son dependientes.
 
-Se propone `funded_amnt` como exposición conservadora en originación; $EAD_{obs}$ construye la etiqueta histórica. Los cálculos dentro de créditos ya castigados no equivalen a pérdida esperada ex-ante. `lgd/expected_loss.py` implementa la multiplicación, pero el experimento aún no conecta los dos modelos sobre créditos alineados. **La integración y evaluación de pérdida esperada siguen pendientes.**
+Se usa `funded_amnt` como exposición en originación; $EAD_{obs}$ construye la etiqueta histórica de LGD. La integración por identificador aplica los modelos PD y LGD a la misma cohorte de préstamos originados en 2014 y calcula $PD_i\times LGD_i\times EAD_{0,i}$. Se puntuaron 235.628 préstamos; la PD media fue 0,22865, la LGD media predicha condicional al incumplimiento fue 0,91628 y la pérdida esperada total estimada fue USD 774.349.671,31.
+
+En las 68.694 observaciones con resultado resuelto (29,15 %), la pérdida esperada sumó USD 208.561.086,83 y la pérdida realizada estimada, USD 168.195.585,76. Estas cantidades no son directamente comparables: la primera usa exposición en originación y la segunda el principal pendiente al castigo. Además, el objetivo PD se deriva de estados observados sin un horizonte fijo. Por tanto, la integración es exploratoria y no constituye una provisión regulatoria ni una estimación validada para un horizonte contractual. Las predicciones por préstamo y el resumen están en [`reports/lgd_evaluation/`](../lgd_evaluation/); el JSON identifica con SHA-256 la copia de `loan.csv` usada para generarlos.
 
 ### 2.5 Reproducción
 
-Con las matrices guardadas: `python -m credit_risk.lgd.experiments --demo`; para benchmark: `python -m credit_risk.lgd.experiments --seeds 30`. Los parámetros de entrenamiento se pueden cambiar desde `configs/lgd_mlp_best.yaml` o por CLI. Por ejemplo:
+Con las matrices guardadas: `python -m credit_risk.lgd.experiments --demo`; para benchmark: `python -m credit_risk.lgd.experiments --seeds 30`. La integración PD–LGD por ID se reproduce con `python -m credit_risk.lgd.portfolio --year 2014` y requiere `loan.csv`. Los parámetros de entrenamiento se pueden cambiar desde `configs/lgd_mlp_best.yaml` o por CLI. Por ejemplo:
 
 ```console
 python -m credit_risk.lgd.experiments --demo --epochs 20 --patience 5 --batch-size 256 --weight-decay 0.0005
@@ -550,7 +554,7 @@ python -m pytest -q
 python run_app.py
 ```
 
-En la revisión del 30/10/2026, en una extracción limpia de main sin CSV y con el entorno existente, PD demo tardó 30,16 s, LGD demo 71,88 s, el paquete pasó `--check` y hubo 60 pruebas aprobadas y una omitida. Son mediciones de esa máquina, no una instalación independiente ni garantías universales. La prueba integral en otra computadora sigue siendo parte del cierre.
+En una revisión previa del 30/10/2026, en una extracción limpia de main sin CSV y con el entorno existente, PD demo tardó 30,16 s, LGD demo 71,88 s, el paquete pasó `--check` y hubo 60 pruebas aprobadas y una omitida. En la verificación posterior a la integración PD–LGD, la suite registró 70 pruebas aprobadas; el reporte pasó `scripts/build_report.py --check` y la cohorte 2014 se regeneró desde el CSV identificado en su JSON. Son mediciones de esa máquina, no una instalación independiente ni garantías universales. La prueba integral en otra computadora sigue siendo parte del cierre.
 
 Los benchmarks se ejecutan con `python -m credit_risk.pd.experiments` y `python -m credit_risk.lgd.experiments --seeds 30`. Reentrenar PD exige exportar de nuevo el paquete según el README. Reconstruir matrices desde el original requiere CSV y los comandos `credit_risk.data.prepare_data` y `credit_risk.lgd.data`.
 
@@ -766,13 +770,11 @@ ni durante cuánto tiempo.
 
 **Corrección**
 
-Se deben cotejar y actualizar conjuntamente los conteos, resultados,
-descripciones de cada fase y conclusiones en los Markdown y en el notebook.
-El estado final documentado informa 150 ensayos iniciales y 30 de
-refinamiento; estos obtuvieron AUC de validación 0.67338 y 0.67471,
-respectivamente, según `reports/pd_evaluation/informe_pd.md`. Las descripciones
-deben explicar esos conteos y resultados, sin mantener cifras o afirmaciones
-de una búsqueda anterior.
+Se actualizaron conjuntamente los conteos, resultados y descripciones: el
+notebook ahora indica 150 ensayos iniciales y 30 de refinamiento, en
+concordancia con el JSON de búsqueda y el informe PD. Los mejores AUC de
+validación fueron 0.67338 y 0.67471, respectivamente. El texto histórico
+desactualizado no se puede reconstruir sin la versión previa o un diff.
 
 **Lección aprendida**
 
@@ -784,24 +786,7 @@ conversación original facilita demostrar el error y su corrección.
 
 
 
-## 9. Estado de entrega y límites
-
-La Tabla 11 separa implementación y verificación final. La revisión LGD incorpora treinta entrenamientos y selección del checkpoint por validación. La integración de ambos modelos para pérdida esperada sigue pendiente.
-
-**Tabla 11. Estado observado y pendientes.** Fuente: revisión del repositorio y pruebas del 30/10/2026.
-
-| Componente | Evidencia | Cierre pendiente |
-|---|---|---|
-| Datos | Matrices PD/LGD, EAD LGD, transformadores y EDA sin CSV. | La reconstrucción exacta desde otra descarga no está garantizada: falta checksum original. |
-| PD | Treinta semillas, calibración, presupuesto y checkpoint final. | Validación temporal adicional y calibración antes de uso real. |
-| LGD | Baseline, MLP, cinco configuraciones y JSON con treinta semillas. | Selección por validación corregida y comprobada; queda una evaluación externa futura sobre datos no usados históricamente. |
-| Pérdida esperada | Función y pruebas. | Integrar PD/LGD reales y EAD en los mismos créditos. |
-| Scorecard y app | Inferencia, percentil, simulación y URL pública. | Verificar rama desplegada y enlaces reporte/video en la app servida. |
-| Reporte | Fuente única, matemáticas y tablas derivadas de evidencia. | Incorporar los resultados que resuelvan los pendientes anteriores. |
-| Cacería e IA | Cinco casos declarados y casos detallados con límites. | Conservar registros originales y completar evidencia parcial. |
-| Videos y sustentación | Enlace promocional disponible. | Duración y participación de todos, cinco videos individuales y ensayo integral en otra máquina. |
-
-## 10. Referencias
+## 9. Referencias
 
 Las fuentes se citan junto a los métodos que sustentan; los resultados propios remiten a archivos del repositorio. Las entradas siguen orden alfabético y formato APA 7. Las definiciones de negocio proceden del diccionario distribuido con el dataset.
 

@@ -126,7 +126,7 @@ def preprocesar_y_dividir(df, numeric_cols, cat_cols):
 2. Usa `train_test_split(..., random_state=42)` con partición aleatoria uniforme, ignorando la naturaleza cronológica de los préstamos. En riesgo de crédito, un banco en 2013 no puede evaluar a sus clientes utilizando datos aleatorios extraídos de préstamos de 2014 o 2015.
 
 #### 4. Evidencia que lo demuestra
-- **Consigna oficial del Trabajo 2:** Establece que la partición debe ser estrictamente **temporal**: Entrenamiento (2007–2012), Validación (2013) y Prueba independiente (2014).
+- **Protocolo de partición del equipo:** El flujo del proyecto usa una separación **temporal**: Entrenamiento (2007–2012), Validación (2013) y Prueba (2014). La consigna exige justificar la partición temporal, pero estos años concretos corresponden a la decisión metodológica del equipo.
 - **Regla de comparación justa:** En `tests/test_preprocesamiento.py::test_transformador_solo_ajusta_con_train` se verifica formalmente que `preprocesador.fit()` se ejecute **únicamente** sobre la matriz de entrenamiento $X_{\text{train}}$. Cualquier categoría o media observada en 2013–2014 no debe influir en la transformación.
 
 #### 5. Corrección implementada
@@ -205,13 +205,13 @@ Nunca debe aceptarse una cita, autor, año o identificador DOI sugerido por un m
 
 #### 4. Evidencia que lo demuestra
 - **Resultados empíricos del experimento sobre la partición de prueba (Año 2014, $N=13.981$ préstamos castigados):**
-  - **Regresión Lineal (Baseline):** 45 parámetros entrenables | Tiempo de ajuste: **0.053 s** | **MAE = 0.0771** | **RMSE = 0.0868**.
-  - **Red Neuronal MLP (30 semillas independientes):** 5.185 parámetros entrenables | Tiempo acumulado: **~120 s** | **MAE = 0.0771 ± 0.0007** | **RMSE = 0.0887 ± 0.0007**.
-  - **Comparación de complejidad:** El MLP posee **115 veces más parámetros** y tarda **2.400 veces más tiempo** en entrenar, y sin embargo su error absoluto medio (MAE) es indistinguible del baseline lineal, mientras que el baseline supera ligeramente al MLP en error cuadrático (RMSE 0.0868 vs. 0.0887).
-  - **Distribución de predicciones:** Ambos modelos colapsan sus estimaciones hacia la media muestral condicional ($\approx 0.92 - 0.94$) porque la información disponible en $X$ carece de soporte suficiente para justificar predicciones extremas sin incurrir en penalizaciones cuadráticas severas.
+  - **Regresión Lineal (Baseline):** 45 parámetros entrenables | Tiempo de ajuste: **0,040 s** | **MAE = 0,07711** | **RMSE = 0,08677**.
+  - **Red Neuronal MLP (30 semillas independientes):** 5.185 parámetros entrenables | Búsqueda de cinco configuraciones: **31,98 s** | Ajuste acumulado de 30 corridas: **165,07 s** | **MAE = 0,07714 ± 0,00074** | **RMSE = 0,08876 ± 0,00070**.
+  - **Comparación de complejidad:** El MLP posee aproximadamente **115 veces más parámetros**; los MAE y RMSE medios en test son ligeramente mayores que los del baseline. Los tiempos comparan un ajuste lineal con la búsqueda y 30 ajustes neuronales, por lo que no son tiempos por modelo equivalentes.
+  - **Distribución de predicciones:** El baseline predice con media 0,9173 y desviación 0,0143. El MLP guardado, seleccionado por RMSE de validación (semilla 808), tiene media 0,9184 y desviación 0,0237. Ambas distribuciones son más estrechas que la LGD observada, con media 0,9452 y 62,74 % de valores iguales a 1.
 
 #### 5. Corrección implementada
-Se rechazó la afirmación dogmática de la IA en la sección de discusión del reporte técnico (`reports/technical-report/index.html`, Sección 2.4). Se concluyó con rigor y evidencia cuantitativa que **en este problema tabular, la red neuronal no aporta ventajas operativas ni predictivas sobre la regresión lineal**. El baseline lineal es preferible en un entorno bancario real por ser determinístico, transparente para auditorías regulatorias, instantáneo de computar y carente de variabilidad por semillas.
+Se rechazó la afirmación dogmática de la IA en la sección de discusión del reporte técnico (Sección 2.3 en `reports/technical-report/index.md` y en su versión HTML). La corrida completa y registrada de 30 semillas no respalda que el MLP supere al baseline en esta tarea y partición. La conclusión se limita a estas métricas y datos; no se generaliza a todo uso bancario ni a todos los modelos tabulares.
 
 #### 6. Lección aprendida
 La capacidad matemática de aproximación universal no equivale a eficiencia estadística de generalización. En datos tabulares con variables de bajo poder explicativo ex-ante, la complejidad adicional de una red neuronal solo incrementa el costo computacional y la varianza entre semillas, sin mejorar las decisiones financieras del negocio.
@@ -226,4 +226,4 @@ La capacidad matemática de aproximación universal no equivale a eficiencia est
 | **H2** | **Matemáticas y funciones de pérdida** | Sara Acevedo (Int. 3) | Propuso Softmax unidimensional o salida lineal no acotada; afirmó que Sigmoide no sirve para regresión. | Papke & Wooldridge (1996) sobre respuestas fraccionarias; derivación de rango $(0, 1)$ de $\sigma(z)$. | Capa final con activación Sigmoide intrínseca y prueba unitaria de acotamiento en $[0, 1]$. |
 | **H3** | **Código y metodología experimental** | Equipo (Int. 1 y 2) | Aplicó `fit_transform` sobre todo el dataset antes de dividir y propuso división aleatoria temporalmente ciega. | Regla de no anticipación temporal; prueba `test_preprocesamiento.py::test_transformador_solo_ajusta_con_train`. | Partición temporal estricta (2007-2012, 2013, 2014); ajuste de transformadores exclusivamente en `train`. |
 | **H4** | **Bibliografía y rigor académico** | Equipo (Int. 5) | Generó tres referencias académicas inventadas con autores falsos y códigos DOI que arrojaban HTTP 404. | Verificación directa en el registro central de CrossRef (`doi.org`) e índices de Scopus. | Eliminación de citas espurias; adopción de fuentes primarias reales verificadas (Basilea, Loshchilov, Papke). |
-| **H5** | **Conceptos de redes en datos tabulares** | Sara Acevedo (Int. 3) | Afirmó que el MLP siempre supera por amplio margen a un modelo lineal en datos tabulares de LGD. | Experimento de 30 semillas independientes: MAE idéntico (0.0771) y RMSE favorable al baseline (0.0868 vs 0.0887). | Discusión crítica basada en evidencia empírica: el modelo lineal es superior por simplicidad y robustez. |
+| **H5** | **Conceptos de redes en datos tabulares** | Sara Acevedo (Int. 3) | Afirmó que el MLP siempre supera por amplio margen a un modelo lineal en datos tabulares de LGD. | Benchmark registrado: 5 configuraciones y 30 semillas; baseline MAE/RMSE 0,07711/0,08677; MLP 0,07714 ± 0,00074 / 0,08876 ± 0,00070. | La afirmación no se sostiene en esta tarea y partición; el MLP no mejora las métricas del baseline. |

@@ -140,7 +140,7 @@ En concordancia con los marcos de Basilea y el ciclo de vida del crédito:
 
 ### 6.2. Alcance de la cuantificación
 
-El benchmark actualizado evalúa LGD condicionada a créditos castigados. No se presentan las pérdidas monetarias del checkpoint anterior como resultados del nuevo modelo. La integración PD × LGD × EAD sobre los mismos créditos sigue pendiente; no basta con multiplicar LGD por exposición en una cohorte ya incumplida.
+El benchmark actualizado evalúa LGD condicionada a créditos castigados. No se presentan las pérdidas monetarias del checkpoint anterior como resultados del nuevo modelo. También se integraron por ID las predicciones PD y LGD para los 235.628 préstamos originados en 2014, usando `funded_amnt` como exposición al otorgamiento. La pérdida esperada estimada fue USD 774.349.671,31; entre 68.694 préstamos con resultado resuelto, la pérdida esperada fue USD 208.561.086,83 y la realizada estimada, USD 168.195.585,76. La comparación es exploratoria: la PD no corresponde a un horizonte fijo y las dos pérdidas usan exposiciones de momentos distintos. El resumen JSON y las predicciones por préstamo están en `reports/lgd_evaluation/`; el JSON registra el SHA-256 de `loan.csv` y el comando requiere ese archivo para reproducir los resultados.
 
 
 ## 7. Instrucciones de reproducción, comandos en vivo y verificación de requisitos
@@ -152,7 +152,7 @@ El benchmark actualizado evalúa LGD condicionada a créditos castigados. No se 
 | **Cada experimento se lanza con un solo comando** | **Cumple** | `python -m credit_risk.lgd.experiments` o con `--demo`. Carga automáticamente las matrices versionadas en Git o las autogenera desde `loan.csv` si no existieran, sin pasos previos obligatorios. |
 | **Parámetros modificables sin tocar código** | **Cumple en la implementación** | YAML y CLI permiten modificar paciencia (`early_stopping_patience` / `--patience`), tamaño de lote (`batch_size` / `--batch-size`) y decaimiento de pesos (`weight_decay` / `--weight-decay`); se propagan a la búsqueda y al entrenamiento final. La demo usa 15 épocas por defecto (`demo.epochs`) y permite cambiar el máximo con `--epochs`. Las pruebas cubren la resolución de épocas y el paso de parámetros a los modelos. |
 | **Demostración en menos de 2 minutos** | **Cumple (Medido)** | **37,19 s** en clon limpio. Entorno medido: CPU AMD Ryzen 7 3700U (4c/8t), 6.7 GB RAM, Linux Debian x86_64. |
-| **Cacería de la alucinación (15 %)** | **Cumple** | Consolidada en `docs/caceria_alucinaciones.md` y Sección 4 del reporte técnico, con aportes en LGD (H1, H2, H5). |
+| **Cacería de la alucinación (15 %)** | **Cumple** | Consolidada en `docs/caceria_alucinaciones.md` y Sección 8 del reporte técnico, con aportes en LGD (H1, H2, H5). |
 
 ### 7.2. Comandos de ejecución
 
@@ -171,6 +171,9 @@ PYTHONPATH=src python -m credit_risk.lgd.data
 
 # 5. Suite completa de pruebas unitarias de LGD
 pytest tests/test_lgd.py tests/test_lgd_checkpoint_integration.py -v
+
+# 6. Regenerar integración PD × LGD × EAD por ID (requiere data/raw/loan/loan.csv)
+PYTHONPATH=src python -m credit_risk.lgd.portfolio --year 2014
 ```
 
 ---
@@ -180,7 +183,7 @@ pytest tests/test_lgd.py tests/test_lgd_checkpoint_integration.py -v
 Sara Acevedo Maya identificó y documentó con evidencia empírica y fuentes primarias tres de los cinco hallazgos del equipo (ver `docs/caceria_alucinaciones.md`):
 1. **Hallazgo H1 (Datos del mundo real):** Fuga de información en la fórmula de LGD sugerida por la IA (inclusión de variables ex-post como `recoveries` en $X$ y omisión de amortizaciones previas). Corregido con el diccionario oficial de Lending Club y normativa de Basilea II.
 2. **Hallazgo H2 (Matemáticas):** Sugerencia errónea de usar Softmax escalar o capa lineal no acotada, afirmando falsamente que la Sigmoide no sirve para regresión. Corregido con la literatura de quasi-verosimilitud bernoulli (Papke & Wooldridge, 1996) y activación logística diferenciable.
-3. **Hallazgo H5 (Conceptos):** Afirmación dogmática de que el MLP superaría drásticamente a la regresión lineal en datos tabulares de LGD. Refutado experimentalmente mediante las 30 semillas independientes (MAE idéntico de 0.0771 y RMSE favorable al modelo lineal).
+3. **Hallazgo H5 (Conceptos):** Afirmación dogmática de que el MLP superaría drásticamente a la regresión lineal en datos tabulares de LGD. No se sostiene en este experimento: el MAE medio del MLP es muy similar y ligeramente mayor (0.077140 frente a 0.077110), y su RMSE medio también es mayor.
 
 ---
 

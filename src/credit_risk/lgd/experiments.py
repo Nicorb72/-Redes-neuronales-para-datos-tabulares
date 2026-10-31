@@ -9,6 +9,7 @@ Cumple estrictamente las reglas de comparación del trabajo:
 """
 import argparse
 import json
+import re
 import time
 from pathlib import Path
 import numpy as np
@@ -419,11 +420,32 @@ def ejecutar_experimento_completo(
     modelos_dir.mkdir(parents=True, exist_ok=True)
     figures_dir.mkdir(parents=True, exist_ok=True)
 
-    baseline.save(modelos_dir / ("baseline_lgd_demo.joblib" if demo else "baseline_lgd.joblib"))
-    best_mlp.save(modelos_dir / ("mlp_lgd_demo.pt" if demo else "mlp_lgd.pt"))
+    # Las demos y ejecuciones parciales/personalizadas no deben reemplazar los
+    # artefactos oficiales consumidos por el reporte y la integración PD–LGD.
+    configuracion_personalizada = config_path is not None or any(value is not None for value in (
+        hidden_dims, learning_rate, max_epochs, dropout, loss_function,
+        patience, batch_size, weight_decay,
+    ))
+    benchmark_oficial = not demo and not configuracion_personalizada and seeds_count == 30
+    if demo:
+        run_mode, suffix = "demo", "_demo"
+    elif benchmark_oficial:
+        run_mode, suffix = "full_benchmark", ""
+    else:
+        run_mode = "custom"
+        signature = (
+            f"h{'x'.join(map(str, mejor_cfg['hidden_dims']))}_lr{mejor_cfg['lr']:g}_"
+            f"d{mejor_cfg['dropout']:g}_{mejor_cfg['loss']}_e{mejor_cfg['epochs']}_"
+            f"b{mejor_cfg['batch_size']}_p{mejor_cfg['patience']}_"
+            f"wd{mejor_cfg['weight_decay']:g}_s{seeds_count}"
+        )
+        suffix = "_custom_" + re.sub(r"[^A-Za-z0-9_-]+", "-", signature.replace(".", "p"))
+
+    baseline.save(modelos_dir / f"baseline_lgd{suffix}.joblib")
+    best_mlp.save(modelos_dir / f"mlp_lgd{suffix}.pt")
 
     # Guardar gráfica comparativa de distribución
-    fig_name = "distribucion_lgd_demo.svg" if demo else "distribucion_lgd_observada_vs_predicha.svg"
+    fig_name = f"distribucion_lgd{suffix}.svg" if suffix else "distribucion_lgd_observada_vs_predicha.svg"
     generar_figura_distribucion_lgd(
         y["test"],
         preds_base,
@@ -443,7 +465,14 @@ def ejecutar_experimento_completo(
             "resumen_distribucion": resumen_distribucion(preds_base, "Baseline"),
         },
         "busqueda_hiperparametros": busqueda,
-        "mlp_30_semillas": stats_30,
+        f"mlp_{seeds_count}_semillas": stats_30,
+        "run_metadata": {
+            "mode": run_mode,
+            "n_seeds": seeds_count,
+            "selected_loss": mejor_cfg["loss"],
+            "selected_hidden_dims": mejor_cfg["hidden_dims"],
+            "checkpoint_selection": stats_30["checkpoint_selection"],
+        },
         "mejor_mlp_individual": {
             "seed": best_mlp.seed,
             "checkpoint_selection": stats_30["checkpoint_selection"],
@@ -455,7 +484,10 @@ def ejecutar_experimento_completo(
         "distribucion_observada": resumen_distribucion(y["test"], "Observada"),
     }
 
-    results_file = "lgd_demo_results.json" if demo else "lgd_benchmark_results.json"
+    results_file = (
+        f"lgd_{run_mode}_results.json" if run_mode != "custom"
+        else f"lgd{suffix}_results.json"
+    )
     with open(modelos_dir / results_file, "w", encoding="utf-8") as f:
         json.dump(benchmark_data, f, indent=4, ensure_ascii=False)
 
