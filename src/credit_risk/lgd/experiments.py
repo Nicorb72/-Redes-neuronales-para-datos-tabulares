@@ -57,6 +57,14 @@ def cargar_configuracion_lgd(ruta_config: Path | str | None = None) -> dict:
         return yaml.safe_load(f)
 
 
+def _resolver_epocas(config: dict, demo: bool, max_epochs: int | None) -> int:
+    if max_epochs is not None:
+        return max_epochs
+    if demo:
+        return int(config.get("demo", {}).get("epochs", 15))
+    return int(config.get("max_epochs", 60))
+
+
 def cargar_datos_procesados_lgd():
     """Carga matrices X, etiquetas y ead preprocesadas desde data/processed/.
 
@@ -94,21 +102,44 @@ def cargar_datos_procesados_lgd():
     return X, y, ead
 
 
-def explorar_hiperparametros(X_train, y_train, X_val, y_val, demo: bool = False):
+def explorar_hiperparametros(
+    X_train,
+    y_train,
+    X_val,
+    y_val,
+    demo: bool = False,
+    epochs: int | None = None,
+    patience: int = 8,
+    batch_size: int = 128,
+    weight_decay: float = 1e-4,
+    activation: str = "relu",
+    output_activation: str = "sigmoid",
+):
     """Búsqueda sistemática de arquitecturas para MLP con presupuesto explícito."""
+    if epochs is None:
+        epochs = 15 if demo else 60
     if demo:
         grid = [
-            {"hidden_dims": [32], "dropout": 0.1, "lr": 1e-3, "loss": "mse", "epochs": 15},
-            {"hidden_dims": [64, 32], "dropout": 0.2, "lr": 1e-3, "loss": "mse", "epochs": 15},
+            {"hidden_dims": [32], "dropout": 0.1, "lr": 1e-3, "loss": "mse", "epochs": epochs},
+            {"hidden_dims": [64, 32], "dropout": 0.2, "lr": 1e-3, "loss": "mse", "epochs": epochs},
         ]
     else:
         grid = [
-            {"hidden_dims": [32], "dropout": 0.1, "lr": 1e-3, "loss": "mse", "epochs": 60},
-            {"hidden_dims": [64, 32], "dropout": 0.2, "lr": 1e-3, "loss": "mse", "epochs": 60},
-            {"hidden_dims": [128, 64], "dropout": 0.2, "lr": 5e-4, "loss": "mse", "epochs": 60},
-            {"hidden_dims": [64, 32], "dropout": 0.2, "lr": 1e-3, "loss": "huber", "epochs": 60},
-            {"hidden_dims": [64, 32], "dropout": 0.1, "lr": 1e-3, "loss": "bce", "epochs": 60},
+            {"hidden_dims": [32], "dropout": 0.1, "lr": 1e-3, "loss": "mse", "epochs": epochs},
+            {"hidden_dims": [64, 32], "dropout": 0.2, "lr": 1e-3, "loss": "mse", "epochs": epochs},
+            {"hidden_dims": [128, 64], "dropout": 0.2, "lr": 5e-4, "loss": "mse", "epochs": epochs},
+            {"hidden_dims": [64, 32], "dropout": 0.2, "lr": 1e-3, "loss": "huber", "epochs": epochs},
+            {"hidden_dims": [64, 32], "dropout": 0.1, "lr": 1e-3, "loss": "bce", "epochs": epochs},
         ]
+
+    for cfg in grid:
+        cfg.update({
+            "patience": patience,
+            "batch_size": batch_size,
+            "weight_decay": weight_decay,
+            "activation": activation,
+            "output_activation": output_activation,
+        })
 
     resultados = []
     t0 = time.time()
@@ -119,9 +150,13 @@ def explorar_hiperparametros(X_train, y_train, X_val, y_val, demo: bool = False)
             hidden_dims=cfg["hidden_dims"],
             dropout=cfg["dropout"],
             learning_rate=cfg["lr"],
+            weight_decay=cfg["weight_decay"],
             loss_function=cfg["loss"],
             epochs=cfg["epochs"],
-            patience=8,
+            patience=cfg["patience"],
+            batch_size=cfg["batch_size"],
+            activation=cfg["activation"],
+            output_activation=cfg["output_activation"],
             seed=42,
         )
         model.fit(X_train, y_train, X_val, y_val, verbose=False)
@@ -167,9 +202,13 @@ def ejecutar_30_semillas_mlp(best_cfg, X_train, y_train, X_val, y_val, X_test, y
             hidden_dims=best_cfg["hidden_dims"],
             dropout=best_cfg["dropout"],
             learning_rate=best_cfg["lr"],
+            weight_decay=best_cfg.get("weight_decay", 1e-4),
             loss_function=best_cfg["loss"],
             epochs=best_cfg["epochs"],
-            patience=8,
+            patience=best_cfg.get("patience", 8),
+            batch_size=best_cfg.get("batch_size", 128),
+            activation=best_cfg.get("activation", "relu"),
+            output_activation=best_cfg.get("output_activation", "sigmoid"),
             seed=seed * 101,
         )
         m.fit(X_train, y_train, X_val, y_val, verbose=False)
@@ -272,8 +311,14 @@ def ejecutar_experimento_completo(
     if weight_decay is not None:
         config["weight_decay"] = weight_decay
 
-    seeds_count = 5 if demo else (n_seeds or int(config.get("seeds", 30)))
-    epochs_run = 15 if demo else int(config.get("max_epochs", 60))
+    demo_config = config.get("demo", {})
+    seeds_count = n_seeds if n_seeds is not None else (
+        int(demo_config.get("seeds", 5)) if demo else int(config.get("seeds", 30))
+    )
+    epochs_run = _resolver_epocas(config, demo, max_epochs)
+    patience_run = int(config.get("early_stopping_patience", 8))
+    batch_size_run = int(config.get("batch_size", 128))
+    weight_decay_run = float(config.get("weight_decay", 1e-4))
 
     mejor_cfg = {
         "hidden_dims": config.get("hidden_dims", [64, 32]),
@@ -281,13 +326,20 @@ def ejecutar_experimento_completo(
         "lr": float(config.get("learning_rate", 0.001)),
         "loss": str(config.get("loss_function", "mse")),
         "epochs": epochs_run,
+        "patience": patience_run,
+        "batch_size": batch_size_run,
+        "weight_decay": weight_decay_run,
+        "activation": str(config.get("activation", "relu")),
+        "output_activation": str(config.get("output_activation", "sigmoid")),
     }
 
     print("=" * 65)
     print(f"EXPERIMENTACIÓN LGD (Pérdida Dado el Incumplimiento) {'[MODO DEMO]' if demo else ''}")
     print("=" * 65)
     print(f"Configuración activa: hidden_dims={mejor_cfg['hidden_dims']}, lr={mejor_cfg['lr']}, "
-          f"dropout={mejor_cfg['dropout']}, loss={mejor_cfg['loss']}, epochs={mejor_cfg['epochs']}, seeds={seeds_count}")
+          f"dropout={mejor_cfg['dropout']}, loss={mejor_cfg['loss']}, epochs={mejor_cfg['epochs']}, "
+          f"patience={mejor_cfg['patience']}, batch_size={mejor_cfg['batch_size']}, "
+          f"weight_decay={mejor_cfg['weight_decay']}, seeds={seeds_count}")
 
     X, y, ead = cargar_datos_procesados_lgd()
     raiz = obtener_raiz_proyecto()
@@ -306,12 +358,34 @@ def ejecutar_experimento_completo(
 
     # 2. Búsqueda de Hiperparámetros
     print("\n2. Exploración sistemática de arquitecturas de Red Neuronal...")
-    busqueda = explorar_hiperparametros(X["train"], y["train"], X["validation"], y["validation"], demo=demo)
-    # Si no se pasó una arquitectura personalizada por CLI, usar la mejor de la búsqueda
-    if hidden_dims is None and loss_function is None and learning_rate is None:
+    busqueda = explorar_hiperparametros(
+        X["train"],
+        y["train"],
+        X["validation"],
+        y["validation"],
+        demo=demo,
+        epochs=epochs_run,
+        patience=patience_run,
+        batch_size=batch_size_run,
+        weight_decay=weight_decay_run,
+        activation=str(config.get("activation", "relu")),
+        output_activation=str(config.get("output_activation", "sigmoid")),
+    )
+    # Conservar la configuración personalizada; si no, usar la mejor de la búsqueda.
+    if (
+        hidden_dims is None
+        and loss_function is None
+        and learning_rate is None
+        and dropout is None
+    ):
         mejor_cfg = busqueda["mejor_configuracion"]["config"]
-        if demo:
-            mejor_cfg["epochs"] = 15
+    mejor_cfg.update({
+        "patience": patience_run,
+        "batch_size": batch_size_run,
+        "weight_decay": weight_decay_run,
+        "activation": str(config.get("activation", "relu")),
+        "output_activation": str(config.get("output_activation", "sigmoid")),
+    })
     print(f"   Presupuesto: {busqueda['presupuesto_configuraciones']} arquitecturas evaluadas en {busqueda['tiempo_total_busqueda_sec']:.2f}s")
     print(f"   Arquitectura seleccionada para benchmark: {mejor_cfg['hidden_dims']}, dropout={mejor_cfg['dropout']}, loss={mejor_cfg['loss']}")
 

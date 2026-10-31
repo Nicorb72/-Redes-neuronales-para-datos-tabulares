@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from scipy import sparse
 
+from credit_risk.lgd import experiments as lgd_experiments
 from credit_risk.lgd.baseline import BaselineLGD
 from credit_risk.lgd.evaluation import calcular_metricas_lgd, resumen_distribucion
 from credit_risk.lgd.expected_loss import calcular_perdida_esperada, resumir_perdida_esperada
@@ -13,6 +14,13 @@ from credit_risk.lgd.target import (
     calcular_lgd,
     filtrar_castigados,
 )
+
+
+def test_epocas_demo_respetan_config_y_override():
+    config = {"max_epochs": 60, "demo": {"epochs": 18}}
+    assert lgd_experiments._resolver_epocas(config, demo=True, max_epochs=None) == 18
+    assert lgd_experiments._resolver_epocas(config, demo=True, max_epochs=23) == 23
+    assert lgd_experiments._resolver_epocas(config, demo=False, max_epochs=None) == 60
 
 
 def test_calcular_ead_observada():
@@ -103,6 +111,106 @@ def test_mlp_regressor_salida_sigmoide_acotada():
     # Salida por construcción Sigmoide debe estar en [0, 1]
     assert np.all(preds >= 0.0)
     assert np.all(preds <= 1.0)
+
+
+def test_busqueda_lgd_aplica_parametros_configurables(monkeypatch):
+    modelos = []
+
+    class ModeloFalso:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+            self.n_parameters = 1
+            modelos.append(self)
+
+        def fit(self, *args, **kwargs):
+            return self
+
+        def evaluate(self, *args):
+            return 0.1, 0.2
+
+    monkeypatch.setattr(lgd_experiments, "LGDNeuralNetwork", ModeloFalso)
+    resultado = lgd_experiments.explorar_hiperparametros(
+        np.zeros((2, 1)),
+        np.zeros(2),
+        np.zeros((1, 1)),
+        np.zeros(1),
+        demo=True,
+        epochs=23,
+        patience=4,
+        batch_size=16,
+        weight_decay=0.005,
+        activation="tanh",
+        output_activation="linear",
+    )
+
+    assert len(modelos) == 2
+    for modelo in modelos:
+        assert modelo.kwargs["epochs"] == 23
+        assert modelo.kwargs["patience"] == 4
+        assert modelo.kwargs["batch_size"] == 16
+        assert modelo.kwargs["weight_decay"] == 0.005
+        assert modelo.kwargs["activation"] == "tanh"
+        assert modelo.kwargs["output_activation"] == "linear"
+    for record in resultado["todas_las_configuraciones"]:
+        cfg = record["config"]
+        assert cfg["epochs"] == 23
+        assert cfg["patience"] == 4
+        assert cfg["batch_size"] == 16
+        assert cfg["weight_decay"] == 0.005
+
+
+def test_benchmark_lgd_aplica_parametros_configurables(monkeypatch):
+    modelos = []
+
+    class ModeloFalso:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+            self.n_parameters = 1
+            self.fit_time_sec = 0.01
+            modelos.append(self)
+
+        def fit(self, *args, **kwargs):
+            return self
+
+        def evaluate(self, *args):
+            return 0.1, 0.2
+
+        def predict(self, X):
+            return np.zeros(len(X))
+
+    monkeypatch.setattr(lgd_experiments, "LGDNeuralNetwork", ModeloFalso)
+    cfg = {
+        "hidden_dims": [8],
+        "dropout": 0.1,
+        "lr": 0.002,
+        "loss": "mse",
+        "epochs": 23,
+        "patience": 4,
+        "batch_size": 16,
+        "weight_decay": 0.005,
+        "activation": "tanh",
+        "output_activation": "linear",
+    }
+
+    lgd_experiments.ejecutar_30_semillas_mlp(
+        cfg,
+        np.zeros((2, 1)),
+        np.zeros(2),
+        np.zeros((1, 1)),
+        np.zeros(1),
+        np.zeros((1, 1)),
+        np.zeros(1),
+        n_seeds=2,
+    )
+
+    assert len(modelos) == 2
+    for modelo in modelos:
+        assert modelo.kwargs["epochs"] == 23
+        assert modelo.kwargs["patience"] == 4
+        assert modelo.kwargs["batch_size"] == 16
+        assert modelo.kwargs["weight_decay"] == 0.005
+        assert modelo.kwargs["activation"] == "tanh"
+        assert modelo.kwargs["output_activation"] == "linear"
 
 
 def test_calculo_y_resumen_perdida_esperada():

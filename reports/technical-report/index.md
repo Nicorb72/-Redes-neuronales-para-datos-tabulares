@@ -274,7 +274,7 @@ Se propone `funded_amnt` como exposición conservadora en originación; $EAD_{ob
 
 ### 2.5 Reproducción
 
-Con las matrices guardadas: `python -m credit_risk.lgd.experiments --demo`; para benchmark: `python -m credit_risk.lgd.experiments --seeds 30`. Solo reconstruir datos requiere `loan.csv` y `python -m credit_risk.lgd.data`. Demo guarda salidas separadas; que exista el comando completo no acredita su entrega.
+Con las matrices guardadas: `python -m credit_risk.lgd.experiments --demo`; para benchmark: `python -m credit_risk.lgd.experiments --seeds 30`. En demo, las épocas se leen de `demo.epochs` en el YAML (15 por defecto) y `--epochs` las sobrescribe; `--patience`, `--batch-size` y `--weight-decay` se aplican tanto a la búsqueda como al entrenamiento final. Solo reconstruir datos requiere `loan.csv` y `python -m credit_risk.lgd.data`. Demo guarda salidas separadas; que exista el comando completo no acredita su entrega.
 
 
 
