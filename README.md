@@ -42,15 +42,14 @@ train y simulación de cambios en las variables.
 
 - Python 3.11.9, especificado en `.python-version`.
 - Git.
-- El CSV original solo es necesario para reconstruir las matrices desde la
-  fuente (`prepare_data`) y preparar LGD. El archivo no está versionado y debe
+- El CSV original solo es necesario si se desea reconstruir desde cero las matrices desde la
+  fuente (`prepare_data` o `lgd.data`). El archivo no está versionado por su tamaño y debe
   descargarse por separado.
 
-**Un clon limpio permite ejecutar la aplicación y los experimentos PD sin
-descargar `loan.csv`**, porque incluye matrices PD procesadas y artefactos del
-modelo. Esto reproduce el flujo desde esos artefactos, no la preparación desde
-los registros originales. El resumen `data/processed/eda_pd_resumen.json`
-permite regenerar dos figuras EDA, pero no sustituye el CSV para preparar datos.
+**Un clon limpio permite ejecutar la aplicación y los experimentos de PD y LGD sin
+descargar `loan.csv`**, porque incluye matrices procesadas y artefactos de ambos
+modelos versionados en el repositorio. Esto reproduce el flujo completo desde esos artefactos. El resumen `data/processed/eda_pd_resumen.json`
+permite regenerar las figuras EDA sin depender del CSV original.
 
 ## Instalación
 
@@ -263,22 +262,25 @@ $env:PYTHONPATH = "src"
 python -m credit_risk.data.generate_eda_figures
 ```
 
-### Preparar datos y ejecutar experimentos LGD
+### Ejecutar experimentos LGD (Comando único, parámetros externos y demo < 2 min)
 
-LGD aún no tiene matrices de entrada versionadas; tanto la preparación como
-los experimentos requieren `data/raw/loan/loan.csv`:
+Las matrices procesadas de LGD están versionadas en Git (`data/processed/*_lgd.*`), por lo que los experimentos de LGD se ejecutan directamente con un solo comando en un clon limpio sin necesidad de `loan.csv`:
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m credit_risk.lgd.data
+# Demostración rápida (< 2 minutos, ~37 s medidos en CPU local con 5 semillas)
 python -m credit_risk.lgd.experiments --demo
+
+# Corrida completa del benchmark (30 semillas)
 python -m credit_risk.lgd.experiments --seeds 30
+
+# Modificación de hiperparámetros en vivo sin tocar código
+python -m credit_risk.lgd.experiments --demo --hidden-dims 128,64 --lr 0.005 --epochs 20
 ```
 
-La demostración usa dos configuraciones y cinco semillas. El benchmark
-completo evalúa cinco configuraciones y usa 30 semillas por defecto. Los
-resultados y modelos LGD se guardan bajo `artifacts/models/` y las figuras
-bajo `reports/figures/`.
+Los hiperparámetros están externalizados en `configs/lgd_mlp_best.yaml`. Si las matrices faltaran y estuviera presente `loan.csv`, el script las reconstruye automáticamente. Si se desea reconstruir las matrices desde la fuente de manera explícita: `python -m credit_risk.lgd.data`.
+
+Los resultados y modelos LGD se guardan bajo `artifacts/models/` y las figuras bajo `reports/figures/`.
 
 ### Exportar el paquete PD
 

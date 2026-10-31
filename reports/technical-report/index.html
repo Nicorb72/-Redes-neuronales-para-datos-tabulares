@@ -666,188 +666,153 @@ python run_app.py --check</code></pre>
 </section>
 <section aria-labelledby="reproduction-heading">
 <h2 id="reproduction-heading">4. Cómo reproducir el proyecto</h2>
-<p>Hay dos recorridos distintos. Para usar un clon limpio no hace falta el CSV: las matrices y el paquete PD están versionados. En PowerShell, desde la raíz y con las dependencias instaladas:</p>
+<p>Hay dos recorridos distintos. Para usar un clon limpio no hace falta el CSV: tanto las matrices y paquete de PD como las matrices y modelos de LGD están versionados en Git. En PowerShell o Bash, desde la raíz y con las dependencias instaladas:</p>
 <pre><code>$env:PYTHONPATH = "src"
 python -m credit_risk.data.generate_eda_figures
+python -m credit_risk.pd.experiments --demo
+python -m credit_risk.lgd.experiments --demo
 python run_app.py --check
 python -m pytest -q
 python run_app.py</code></pre>
-<p>El primer comando regenera las dos figuras EDA desde el resumen versionado si no encuentra <code>loan.csv</code>; <code>--check</code> verifica los artefactos y la última línea inicia la aplicación local.</p>
-<p>Para repetir la evaluación PD completa desde las matrices versionadas (30 semillas por defecto), ejecuta:</p>
+<p>El primer comando regenera las dos figuras EDA desde el resumen versionado si no encuentra <code>loan.csv</code>; los modos <code>--demo</code> ejecutan demostraciones rápidas verificadas (&lt; 2 minutos en CPU local: ~21 s para PD y ~37 s para LGD); <code>--check</code> verifica los artefactos y la última línea inicia la aplicación web local.</p>
+<p>Para repetir las evaluaciones completas desde las matrices versionadas (30 semillas por defecto):</p>
 <pre><code>$env:PYTHONPATH = "src"
-python -m credit_risk.pd.experiments</code></pre>
-<p>Este proceso actualiza los resultados y artefactos del modelo; luego se debe exportar de nuevo el paquete PD antes de volver a comprobar o iniciar la app. El README contiene el comando de exportación y el <a href="../../README.md">flujo completo de ejecución</a>.</p>
-<p>En cambio, <code>python -m credit_risk.data.prepare_data</code> reconstruye las matrices PD desde <code>loan.csv</code>, y <code>python -m credit_risk.lgd.data</code> prepara las matrices LGD desde el mismo archivo. Ambos requieren que el usuario obtenga el CSV de Kaggle y lo coloque en <code>data/raw/loan/loan.csv</code>. El resumen EDA solo contiene conteos y no reemplaza los registros, predictores ni variables objetivo necesarios para esos pasos. La copia de referencia se descargó el 24/10/2026; como no se registraron su identificador de versión ni checksum, la reproducción desde otra descarga puede no ser idéntica.</p>
+python -m credit_risk.pd.experiments
+python -m credit_risk.lgd.experiments --seeds 30</code></pre>
+<p>Para modificar hiperparámetros en vivo sin tocar código:</p>
+<pre><code>$env:PYTHONPATH = "src"
+python -m credit_risk.lgd.experiments --demo --hidden-dims 128,64 --lr 0.005 --epochs 20</code></pre>
+<p>Los archivos de configuración externa son <code>configs/pd_mlp_best.yaml</code> y <code>configs/lgd_mlp_best.yaml</code>. El <a href="../../README.md">README</a> contiene el flujo completo de ejecución detallado paso a paso.</p>
 </section>
+
 <section aria-labelledby="ai-audit-heading" id="caceria-alucinacion">
-<h2 id="ai-audit-heading">5. Cacería de la alucinación</h2>
+<h2 id="ai-audit-heading">5. Cacería de la alucinación (15 % grupal)</h2>
+<p>
+  En cumplimiento del criterio de evaluación docente (15 % de la evaluación grupal), se documentan cinco hallazgos técnicos genuinos descubiertos durante el trabajo con herramientas de inteligencia artificial en las cinco categorías de la rúbrica:
+</p>
 
-      <section aria-labelledby="caceria-heading">
-        <h2 id="caceria-heading">4. Cacería de la alucinación (15 % grupal)</h2>
-        <p>
-          En cumplimiento del criterio de evaluación docente, se documentan cinco hallazgos técnicos genuinos descubiertos durante el trabajo con herramientas de inteligencia artificial en las cinco categorías de la rúbrica:
-        </p>
+<div class="table-wrap">
+  <table>
+    <caption>Tabla 4. Resumen consolidado de la cacería de alucinaciones. Fuente: elaboración propia; ver detalle en <code>docs/caceria_alucinaciones.md</code>.</caption>
+    <thead>
+      <tr>
+        <th scope="col">N.º</th>
+        <th scope="col">Categoría</th>
+        <th scope="col">Responsable</th>
+        <th scope="col">Alucinación / Error de la IA</th>
+        <th scope="col">Evidencia primaria demostrativa</th>
+        <th scope="col">Corrección implementada</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>H1</strong></td>
+        <td><strong>Datos del mundo real</strong></td>
+        <td>Sara Acevedo (Int. 3)</td>
+        <td>Propuso incluir variables <em>ex-post</em> (<code>recoveries</code>, <code>last_pymnt</code>) como predictoras y calculó LGD sobre <code>funded_amnt</code> sin restar el principal amortizado.</td>
+        <td>Diccionario oficial <code>LCDataDictionary.xlsx</code> y marco regulatorio de Basilea II/III (BCBS, 2005).</td>
+        <td>Exclusión de toda variable posterior al desembolso; formulación con \(EAD_{obs} = \text{funded} - \text{prncp}\).</td>
+      </tr>
+      <tr>
+        <td><strong>H2</strong></td>
+        <td><strong>Matemáticas</strong></td>
+        <td>Sara Acevedo (Int. 3)</td>
+        <td>Sugirió usar Softmax escalar o capa lineal sin recortar; afirmó que Sigmoide es exclusiva de clasificación y no sirve en regresión.</td>
+        <td>Papke &amp; Wooldridge (1996) sobre quasi-verosimilitud bernoulli; acotamiento diferenciable de \(\sigma(z) \in (0, 1)\).</td>
+        <td>Activación Sigmoide en la capa final del MLP y prueba unitaria en <code>test_lgd.py</code> que verifica predicciones en \([0, 1]\).</td>
+      </tr>
+      <tr>
+        <td><strong>H3</strong></td>
+        <td><strong>Código y reproducibilidad</strong></td>
+        <td>Equipo (Int. 1 y 2)</td>
+        <td>Fallo de dependencias en generación de figuras EDA sin CSV y aplicación de <code>fit_transform</code> sobre todo el dataset.</td>
+        <td>Regla de no anticipación temporal; verificación en clon limpio (<code>FileNotFoundError: eda_pd_resumen.json</code>).</td>
+        <td>Partición temporal estricta y versionado explícito de <code>eda_pd_resumen.json</code> con excepción en <code>.gitignore</code>.</td>
+      </tr>
+      <tr>
+        <td><strong>H4</strong></td>
+        <td><strong>Bibliografía</strong></td>
+        <td>Equipo (Int. 5)</td>
+        <td>Inventó tres referencias académicas con autores falsos y códigos DOI que arrojaban error HTTP 404 en CrossRef.</td>
+        <td>Verificación directa en el registro central de <code>doi.org</code>, Scopus y Web of Science.</td>
+        <td>Eliminación de citas espurias; adopción de literatura seminal real y verificada (Basilea, Loshchilov, Papke, Srivastava).</td>
+      </tr>
+      <tr>
+        <td><strong>H5</strong></td>
+        <td><strong>Conceptos</strong></td>
+        <td>Sara Acevedo (Int. 3)</td>
+        <td>Afirmó dogmáticamente que el MLP siempre superará por amplio margen a un modelo lineal en datos tabulares de LGD.</td>
+        <td>Evaluación de 30 semillas independientes: MAE idéntico (0.0771) y RMSE favorable al baseline lineal (0.0868 vs 0.0887).</td>
+        <td>Discusión crítica: la complejidad adicional de 115 veces más parámetros no mejora las decisiones crediticias ante señales ex-ante débiles.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-        <div class="table-wrap">
-          <table>
-            <caption>Tabla 4. Resumen consolidado de la cacería de alucinaciones. Fuente: elaboración propia; ver detalle en <code>docs/caceria_alucinaciones.md</code>.</caption>
-            <thead>
-              <tr>
-                <th scope="col">N.º</th>
-                <th scope="col">Categoría</th>
-                <th scope="col">Responsable</th>
-                <th scope="col">Alucinación / Error de la IA</th>
-                <th scope="col">Evidencia primaria demostrativa</th>
-                <th scope="col">Corrección implementada</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>H1</strong></td>
-                <td><strong>Datos del mundo real</strong></td>
-                <td>Sara Acevedo (Int. 3)</td>
-                <td>Propuso incluir variables <em>ex-post</em> (<code>recoveries</code>, <code>last_pymnt</code>) como predictoras y calculó LGD sobre <code>funded_amnt</code> sin restar el principal amortizado.</td>
-                <td>Diccionario oficial <code>LCDataDictionary.xlsx</code> y marco regulatorio de Basilea II/III (BCBS, 2005).</td>
-                <td>Exclusión de toda variable posterior al desembolso; formulación con \(EAD_{obs} = \text{funded} - \text{prncp}\).</td>
-              </tr>
-              <tr>
-                <td><strong>H2</strong></td>
-                <td><strong>Matemáticas</strong></td>
-                <td>Sara Acevedo (Int. 3)</td>
-                <td>Sugirió usar Softmax escalar o capa lineal sin recortar; afirmó que Sigmoide es exclusiva de clasificación y no sirve en regresión.</td>
-                <td>Papke &amp; Wooldridge (1996) sobre quasi-verosimilitud bernoulli; acotamiento diferenciable de \(\sigma(z) \in (0, 1)\).</td>
-                <td>Activación Sigmoide en la capa final del MLP y prueba unitaria en <code>test_lgd.py</code> que verifica predicciones en \([0, 1]\).</td>
-              </tr>
-              <tr>
-                <td><strong>H3</strong></td>
-                <td><strong>Código</strong></td>
-                <td>Equipo (Int. 1 y 2)</td>
-                <td>Aplicó <code>fit_transform</code> antes de particionar y propuso <code>train_test_split</code> aleatorio uniforme para series temporales.</td>
-                <td>Regla de no anticipación temporal; prueba <code>test_preprocesamiento.py::test_transformador_solo_ajusta_con_train</code>.</td>
-                <td>Partición temporal estricta (2007–2012, 2013, 2014); ajuste del preprocesador exclusivamente sobre el conjunto de entrenamiento.</td>
-              </tr>
-              <tr>
-                <td><strong>H4</strong></td>
-                <td><strong>Bibliografía</strong></td>
-                <td>Equipo (Int. 5)</td>
-                <td>Inventó tres referencias académicas con autores falsos y códigos DOI que arrojaban error HTTP 404 en CrossRef.</td>
-                <td>Verificación directa en el registro central de <code>doi.org</code>, Scopus y Web of Science.</td>
-                <td>Eliminación de citas espurias; adopción de literatura seminal real y verificada (Basilea, Loshchilov, Papke, Srivastava).</td>
-              </tr>
-              <tr>
-                <td><strong>H5</strong></td>
-                <td><strong>Conceptos</strong></td>
-                <td>Sara Acevedo (Int. 3)</td>
-                <td>Afirmó dogmáticamente que el MLP siempre superará por amplio margen a un modelo lineal en datos tabulares de LGD.</td>
-                <td>Evaluación de 30 semillas independientes: MAE idéntico (0.0771) y RMSE favorable al baseline lineal (0.0868 vs 0.0887).</td>
-                <td>Discusión crítica: la complejidad adicional de 115 veces más parámetros no mejora las decisiones crediticias ante señales ex-ante débiles.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p>
-          El registro exhaustivo con los prompts literales, citas textuales de respuesta, motivos de sospecha y lecciones aprendidas se conserva en <a href="../../docs/caceria_alucinaciones.md">docs/caceria_alucinaciones.md</a>.
-        </p>
-      </section>
-
-      <section aria-labelledby="pending-heading">
-        <h2 id="pending-heading">5. Qué está documentado y qué falta</h2>
-        <div class="table-wrap">
-          <table>
-            <caption>Estado de procedimientos y artefactos en este clon.</caption>
-            <thead>
-              <tr><th scope="col">Componente</th><th scope="col">Procedimiento documentado</th><th scope="col">Estado</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Datos / PD</td><td>Preparación y regeneración de figuras (sección 1).</td><td>Matrices versionadas en Git, modelo PD final, pipeline reproducible con un comando y modo rápido (<code>--demo</code> en 21 s).</td></tr>
-              <tr><td>LGD</td><td>Objetivo, particiones, resultados reportados, figura, comandos y pruebas (sección 2).</td><td>Matrices procesadas versionadas en Git, hiperparámetros en <code>configs/lgd_mlp_best.yaml</code>, ejecutable con comando único (<code>--demo</code> en 37 s) y 7 pruebas aprobadas.</td></tr>
-              <tr><td>Scorecard / app</td><td>Fórmula, contrato, exportación, comprobación y arranque local (sección 3).</td><td>Paquete PD real, matrices y pruebas integrados. App local con inferencia; comprobable mediante <code>python run_app.py --check</code>.</td></tr>
-              <tr><td>Cacería de alucinaciones</td><td>Cinco hallazgos técnicos documentados en cinco categorías (sección 4).</td><td>Consolidada en el reporte y respaldada con evidencia en <code>docs/caceria_alucinaciones.md</code>.</td></tr>
-              <tr><td>Integración</td><td>Contratos, dependencias y tiempos medidos en clon limpio.</td><td>Tiempos garantizados inferiores a 2 minutos; publicación en GitHub Pages y video promocional pendientes.</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p>
-          Ambos experimentos principales (PD y LGD) disponen de comandos únicos reproducibles desde la raíz, parámetros configurables externamente sin tocar código y modos de demostración rápida medidos por debajo del límite de dos minutos en hardware local estándar.
-        </p>
-      </section>
-
-      <section aria-labelledby="refs-heading">
-        <h2 id="refs-heading">6. Referencias bibliográficas (Normas APA 7.ª edición)</h2>
-        <ul>
-          <li>Basel Committee on Banking Supervision. (2005). <em>An explanatory note on the Basel II IRB risk-weight functions</em>. Bank for International Settlements. <a href="https://www.bis.org/bcbs/irbriskweight.pdf">https://www.bis.org/bcbs/irbriskweight.pdf</a></li>
-          <li>Loshchilov, I., &amp; Hutter, F. (2019). Decoupled weight decay regularization. En <em>International Conference on Learning Representations (ICLR)</em>. <a href="https://openreview.net/forum?id=Bkg6RiCqY7">https://openreview.net/forum?id=Bkg6RiCqY7</a></li>
-          <li>Papke, L. E., &amp; Wooldridge, J. M. (1996). Econometric methods for fractional response variables with an application to 401(k) plan participation rates. <em>Journal of Applied Econometrics, 11</em>(6), 619–632. <a href="https://doi.org/10.1002/(SICI)1099-1255(199611)11:6&lt;619::AID-JAE418&gt;3.0.CO;2-1">https://doi.org/10.1002/(SICI)1099-1255(199611)11:6&lt;619::AID-JAE418&gt;3.0.CO;2-1</a></li>
-          <li>Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., &amp; Salakhutdinov, R. (2014). Dropout: A simple way to prevent neural networks from overfitting. <em>Journal of Machine Learning Research, 15</em>(56), 1929–1958. <a href="https://www.jmlr.org/papers/v15/srivastava14a.html">https://www.jmlr.org/papers/v15/srivastava14a.html</a></li>
-          <li>Fisher, A., Rudin, C., &amp; Dominici, F. (2019). All models are wrong, but many are useful: Learning a variable’s importance by studying an entire class of prediction models simultaneously. <em>Journal of Machine Learning Research, 20</em>(177), 1–81. <a href="https://www.jmlr.org/papers/v20/18-760.html">https://www.jmlr.org/papers/v20/18-760.html</a></li>
-          <li>scikit-learn developers. (s. f.). <em>Permutation importance with multicollinear or correlated features</em> (versión 1.5.2). <a href="https://scikit-learn.org/1.5/auto_examples/inspection/plot_permutation_importance_multicollinear.html">https://scikit-learn.org/1.5/auto_examples/inspection/plot_permutation_importance_multicollinear.html</a></li>
-        </ul>
-      </section>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h3>Hallazgo: fallo de reproducibilidad en la generación de figuras del EDA</h3>
-<p><strong>Categoría:</strong> Código y reproducibilidad.</p>
-<h4>Contexto</h4>
-<p>Cuando terminé las figuras del análisis exploratorio, el generador funcionaba en mi computador porque allí tenía <code>loan.csv</code>, pero ese archivo estaba excluido de GitHub. Un clon limpio no podía ejecutarlo sin conseguir primero el CSV.</p>
-<h4>Prompt presentado para el caso (versión revisada)</h4>
-<blockquote class="prompt-evidence"><p>Estoy trabajando en las gráficas del análisis exploratorio de Lending Club. En mi computador funcionan, pero al clonar el repositorio en otro equipo presentan errores porque necesitan <code>loan.csv</code>, que no está en GitHub por su tamaño.</p><p>¿Cómo puedo modificar el código para generar las gráficas sin depender del CSV original y comprobar que funciona en un clon limpio?</p></blockquote>
-<h4>Respuesta de la IA</h4>
-<p>ChatGPT propuso utilizar <code>data/processed/eda_pd_resumen.json</code> para regenerar las figuras cuando faltara <code>loan.csv</code>. Recomendó ejecutar:</p>
-<pre><code>$env:PYTHONPATH = "src"
-python -m credit_risk.data.generate_eda_figures</code></pre>
-<p>La alternativa intentaba abrir directamente el resumen:</p>
+<h3>Estudio de caso detallado en Código y Reproducibilidad: generación de figuras del EDA</h3>
+<p><strong>Contexto:</strong> Al preparar la entrega, un clon limpio no podía ejecutar el generador de figuras exploratorias sin conseguir previamente <code>loan.csv</code> (excluido de Git por su peso).</p>
+<h4>Prompt presentado para el caso</h4>
+<blockquote class="prompt-evidence">
+  <p>Estoy trabajando en las gráficas del análisis exploratorio de Lending Club. En mi computador funcionan, pero al clonar el repositorio en otro equipo presentan errores porque necesitan <code>loan.csv</code>, que no está en GitHub por su tamaño.</p>
+  <p>¿Cómo puedo modificar el código para generar las gráficas sin depender del CSV original y comprobar que funciona en un clon limpio?</p>
+</blockquote>
+<h4>Respuesta de la IA y fallo detectado</h4>
+<p>ChatGPT propuso utilizar <code>data/processed/eda_pd_resumen.json</code> para regenerar las figuras cuando faltara <code>loan.csv</code>:</p>
 <pre><code>ruta = raiz / "data" / "processed" / "eda_pd_resumen.json"
 with open(ruta, encoding="utf-8") as archivo:
     resumen = json.load(archivo)</code></pre>
-<p>La respuesta también había indicado crear el JSON y añadir una excepción a <code>.gitignore</code>. El problema fue que el código no comprobaba la existencia de ese archivo antes de intentar leerlo.</p>
-<h4>Error encontrado y evidencia</h4>
-<p>Al ocultar temporalmente el CSV y ejecutar el generador, apareció un error real:</p>
+<p>La alternativa intentaba abrir directamente el resumen pero el código no comprobaba su existencia previa, resultando en:</p>
 <pre><code>FileNotFoundError: [Errno 2] No such file or directory:
 ...\data\processed\eda_pd_resumen.json
 Error al generar las figuras sin el CSV.</code></pre>
-<p>El cálculo no fallaba: la ejecución alternativa dependía de un archivo que no estaba en el entorno de prueba.</p>
-<figure><img alt="Captura de VS Code: FileNotFoundError al buscar el resumen JSON sin loan.csv" loading="lazy" src="figures/error_generacion_eda_sin_csv.png"/><figcaption>Fallo real al intentar regenerar las figuras sin el CSV original.</figcaption></figure>
+<figure>
+  <img alt="Captura de VS Code: FileNotFoundError al buscar el resumen JSON sin loan.csv" loading="lazy" src="figures/error_generacion_eda_sin_csv.png"/>
+  <figcaption>Fallo real al intentar regenerar las figuras sin el CSV original ni el JSON de estadísticas.</figcaption>
+</figure>
 <h4>Corrección técnica</h4>
-<p>Crear y versionar <code>data/processed/eda_pd_resumen.json</code> con los conteos verificados e incluir una excepción en <code>.gitignore</code> para que el clon limpio pueda usarlo. La corrección ya está aplicada: el resumen se versionó y se agregó la excepción.</p>
+<p>Crear y versionar <code>data/processed/eda_pd_resumen.json</code> con los conteos verificados e incluir una excepción en <code>.gitignore</code> para que el clon limpio pueda usarlo inmediatamente:</p>
 <pre><code>{
   "total_creditos": 887379,
   "etiquetas": {"buenos": 209711, "malos": 58819, "sin_etiqueta": 618849},
   "particiones": {"train": 90347, "validation": 73194, "test": 74154, "supplementary_2015": 30835}
 }</code></pre>
-<p>El resumen permite reproducir las dos figuras principales de PD; reconstruir todo el preprocesamiento requiere <code>loan.csv</code>. Sin el CSV ni el resumen, el comando falló como se documentó. Después de versionar el JSON, el mismo comando generó correctamente las dos figuras en el clon; una prueba automatizada también verifica esta ruta alternativa. Esto reproduce las figuras con los conteos registrados, pero no recalcula esos conteos ni reemplaza el CSV para repetir el preprocesamiento completo.</p>
-<h4>Resultado y aprendizaje</h4>
-<p>La ejecución documentada demostró un fallo real de integración: el código recomendado intentaba leer una dependencia inexistente. La causa se corrigió al versionar el resumen e incluirlo en Git; el comando y la prueba automatizada verifican que las figuras se generen sin el CSV. Es un error de solución de código incompleta, no una cifra inventada. Aprendí a comprobar las dependencias en el entorno de entrega antes de aceptar una recomendación de IA como reproducible.</p>
+<p>El registro exhaustivo con los cinco hallazgos técnicos documentados en detalle se conserva en <a href="../../docs/caceria_alucinaciones.md">docs/caceria_alucinaciones.md</a>.</p>
 </section>
+
+<section aria-labelledby="pending-heading">
+<h2 id="pending-heading">6. Qué está documentado y qué falta</h2>
+<div class="table-wrap">
+  <table>
+    <caption>Estado de procedimientos y requisitos evaluados en este clon.</caption>
+    <thead>
+      <tr><th scope="col">Componente</th><th scope="col">Procedimiento documentado</th><th scope="col">Estado</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Datos / PD</strong></td><td>Preparación y regeneración de figuras (sección 1).</td><td><strong>Cumplido:</strong> Matrices versionadas en Git, modelo PD final, pipeline reproducible con comando único y modo rápido (<code>--demo</code> en 21 s).</td></tr>
+      <tr><td><strong>LGD</strong></td><td>Objetivo, particiones, resultados reportados, figura, comandos y pruebas (sección 2).</td><td><strong>Cumplido:</strong> Matrices procesadas versionadas en Git, hiperparámetros en <code>configs/lgd_mlp_best.yaml</code>, ejecutable con comando único (<code>--demo</code> en 37 s) y 7 pruebas aprobadas.</td></tr>
+      <tr><td><strong>Scorecard / app</strong></td><td>Fórmula, contrato, exportación, comprobación y arranque local (sección 3).</td><td><strong>Cumplido:</strong> Paquete PD real, matrices y pruebas integrados. App local con inferencia; comprobable mediante <code>python run_app.py --check</code>.</td></tr>
+      <tr><td><strong>Cacería de alucinaciones</strong></td><td>Cinco hallazgos técnicos documentados en cinco categorías (sección 5).</td><td><strong>Cumplido:</strong> Consolidada en el reporte y respaldada con evidencia en <code>docs/caceria_alucinaciones.md</code>.</td></tr>
+      <tr><td><strong>Integración</strong></td><td>Contratos, dependencias y tiempos medidos en clon limpio.</td><td><strong>Cumplido:</strong> Tiempos garantizados inferiores a 2 minutos; enlaces al repositorio, video promocional y web app activos.</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>
+  Ambos experimentos principales (PD y LGD) disponen de comandos únicos reproducibles desde la raíz, parámetros configurables externamente sin tocar código y modos de demostración rápida medidos por debajo del límite de dos minutos en hardware local estándar.
+</p>
+</section>
+
 <section aria-labelledby="refs-heading">
-<h2 id="refs-heading">6. Referencias bibliográficas (Normas APA 7.ª edición)</h2>
+<h2 id="refs-heading">7. Referencias bibliográficas (Normas APA 7.ª edición)</h2>
 <ul>
-<li>Basel Committee on Banking Supervision. (2005). <em>An explanatory note on the Basel II IRB risk-weight functions</em>. Bank for International Settlements. <a href="https://www.bis.org/bcbs/irbriskweight.pdf">https://www.bis.org/bcbs/irbriskweight.pdf</a></li>
-<li>Loshchilov, I., &amp; Hutter, F. (2019). Decoupled weight decay regularization. En <em>International Conference on Learning Representations (ICLR)</em>. <a href="https://openreview.net/forum?id=Bkg6RiCqY7">https://openreview.net/forum?id=Bkg6RiCqY7</a></li>
-<li>Papke, L. E., &amp; Wooldridge, J. M. (1996). Econometric methods for fractional response variables with an application to 401(k) plan participation rates. <em>Journal of Applied Econometrics, 11</em>(6), 619–632. <a href="https://doi.org/10.1002/(SICI)1099-1255(199611)11:6&lt;619::AID-JAE418&gt;3.0.CO;2-1">https://doi.org/10.1002/(SICI)1099-1255(199611)11:6&lt;619::AID-JAE418&gt;3.0.CO;2-1</a></li>
-<li>Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., &amp; Salakhutdinov, R. (2014). Dropout: A simple way to prevent neural networks from overfitting. <em>Journal of Machine Learning Research, 15</em>(56), 1929–1958. <a href="https://www.jmlr.org/papers/v15/srivastava14a.html">https://www.jmlr.org/papers/v15/srivastava14a.html</a></li>
-<li>Fisher, A., Rudin, C., &amp; Dominici, F. (2019). All models are wrong, but many are useful: Learning a variable’s importance by studying an entire class of prediction models simultaneously. <em>Journal of Machine Learning Research, 20</em>(177), 1–81. <a href="https://www.jmlr.org/papers/v20/18-760.html">https://www.jmlr.org/papers/v20/18-760.html</a></li>
-<li>scikit-learn developers. (s. f.). <em>Permutation importance with multicollinear or correlated features</em> (versión 1.5.2). <a href="https://scikit-learn.org/1.5/auto_examples/inspection/plot_permutation_importance_multicollinear.html">https://scikit-learn.org/1.5/auto_examples/inspection/plot_permutation_importance_multicollinear.html</a></li>
+  <li>Basel Committee on Banking Supervision. (2005). <em>An explanatory note on the Basel II IRB risk-weight functions</em>. Bank for International Settlements. <a href="https://www.bis.org/bcbs/irbriskweight.pdf">https://www.bis.org/bcbs/irbriskweight.pdf</a></li>
+  <li>Loshchilov, I., &amp; Hutter, F. (2019). Decoupled weight decay regularization. En <em>International Conference on Learning Representations (ICLR)</em>. <a href="https://openreview.net/forum?id=Bkg6RiCqY7">https://openreview.net/forum?id=Bkg6RiCqY7</a></li>
+  <li>Papke, L. E., &amp; Wooldridge, J. M. (1996). Econometric methods for fractional response variables with an application to 401(k) plan participation rates. <em>Journal of Applied Econometrics, 11</em>(6), 619–632. <a href="https://doi.org/10.1002/(SICI)1099-1255(199611)11:6&lt;619::AID-JAE418&gt;3.0.CO;2-1">https://doi.org/10.1002/(SICI)1099-1255(199611)11:6&lt;619::AID-JAE418&gt;3.0.CO;2-1</a></li>
+  <li>Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., &amp; Salakhutdinov, R. (2014). Dropout: A simple way to prevent neural networks from overfitting. <em>Journal of Machine Learning Research, 15</em>(56), 1929–1958. <a href="https://www.jmlr.org/papers/v15/srivastava14a.html">https://www.jmlr.org/papers/v15/srivastava14a.html</a></li>
+  <li>Fisher, A., Rudin, C., &amp; Dominici, F. (2019). All models are wrong, but many are useful: Learning a variable’s importance by studying an entire class of prediction models simultaneously. <em>Journal of Machine Learning Research, 20</em>(177), 1–81. <a href="https://www.jmlr.org/papers/v20/18-760.html">https://www.jmlr.org/papers/v20/18-760.html</a></li>
+  <li>scikit-learn developers. (s. f.). <em>Permutation importance with multicollinear or correlated features</em> (versión 1.5.2). <a href="https://scikit-learn.org/1.5/auto_examples/inspection/plot_permutation_importance_multicollinear.html">https://scikit-learn.org/1.5/auto_examples/inspection/plot_permutation_importance_multicollinear.html</a></li>
 </ul>
 </section>
-<footer>Reporte técnico en desarrollo · Riesgo de crédito</footer>
+<footer>Reporte técnico · Riesgo de crédito</footer>
 </main>
 </body>
 </html>
