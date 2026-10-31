@@ -10,6 +10,11 @@ evaluation:
   test_size: 0.2
   shared_partitions: true
   neural_network_seeds: 30
+  lgd_neural_network_seeds: 30
+
+models:
+  pd: configs/pd_mlp_best.yaml
+  lgd: configs/lgd_mlp_best.yaml
 
 scorecard:
   base_score: 600

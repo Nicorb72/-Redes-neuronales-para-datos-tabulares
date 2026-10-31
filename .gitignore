@@ -30,6 +30,8 @@ Thumbs.db
 !/data/processed/X_train_pd.npz
 !/data/processed/X_validation_pd.npz
 !/data/processed/y_validation_pd.npy
+!/data/processed/*_lgd.npz
+!/data/processed/*_lgd.npy
 
 # Modelos y transformadores generados
 /artifacts/models/*
@@ -41,6 +43,7 @@ Thumbs.db
 !/artifacts/models/pd_preprocessor.joblib
 !/artifacts/models/pd_feature_names.json
 !/artifacts/models/pd_bundle.json
+!/artifacts/models/*lgd*
 
 # Archivos temporales
 /artifacts/prueba_data/

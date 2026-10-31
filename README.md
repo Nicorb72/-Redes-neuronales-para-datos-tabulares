@@ -143,31 +143,49 @@ modelos o figuras que no sean necesarios para reproducir el trabajo.
 
 ## Reproducibilidad y entrega
 
-La aplicación local se inicia con `python run_app.py`. La ejecución completa
-y la demostración de los experimentos de entrenamiento siguen pendientes.
-La demostración debe tardar menos de dos minutos; su tiempo con modelos reales
-debe medirse al integrar los artefactos. Los comandos de interpretación y
-validación se describen en `docs/integrante-4.md`.
+Cada experimento principal se lanza con un **único comando** desde la raíz del repositorio, con parámetros configurables externamente en archivos YAML o por línea de comandos, y demostraciones rápidas medidas en menos de dos minutos:
 
-Antes de entregar:
+### 1. Experimento de PD (Probabilidad de Incumplimiento)
+```bash
+# Corrida completa (30 semillas)
+python -m credit_risk.pd.experiments
 
-- Ejecuten instalación, pruebas, demostración y aplicación en un clon limpio y
-  sin conexión a servicios externos.
-- Verifiquen que las figuras se regeneran desde código y que la app carga los
-  modelos guardados.
-- Comprueben que el reporte tipo blog cita figuras y tablas en el texto,
-  utiliza referencias verificables en APA 7 y contiene la metodología,
-  resultados, discusión, uso de IA y la cacería de alucinaciones con evidencia.
-- Incluyan en el reporte los enlaces al repositorio, aplicación y video
-  promocional; entreguen también el video de contribución individual de cada
-  integrante.
+# Demostración rápida (< 2 minutos, 21.14 s medidos en CPU local)
+python -m credit_risk.pd.experiments --demo
+```
+Configuración en `configs/pd_mlp_best.yaml` y `configs/default.yaml`.
+
+### 2. Experimento de LGD (Pérdida Dado el Incumplimiento - Integrante 3)
+```bash
+# Corrida completa (30 semillas)
+python -m credit_risk.lgd.experiments --seeds 30
+
+# Demostración rápida (< 2 minutos, 37.19 s medidos en CPU local)
+python -m credit_risk.lgd.experiments --demo
+
+# Modificación de parámetros en vivo (sin editar código)
+python -m credit_risk.lgd.experiments --demo --hidden-dims 128,64 --lr 0.005 --epochs 20
+```
+Configuración en `configs/lgd_mlp_best.yaml`. Las matrices procesadas están versionadas en Git o se autogeneran si no estuvieran presentes.
+
+### 3. Aplicación web y scorecard
+```bash
+# Verificación de artefactos
+python run_app.py --check
+
+# Inicio de la aplicación
+python run_app.py
+```
+
+### 4. Cacería de la alucinación (15 % grupal)
+Documentada en la Sección 4 del reporte técnico y detallada con prompts literales, respuestas y evidencias en [`docs/caceria_alucinaciones.md`](docs/caceria_alucinaciones.md). Cubre 5 hallazgos técnicos en las 5 categorías exigidas por la rúbrica.
 
 ## Pruebas
 
-Ejecuten las pruebas desde la raíz del repositorio con:
+Ejecuten la suite completa de pruebas desde la raíz del repositorio con:
 
-```powershell
-python -m pytest
+```bash
+python -m pytest -v
 ```
 
 Las pruebas que requieren el CSV o matrices locales se omiten si esos archivos

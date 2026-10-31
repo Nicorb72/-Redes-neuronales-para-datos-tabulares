@@ -49,7 +49,9 @@ def cargar_datos(columnas=None):
         ruta,
         usecols=columnas,
         low_memory=False,
-        index_col=False
+        index_col=False,
+        on_bad_lines="skip",
+        encoding_errors="replace",
     )
 
     return df

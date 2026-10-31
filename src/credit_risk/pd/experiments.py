@@ -4,6 +4,7 @@ Ejecutar desde la raíz del proyecto:
     PYTHONPATH=src python -m credit_risk.pd.experiments
 """
 
+import argparse
 import json
 from pathlib import Path
 
@@ -117,14 +118,31 @@ def ejecutar_corridas_mlp(
     }
 
 
-def ejecutar_experimento_completo() -> dict:
-    """Ejecuta el pipeline PD con la configuración versionada del proyecto."""
+def ejecutar_experimento_completo(demo: bool = False, n_seeds: int | None = None) -> dict:
+    """Ejecuta el pipeline PD con la configuración versionada del proyecto.
+    
+    Parámetros
+    ----------
+    demo : bool
+        Si es True, ejecuta en modo rápido (< 2 minutos) con 1 semilla y 15 épocas.
+    n_seeds : int | None
+        Número de semillas independientes a evaluar (por defecto 30).
+    """
     raiz = obtener_raiz_proyecto()
     config, config_general = cargar_configuracion_pd(raiz)
     _validar_configuracion(config, config_general)
-    n_seeds = int(config_general["evaluation"]["neural_network_seeds"])
+    
     seed_base = int(config["seed"])
-    semillas = list(range(seed_base, seed_base + n_seeds))
+    if demo:
+        n_seeds = 1
+        semillas = [seed_base]
+        config["max_epochs"] = 15
+        config["early_stopping_patience"] = 4
+        print("[Modo DEMO activado para PD: 1 semilla, max_epochs=15, < 2 minutos]")
+    else:
+        total_seeds = n_seeds or int(config_general["evaluation"]["neural_network_seeds"])
+        semillas = list(range(seed_base, seed_base + total_seeds))
+
     device = seleccionar_dispositivo()
     print(f"Dispositivo: {device}; semillas: {semillas[0]}–{semillas[-1]}", flush=True)
 
@@ -192,13 +210,14 @@ def ejecutar_experimento_completo() -> dict:
     graficar_curva_aprendizaje(final_model.train_history, output_dir / "curva_aprendizaje_final.png")
     pd.DataFrame(final_model.train_history).to_csv(output_dir / "curva_aprendizaje_final.csv", index=False)
 
-    baseline.save(raiz / config["artifacts"]["logistic_model"])
-    joblib.dump(preprocessor, raiz / config["artifacts"]["preprocessor"])
-    feature_names = list(preprocessor.get_feature_names_out())
-    (raiz / config["artifacts"]["feature_names"]).write_text(
-        json.dumps(feature_names, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    final_model.save(raiz / config["artifacts"]["mlp_model"])
+    if not demo:
+        baseline.save(raiz / config["artifacts"]["logistic_model"])
+        joblib.dump(preprocessor, raiz / config["artifacts"]["preprocessor"])
+        feature_names = list(preprocessor.get_feature_names_out())
+        (raiz / config["artifacts"]["feature_names"]).write_text(
+            json.dumps(feature_names, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        final_model.save(raiz / config["artifacts"]["mlp_model"])
 
     result_document = {
         "test_period": "2014",
@@ -228,7 +247,8 @@ def ejecutar_experimento_completo() -> dict:
         },
         "interpretation": "MLP standard deviations reflect seed variability on the same temporal holdout, not sampling confidence intervals.",
     }
-    (output_dir / "resultados.json").write_text(
+    json_out = output_dir / ("resultados_demo.json" if demo else "resultados.json")
+    json_out.write_text(
         json.dumps(result_document, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     hyperparameter_summary_path = raiz / "reports" / "pd_hyperparameter_search" / "resumen_optimizacion.json"
@@ -237,8 +257,9 @@ def ejecutar_experimento_completo() -> dict:
         if hyperparameter_summary_path.exists()
         else None
     )
+    md_out = output_dir / ("informe_pd_demo.md" if demo else "informe_pd.md")
     generar_informe_pd(
-        output_dir / "informe_pd.md",
+        md_out,
         config,
         summary,
         seed_base,
@@ -257,7 +278,11 @@ def ejecutar_experimento_completo() -> dict:
 
 
 def main() -> None:
-    ejecutar_experimento_completo()
+    parser = argparse.ArgumentParser(description="Pipeline de experimentos para PD (Probabilidad de Incumplimiento)")
+    parser.add_argument("--demo", action="store_true", help="Modo demostración rápida (< 2 minutos) con 1 semilla")
+    parser.add_argument("--seeds", type=int, default=None, help="Número de semillas independientes para MLP (por defecto 30)")
+    args = parser.parse_args()
+    ejecutar_experimento_completo(demo=args.demo, n_seeds=args.seeds)
 
 
 if __name__ == "__main__":

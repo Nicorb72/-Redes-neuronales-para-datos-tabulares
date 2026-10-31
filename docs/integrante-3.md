@@ -171,27 +171,48 @@ El modelo de riesgo estima la pérdida agregada de la cartera con un margen de e
 
 ---
 
-## 7. Instrucciones de reproducción y comandos en vivo
+## 7. Instrucciones de reproducción, comandos en vivo y verificación de requisitos
 
-Todos los experimentos se ejecutan con comandos únicos desde la raíz del repositorio:
+### 7.1. Cumplimiento de requisitos de evaluación
+
+| Requisito evaluado | Estado | Implementación y verificación técnica |
+| :--- | :---: | :--- |
+| **Cada experimento se lanza con un solo comando** | **Cumple** | `python -m credit_risk.lgd.experiments` o con `--demo`. Carga automáticamente las matrices versionadas en Git o las autogenera desde `loan.csv` si no existieran, sin pasos previos obligatorios. |
+| **Parámetros modificables sin tocar código** | **Cumple** | Hiperparámetros base en `configs/lgd_mlp_best.yaml`. Banderas CLI disponibles: `--hidden-dims`, `--lr`, `--epochs`, `--dropout`, `--loss`, `--seeds`, `--patience`, `--batch-size`. |
+| **Demostración en menos de 2 minutos** | **Cumple (Medido)** | **37,19 s** en clon limpio. Entorno medido: CPU AMD Ryzen 7 3700U (4c/8t), 6.7 GB RAM, Linux Debian x86_64. |
+| **Cacería de la alucinación (15 %)** | **Cumple** | Consolidada en `docs/caceria_alucinaciones.md` y Sección 4 del reporte técnico, con aportes en LGD (H1, H2, H5). |
+
+### 7.2. Comandos de ejecución
 
 ```bash
-# 1. Preparar datos y generar matrices procesadas de LGD
-PYTHONPATH=src python -m credit_risk.lgd.data
-
-# 2. Ejecutar corrida de demostración en vivo (< 2 minutos)
+# 1. Demostración rápida en vivo (< 2 minutos, 37.19 s medidos)
 PYTHONPATH=src python -m credit_risk.lgd.experiments --demo
 
-# 3. Ejecutar benchmark completo de 30 semillas y guardar artefactos
+# 2. Modificación en vivo (3 minutos): cambiar arquitectura, tasa de aprendizaje y épocas sin tocar código
+PYTHONPATH=src python -m credit_risk.lgd.experiments --demo --hidden-dims 128,64 --lr 0.005 --epochs 20
+
+# 3. Benchmark completo de 30 semillas (usando configs/lgd_mlp_best.yaml)
 PYTHONPATH=src python -m credit_risk.lgd.experiments --seeds 30
 
-# 4. Correr la suite de pruebas unitarias
+# 4. Generación explícita de matrices procesadas (autónoma y robusta ante datos atípicos)
+PYTHONPATH=src python -m credit_risk.lgd.data
+
+# 5. Suite completa de pruebas unitarias de LGD
 pytest tests/test_lgd.py -v
 ```
 
 ---
 
-## 8. Referencias bibliográficas (Normas APA 7.ª edición)
+## 8. Cacería de la alucinación (Aportes del Integrante 3)
+
+Sara Acevedo Maya identificó y documentó con evidencia empírica y fuentes primarias tres de los cinco hallazgos del equipo (ver `docs/caceria_alucinaciones.md`):
+1. **Hallazgo H1 (Datos del mundo real):** Fuga de información en la fórmula de LGD sugerida por la IA (inclusión de variables ex-post como `recoveries` en $X$ y omisión de amortizaciones previas). Corregido con el diccionario oficial de Lending Club y normativa de Basilea II.
+2. **Hallazgo H2 (Matemáticas):** Sugerencia errónea de usar Softmax escalar o capa lineal no acotada, afirmando falsamente que la Sigmoide no sirve para regresión. Corregido con la literatura de quasi-verosimilitud bernoulli (Papke & Wooldridge, 1996) y activación logística diferenciable.
+3. **Hallazgo H5 (Conceptos):** Afirmación dogmática de que el MLP superaría drásticamente a la regresión lineal en datos tabulares de LGD. Refutado experimentalmente mediante las 30 semillas independientes (MAE idéntico de 0.0771 y RMSE favorable al modelo lineal).
+
+---
+
+## 9. Referencias bibliográficas (Normas APA 7.ª edición)
 
 - Basel Committee on Banking Supervision. (2005). *An explanatory note on the Basel II IRB risk-weight functions*. Bank for International Settlements. https://www.bis.org/bcbs/irbriskweight.pdf
 - Loshchilov, I., & Hutter, F. (2019). Decoupled weight decay regularization. En *International Conference on Learning Representations (ICLR)*. https://openreview.net/forum?id=Bkg6RiCqY7

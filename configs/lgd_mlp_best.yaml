@@ -1,0 +1,43 @@
+# Hiperparámetros finales del MLP de LGD (Pérdida Dado el Incumplimiento)
+# Seleccionados en la exploración sistemática de arquitecturas para Integrante 3.
+hidden_dims: [64, 32]
+activation: relu
+output_activation: sigmoid
+optimizer: adamw
+learning_rate: 0.001
+weight_decay: 0.0001
+dropout: 0.2
+loss_function: mse
+batch_size: 128
+early_stopping_patience: 8
+max_epochs: 60
+seed: 42
+seeds: 30
+input_dim: 44
+
+split:
+  train: [2007, 2012]
+  validation: 2013
+  test: 2014
+  supplementary: 2015
+
+baseline:
+  linear_regression:
+    alpha: 0.0
+    clip_min: 0.0
+    clip_max: 1.0
+
+artifacts:
+  output_dir: reports/lgd_evaluation
+  mlp_model: artifacts/models/mlp_lgd.pt
+  baseline_model: artifacts/models/baseline_lgd.joblib
+  preprocessor: artifacts/models/preprocesador_lgd.joblib
+  feature_names: artifacts/models/columnas_lgd.json
+  benchmark_results: artifacts/models/lgd_benchmark_results.json
+  figure_distribution: reports/figures/distribucion_lgd_observada_vs_predicha.svg
+
+demo:
+  epochs: 15
+  seeds: 5
+  hidden_dims: [64, 32]
+  max_runtime_seconds: 120

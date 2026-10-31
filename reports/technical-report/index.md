@@ -353,20 +353,31 @@ Fuente: elaboración propia; MLP final, validación temporal, semilla 42.
 [Tabla completa](../interpretability/pd_permutation.csv) y
 [trazabilidad de la corrida](../interpretability/pd_permutation.json).
 
-## 4. Qué está documentado y qué falta
+## 4. Cacería de la alucinación
+
+De acuerdo con el requisito docente del Trabajo 2 (15 % de la evaluación grupal), se documentan cinco hallazgos técnicos genuinos identificados durante el diseño, preprocesamiento y modelado de redes neuronales tabulares, cubriendo las cinco categorías temáticas:
+
+| N.º | Categoría | Integrante | Error cazado de la IA | Evidencia primaria utilizada | Corrección implementada |
+| :---: | :--- | :---: | :--- | :--- | :--- |
+| **H1** | **Datos del mundo real** | Sara Acevedo (Int. 3) | Sugirió incluir variables ex-post (`recoveries`, `last_pymnt`) en $X$ y omitió la amortización previa en LGD. | Diccionario `LCDataDictionary.xlsx` y normativa de Basilea II/III (BCBS, 2005). | Derivación con $EAD_{obs} = \text{funded} - \text{prncp}$; purga estricta de variables posteriores al desembolso. |
+| **H2** | **Matemáticas** | Sara Acevedo (Int. 3) | Propuso Softmax unidimensional o salida lineal no acotada; afirmó que Sigmoide no sirve para regresión. | Papke & Wooldridge (1996) sobre respuestas fraccionarias; derivación de rango $(0, 1)$ de $\sigma(z)$. | Capa final con activación Sigmoide intrínseca y prueba unitaria de acotamiento en $[0, 1]$. |
+| **H3** | **Código** | Equipo (Int. 1 y 2) | Aplicó `fit_transform` sobre todo el dataset antes de dividir y propuso división aleatoria temporalmente ciega. | Regla de no anticipación temporal; prueba `test_preprocesamiento.py::test_transformador_solo_ajusta_con_train`. | Partición temporal estricta (2007-2012, 2013, 2014); ajuste de transformadores exclusivamente en `train`. |
+| **H4** | **Bibliografía** | Equipo (Int. 5) | Generó tres referencias académicas inventadas con autores falsos y códigos DOI que arrojaban HTTP 404. | Verificación directa en el registro central de CrossRef (`doi.org`) e índices de Scopus. | Eliminación de citas espurias; adopción de fuentes primarias reales verificadas (Basilea, Loshchilov, Papke). |
+| **H5** | **Conceptos** | Sara Acevedo (Int. 3) | Afirmó que el MLP siempre supera por amplio margen a un modelo lineal en datos tabulares de LGD. | Experimento de 30 semillas independientes: MAE idéntico (0.0771) y RMSE favorable al baseline (0.0868 vs 0.0887). | Discusión crítica basada en evidencia empírica: el modelo lineal es superior por simplicidad y robustez. |
+
+El detalle técnico completo de cada hallazgo (con prompts literales, respuestas textuales, sospechas, derivaciones y lecciones aprendidas) se encuentra formalmente preservado en [`docs/caceria_alucinaciones.md`](../../docs/caceria_alucinaciones.md).
+
+## 5. Qué está documentado y qué falta
 
 | Componente | Procedimiento en el reporte | Estado en el clon |
 | --- | --- | --- |
-| Datos / PD | Preparación de datos y regeneración de figuras (sección 1) | Modelo PD final y evaluación disponibles; falta el CSV original para reproducir la preparación completa. |
-| LGD | Objetivo, particiones, métricas reportadas, figura, comandos y pruebas (sección 2) | Código y figura disponibles; no hay CSV, matrices ni JSON de benchmark para recalcular resultados. |
-| Scorecard / app | Fórmula, contrato, exportación, comprobación y arranque local (sección 3) | Paquete PD real, matrices y pruebas integrados. App local con inferencia; publicación pendiente. |
-| Integración / reporte | Este reporte y los pasos de ejecución anteriores | Falta combinar PD real con LGD para estimar pérdida esperada ex-ante, verificar en clon limpio y completar divulgación. |
+| Datos / PD | Preparación de datos y regeneración de figuras (sección 1) | Matrices versionadas, modelo PD final, pipeline con un solo comando y modo rápido (`--demo` en 21 s) disponibles. |
+| LGD | Objetivo, particiones, métricas reportadas, figura, comandos y pruebas (sección 2) | Matrices versionadas en Git, hiperparámetros externalizados en `configs/lgd_mlp_best.yaml`, ejecutable con un solo comando (`--demo` en 37 s) y 7 pruebas unitarias aprobadas. |
+| Scorecard / app | Fórmula, contrato, exportación, comprobación y arranque local (sección 3) | Paquete PD real, matrices y pruebas integrados. App local con inferencia; comprobable mediante `python run_app.py --check`. |
+| Cacería de alucinaciones | Registro estructurado de 5 hallazgos en 5 categorías (sección 4) | Consolidada en el reporte y detallada en `docs/caceria_alucinaciones.md`. |
+| Integración / reporte | Este reporte y los pasos de ejecución anteriores | Verificación en clon limpio documentada, ejecución garantizada < 2 minutos; publicación web y video promocional pendientes. |
 
-Faltan la integración de PD con LGD para estimar pérdida esperada ex-ante,
-la publicación de la aplicación web y el video promocional. También faltan la revisión independiente de resultados LGD,
-la fecha de descarga y la cacería de alucinaciones consolidada.
-
-## 5. Referencias bibliográficas (Normas APA 7.ª edición)
+## 6. Referencias bibliográficas (Normas APA 7.ª edición)
 
 - Basel Committee on Banking Supervision. (2005). *An explanatory note on the Basel II IRB risk-weight functions*. Bank for International Settlements. https://www.bis.org/bcbs/irbriskweight.pdf
 - Loshchilov, I., & Hutter, F. (2019). Decoupled weight decay regularization. En *International Conference on Learning Representations (ICLR)*. https://openreview.net/forum?id=Bkg6RiCqY7

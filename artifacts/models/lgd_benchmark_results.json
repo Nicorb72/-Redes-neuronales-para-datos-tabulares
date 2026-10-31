@@ -1,0 +1,162 @@
+{
+    "baseline": {
+        "tipo": "LinearRegression (Clipped [0, 1])",
+        "parametros": 45,
+        "tiempo_ajuste_sec": 0.05312943458557129,
+        "test_mae": 0.07710983538527284,
+        "test_rmse": 0.08676897375588226,
+        "metricas_completas": {
+            "mae": 0.07710983538527284,
+            "rmse": 0.08676897375588226,
+            "r2": -0.14397278446754558,
+            "pearson_r": 0.012482713748715988,
+            "spearman_rho": 0.01832638530587139,
+            "ks_statistic": 0.6276375080466348,
+            "ks_pvalue": 0.0,
+            "wasserstein_distance": 0.06803819249585849
+        },
+        "resumen_distribucion": {
+            "nombre": "Baseline",
+            "n": 13981,
+            "media": 0.9173490363084684,
+            "desv_est": 0.01426463216344713,
+            "min": 0.8030660900922677,
+            "p25": 0.9089096148080413,
+            "mediana": 0.9158941774283573,
+            "p75": 0.9242434997838405,
+            "max": 1.0,
+            "prop_exacto_1": 0.0010728846291395465
+        }
+    },
+    "busqueda_hiperparametros": {
+        "presupuesto_configuraciones": 2,
+        "tiempo_total_busqueda_sec": 9.28764295578003,
+        "todas_las_configuraciones": [
+            {
+                "id": 2,
+                "config": {
+                    "hidden_dims": [
+                        64,
+                        32
+                    ],
+                    "dropout": 0.2,
+                    "lr": 0.001,
+                    "loss": "mse",
+                    "epochs": 15
+                },
+                "params": 5185,
+                "val_mae": 0.07616732884720026,
+                "val_rmse": 0.0941304687874862,
+                "duration_sec": 4.875423431396484
+            },
+            {
+                "id": 1,
+                "config": {
+                    "hidden_dims": [
+                        32
+                    ],
+                    "dropout": 0.1,
+                    "lr": 0.001,
+                    "loss": "mse",
+                    "epochs": 15
+                },
+                "params": 1537,
+                "val_mae": 0.0758725948410166,
+                "val_rmse": 0.09467364339150418,
+                "duration_sec": 4.412079095840454
+            }
+        ],
+        "mejor_configuracion": {
+            "id": 2,
+            "config": {
+                "hidden_dims": [
+                    64,
+                    32
+                ],
+                "dropout": 0.2,
+                "lr": 0.001,
+                "loss": "mse",
+                "epochs": 15
+            },
+            "params": 5185,
+            "val_mae": 0.07616732884720026,
+            "val_rmse": 0.0941304687874862,
+            "duration_sec": 4.875423431396484
+        }
+    },
+    "mlp_30_semillas": {
+        "n_semillas": 5,
+        "parametros": 5185,
+        "mae": {
+            "media": 0.0770589743754055,
+            "std": 0.0006365028570515037,
+            "min": 0.07646576189131894,
+            "max": 0.07809397660238583
+        },
+        "rmse": {
+            "media": 0.08858631750826841,
+            "std": 0.000520202521039242,
+            "min": 0.0880806200875497,
+            "max": 0.08950242757040444
+        },
+        "tiempo_ajuste_sec": {
+            "media": 4.699195194244385,
+            "std": 0.20804076347944217,
+            "total": 23.495975971221924
+        },
+        "semillas_evaluadas": [
+            101,
+            202,
+            303,
+            404,
+            505
+        ]
+    },
+    "mejor_mlp_individual": {
+        "configuracion": {
+            "hidden_dims": [
+                64,
+                32
+            ],
+            "dropout": 0.2,
+            "lr": 0.001,
+            "loss": "mse",
+            "epochs": 15
+        },
+        "parametros": 5185,
+        "metricas_test": {
+            "mae": 0.07659583364142984,
+            "rmse": 0.0880806200875497,
+            "r2": -0.17882000529287168,
+            "pearson_r": 0.01649084796324389,
+            "spearman_rho": 0.02278098101911904,
+            "ks_statistic": 0.6272083541949789,
+            "ks_pvalue": 0.0,
+            "wasserstein_distance": 0.05927509039543043
+        },
+        "resumen_distribucion": {
+            "nombre": "MLP",
+            "n": 13981,
+            "media": 0.9192313045128998,
+            "desv_est": 0.023850885803654374,
+            "min": 0.7525464296340942,
+            "p25": 0.9063245058059692,
+            "mediana": 0.9218644499778748,
+            "p75": 0.9343859553337097,
+            "max": 0.9999186992645264,
+            "prop_exacto_1": 0.0003576282097131822
+        }
+    },
+    "distribucion_observada": {
+        "nombre": "Observada",
+        "n": 13981,
+        "media": 0.9451508760745537,
+        "desv_est": 0.08112535582296361,
+        "min": 0.0,
+        "p25": 0.8601211631187953,
+        "mediana": 1.0,
+        "p75": 1.0,
+        "max": 1.0,
+        "prop_exacto_1": 0.6273514054788641
+    }
+}

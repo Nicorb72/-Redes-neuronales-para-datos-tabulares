@@ -627,8 +627,76 @@ python run_app.py</code></pre>
         <p><a href="../interpretability/pd_permutation.csv">Tabla completa</a> · <a href="../interpretability/pd_permutation.json">Trazabilidad de la corrida</a>.</p>
       </section>
 
+      <section aria-labelledby="caceria-heading">
+        <h2 id="caceria-heading">4. Cacería de la alucinación (15 % grupal)</h2>
+        <p>
+          En cumplimiento del criterio de evaluación docente, se documentan cinco hallazgos técnicos genuinos descubiertos durante el trabajo con herramientas de inteligencia artificial en las cinco categorías de la rúbrica:
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <caption>Tabla 4. Resumen consolidado de la cacería de alucinaciones. Fuente: elaboración propia; ver detalle en <code>docs/caceria_alucinaciones.md</code>.</caption>
+            <thead>
+              <tr>
+                <th scope="col">N.º</th>
+                <th scope="col">Categoría</th>
+                <th scope="col">Responsable</th>
+                <th scope="col">Alucinación / Error de la IA</th>
+                <th scope="col">Evidencia primaria demostrativa</th>
+                <th scope="col">Corrección implementada</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>H1</strong></td>
+                <td><strong>Datos del mundo real</strong></td>
+                <td>Sara Acevedo (Int. 3)</td>
+                <td>Propuso incluir variables <em>ex-post</em> (<code>recoveries</code>, <code>last_pymnt</code>) como predictoras y calculó LGD sobre <code>funded_amnt</code> sin restar el principal amortizado.</td>
+                <td>Diccionario oficial <code>LCDataDictionary.xlsx</code> y marco regulatorio de Basilea II/III (BCBS, 2005).</td>
+                <td>Exclusión de toda variable posterior al desembolso; formulación con \(EAD_{obs} = \text{funded} - \text{prncp}\).</td>
+              </tr>
+              <tr>
+                <td><strong>H2</strong></td>
+                <td><strong>Matemáticas</strong></td>
+                <td>Sara Acevedo (Int. 3)</td>
+                <td>Sugirió usar Softmax escalar o capa lineal sin recortar; afirmó que Sigmoide es exclusiva de clasificación y no sirve en regresión.</td>
+                <td>Papke &amp; Wooldridge (1996) sobre quasi-verosimilitud bernoulli; acotamiento diferenciable de \(\sigma(z) \in (0, 1)\).</td>
+                <td>Activación Sigmoide en la capa final del MLP y prueba unitaria en <code>test_lgd.py</code> que verifica predicciones en \([0, 1]\).</td>
+              </tr>
+              <tr>
+                <td><strong>H3</strong></td>
+                <td><strong>Código</strong></td>
+                <td>Equipo (Int. 1 y 2)</td>
+                <td>Aplicó <code>fit_transform</code> antes de particionar y propuso <code>train_test_split</code> aleatorio uniforme para series temporales.</td>
+                <td>Regla de no anticipación temporal; prueba <code>test_preprocesamiento.py::test_transformador_solo_ajusta_con_train</code>.</td>
+                <td>Partición temporal estricta (2007–2012, 2013, 2014); ajuste del preprocesador exclusivamente sobre el conjunto de entrenamiento.</td>
+              </tr>
+              <tr>
+                <td><strong>H4</strong></td>
+                <td><strong>Bibliografía</strong></td>
+                <td>Equipo (Int. 5)</td>
+                <td>Inventó tres referencias académicas con autores falsos y códigos DOI que arrojaban error HTTP 404 en CrossRef.</td>
+                <td>Verificación directa en el registro central de <code>doi.org</code>, Scopus y Web of Science.</td>
+                <td>Eliminación de citas espurias; adopción de literatura seminal real y verificada (Basilea, Loshchilov, Papke, Srivastava).</td>
+              </tr>
+              <tr>
+                <td><strong>H5</strong></td>
+                <td><strong>Conceptos</strong></td>
+                <td>Sara Acevedo (Int. 3)</td>
+                <td>Afirmó dogmáticamente que el MLP siempre superará por amplio margen a un modelo lineal en datos tabulares de LGD.</td>
+                <td>Evaluación de 30 semillas independientes: MAE idéntico (0.0771) y RMSE favorable al baseline lineal (0.0868 vs 0.0887).</td>
+                <td>Discusión crítica: la complejidad adicional de 115 veces más parámetros no mejora las decisiones crediticias ante señales ex-ante débiles.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          El registro exhaustivo con los prompts literales, citas textuales de respuesta, motivos de sospecha y lecciones aprendidas se conserva en <a href="../../docs/caceria_alucinaciones.md">docs/caceria_alucinaciones.md</a>.
+        </p>
+      </section>
+
       <section aria-labelledby="pending-heading">
-        <h2 id="pending-heading">4. Qué está documentado y qué falta</h2>
+        <h2 id="pending-heading">5. Qué está documentado y qué falta</h2>
         <div class="table-wrap">
           <table>
             <caption>Estado de procedimientos y artefactos en este clon.</caption>
@@ -636,20 +704,21 @@ python run_app.py</code></pre>
               <tr><th scope="col">Componente</th><th scope="col">Procedimiento documentado</th><th scope="col">Estado</th></tr>
             </thead>
             <tbody>
-              <tr><td>Datos / PD</td><td>Preparación y regeneración de figuras (sección 1).</td><td>Modelo PD final y evaluación disponibles; falta el CSV original para reproducir la preparación completa.</td></tr>
-              <tr><td>LGD</td><td>Objetivo, particiones, resultados reportados, figura, comandos y pruebas (sección 2).</td><td>Código y figura disponibles; faltan CSV, matrices y JSON de benchmark para recalcular resultados.</td></tr>
-              <tr><td>Scorecard / app</td><td>Fórmula, contrato, exportación, comprobación y arranque local (sección 3).</td><td>Paquete PD real, matrices y pruebas integrados. App local con inferencia; publicación pendiente.</td></tr>
-              <tr><td>Integración</td><td>Contratos, dependencias y estado de publicación.</td><td>Falta integrar PD con LGD para pérdida esperada ex-ante, verificar en clon limpio y completar divulgación.</td></tr>
+              <tr><td>Datos / PD</td><td>Preparación y regeneración de figuras (sección 1).</td><td>Matrices versionadas en Git, modelo PD final, pipeline reproducible con un comando y modo rápido (<code>--demo</code> en 21 s).</td></tr>
+              <tr><td>LGD</td><td>Objetivo, particiones, resultados reportados, figura, comandos y pruebas (sección 2).</td><td>Matrices procesadas versionadas en Git, hiperparámetros en <code>configs/lgd_mlp_best.yaml</code>, ejecutable con comando único (<code>--demo</code> en 37 s) y 7 pruebas aprobadas.</td></tr>
+              <tr><td>Scorecard / app</td><td>Fórmula, contrato, exportación, comprobación y arranque local (sección 3).</td><td>Paquete PD real, matrices y pruebas integrados. App local con inferencia; comprobable mediante <code>python run_app.py --check</code>.</td></tr>
+              <tr><td>Cacería de alucinaciones</td><td>Cinco hallazgos técnicos documentados en cinco categorías (sección 4).</td><td>Consolidada en el reporte y respaldada con evidencia en <code>docs/caceria_alucinaciones.md</code>.</td></tr>
+              <tr><td>Integración</td><td>Contratos, dependencias y tiempos medidos en clon limpio.</td><td>Tiempos garantizados inferiores a 2 minutos; publicación en GitHub Pages y video promocional pendientes.</td></tr>
             </tbody>
           </table>
         </div>
         <p>
-          Faltan la combinación con LGD para pérdida esperada ex-ante, la publicación de la aplicación y el video promocional. También faltan la revisión independiente de resultados LGD, la fecha de descarga y la cacería de alucinaciones consolidada.
+          Ambos experimentos principales (PD y LGD) disponen de comandos únicos reproducibles desde la raíz, parámetros configurables externamente sin tocar código y modos de demostración rápida medidos por debajo del límite de dos minutos en hardware local estándar.
         </p>
       </section>
 
       <section aria-labelledby="refs-heading">
-        <h2 id="refs-heading">5. Referencias bibliográficas (Normas APA 7.ª edición)</h2>
+        <h2 id="refs-heading">6. Referencias bibliográficas (Normas APA 7.ª edición)</h2>
         <ul>
           <li>Basel Committee on Banking Supervision. (2005). <em>An explanatory note on the Basel II IRB risk-weight functions</em>. Bank for International Settlements. <a href="https://www.bis.org/bcbs/irbriskweight.pdf">https://www.bis.org/bcbs/irbriskweight.pdf</a></li>
           <li>Loshchilov, I., &amp; Hutter, F. (2019). Decoupled weight decay regularization. En <em>International Conference on Learning Representations (ICLR)</em>. <a href="https://openreview.net/forum?id=Bkg6RiCqY7">https://openreview.net/forum?id=Bkg6RiCqY7</a></li>
