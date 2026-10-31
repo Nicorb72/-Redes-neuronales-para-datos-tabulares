@@ -242,27 +242,29 @@ Se usan `Charged Off` y `Does not meet the credit policy. Status:Charged Off`; s
 
 Los modelos usan las mismas matrices: train 2007–2012 (14.419 filas), validación 2013 (14.836) y prueba 2014 (13.981). El baseline es regresión lineal recortada a $[0,1]$. El MLP usa 44 entradas, capas de 64 y 32 unidades, BatchNorm, ReLU, dropout de 0,20 y salida sigmoide.
 
-**Discrepancia de evidencia:** `docs/integrante-3.md` describe treinta semillas y cinco configuraciones, pero el JSON versionado registra **cinco semillas y dos configuraciones**. La Tabla 5 presenta solo lo respaldado por ese archivo. Recuperar o repetir el benchmark completo sigue pendiente. Además, el código elige el checkpoint con menor RMSE de prueba: debe cambiar a validación o una semilla preestablecida antes de presentar una selección independiente de test.
+El benchmark se repitió con cinco configuraciones y **30 semillas independientes** (101–3030, paso 101). Se seleccionó la arquitectura por RMSE de validación y, después, la semilla por ese mismo criterio. El checkpoint final es la **semilla 808**, con RMSE de validación **0.093988**. Todas las corridas se entrenan y valoran en validación antes de consultar prueba; los empates exactos se resuelven por la primera semilla del orden fijado. El JSON conserva métricas de cada corrida, la marca de selección y `test_used_for_selection=false`.
+
+La Tabla 5 presenta esta ejecución completa. Sustituye el archivo anterior de cinco semillas. La corrección evita usar el ranking de prueba para escoger el checkpoint, pero no convierte la prueba 2014 ya consultada históricamente en un conjunto externo nuevo.
 
 <!-- BEGIN LGD_METRICS -->
-**Tabla 5. Resultados LGD respaldados por el JSON versionado.** Fuente: [lgd_benchmark_results.json](../../artifacts/models/lgd_benchmark_results.json). La DE corresponde a las cinco corridas registradas.
+**Tabla 5. Resultados LGD respaldados por el JSON versionado.** Fuente: [lgd_benchmark_results.json](../../artifacts/models/lgd_benchmark_results.json). La DE corresponde a las corridas registradas en ese JSON.
 
 | Modelo | Parámetros | MAE media ± DE | MAE mín–máx | RMSE media ± DE | RMSE mín–máx |
 |---|---|---|---|---|---|
 | Lineal recortado | 45 | 0.07711 | — | 0.08677 | — |
-| MLP (5 semillas) | 5185 | 0.07706 ± 0.00064 | 0.07647–0.07809 | 0.08859 ± 0.00052 | 0.08808–0.08950 |
+| MLP (30 semillas) | 5185 | 0.07714 ± 0.00074 | 0.07566–0.07910 | 0.08876 ± 0.00070 | 0.08757–0.09062 |
 <!-- END LGD_METRICS -->
 
 ### 2.3 Distribución y aporte de la red
 
-La Figura 6 conserva la comparación entregada por el equipo. Las predicciones se concentran cerca de la media y no reproducen toda la masa observada en uno. Una estimación de media condicional no tiene por qué reproducir la distribución marginal de la respuesta: son objetivos diferentes. La figura debe conciliarse con el benchmark final; no se atribuye a una corrida de treinta semillas no respaldada por el JSON actual.
+La Figura 6 se regeneró con el checkpoint seleccionado por validación y las predicciones del baseline sobre prueba 2014. Las predicciones se concentran cerca de la media y no reproducen toda la masa observada en uno. Una media condicional no tiene por qué reproducir la distribución marginal de la respuesta: son objetivos distintos.
 
 <figure>
 <img src="../figures/distribucion_lgd_observada_vs_predicha.svg" alt="Distribución LGD observada y predicha">
-<figcaption><strong>Figura 6.</strong> Distribución LGD en prueba 2014, observada frente a baseline y MLP. <strong>Fuente:</strong> figura del equipo, generada por <code>lgd/experiments.py</code>; conciliación con benchmark completo pendiente.</figcaption>
+<figcaption><strong>Figura 6.</strong> Distribución LGD en prueba 2014, observada frente a baseline y MLP. <strong>Fuente:</strong> benchmark de 30 semillas, <code>lgd/experiments.py</code>; checkpoint 808 seleccionado por validación.</figcaption>
 </figure>
 
-Las cinco corridas respaldadas presentan una diferencia pequeña de MAE y RMSE medio mayor que el baseline (Tabla 5). No muestran una ventaja clara del MLP para esta definición de LGD. La mayor complejidad no justifica afirmar superioridad universal.
+Las treinta corridas presentan una diferencia pequeña de MAE y RMSE medio mayor que el baseline (Tabla 5). No muestran una ventaja clara del MLP para esta definición de LGD. La mayor complejidad no justifica afirmar superioridad universal.
 
 ### 2.4 Pérdida esperada
 
@@ -486,11 +488,11 @@ Los modelos de una tarea usan las mismas matrices y particiones; la arquitectura
 | Logística PD | 1 ajuste | 0.065 s | 45 |
 | MLP PD: búsqueda | 180 ensayos + 25 corridas de robustez | 1.994,85 s oficiales | 7.105 |
 | MLP PD: evaluación final | 30 semillas de una configuración | 137.51 s de ajuste | 7.105 |
-| Lineal LGD | 1 ajuste | 0.053 s | 45 |
-| MLP LGD: archivo guardado | 2 configuraciones + 5 semillas | 9.29 s búsqueda + 23.50 s ajustes | 5185 |
+| Lineal LGD | 1 ajuste | 0.040 s | 45 |
+| MLP LGD: archivo guardado | 5 configuraciones + 30 semillas | 31.98 s búsqueda + 165.07 s ajustes | 5185 |
 <!-- END COMPUTE -->
 
-El presupuesto oficial PD incluye 150 ensayos iniciales y 30 de refinamiento, más 25 corridas de robustez de candidatos. El resumen registra 1.994,85 s oficiales y 705,82 s de exploración descartada, total 2.700,67 s; se separan de los 30 ajustes finales. Para LGD se mantiene la discrepancia de la sección 2.2 hasta recuperar el benchmark completo.
+El presupuesto oficial PD incluye 150 ensayos iniciales y 30 de refinamiento, más 25 corridas de robustez de candidatos. El resumen registra 1.994,85 s oficiales y 705,82 s de exploración descartada, total 2.700,67 s; se separan de los 30 ajustes finales. Para LGD, la sección 2.2 documenta cinco configuraciones y treinta corridas; el JSON incluye la selección por validación y todas las métricas por semilla.
 
 ## 5. Cierre de hipótesis, discusión y aprendizajes
 
@@ -514,7 +516,7 @@ Las correlaciones pueden producir perfiles poco plausibles al cambiar una variab
 
 ### 5.2 Qué aportaron las redes
 
-PD muestra mejora media moderada frente a la logística: AUC +0,00465 y Brier −0,00545 en prueba 2014. Debe leerse junto con variación entre semillas, mayor presupuesto y desplazamiento temporal de la tasa de incumplimiento. No demuestra superioridad general ni calibración adecuada para decisiones reales. En LGD, las cinco corridas guardadas no muestran una ventaja clara del MLP y no permiten dar por verificado un benchmark de treinta.
+PD muestra mejora media moderada frente a la logística: AUC +0,00465 y Brier −0,00545 en prueba 2014. Debe leerse junto con variación entre semillas, mayor presupuesto y desplazamiento temporal de la tasa de incumplimiento. No demuestra superioridad general ni calibración adecuada para decisiones reales. En LGD, las treinta corridas guardadas no muestran una ventaja clara del MLP frente al baseline; el checkpoint se seleccionó exclusivamente por validación.
 
 La logística permite interpretar log-odds directamente. El MLP representa no linealidades, pero necesita herramientas adicionales y cautela con correlaciones. Convertir PD en puntaje facilita la comunicación; no mejora por sí solo las probabilidades.
 
@@ -582,7 +584,7 @@ La Tabla 10 resume los cinco hallazgos declarados en [docs/caceria_alucinaciones
 | H2 | Matemáticas | Restringir sigmoide a clasificación o proponer softmax escalar. Justificar media acotada y pérdidas. | Sección 4 y pruebas de rango; conservar respuesta original. |
 | H3 | Código | Ajustar transformador antes de separar particiones. Ajustar solo con train. | Código de preparación. El PDF exige una partición temporal justificada; **no fija** los años 2007–2012/2013/2014 elegidos por el equipo. El error del resumen EDA se documenta en 8.2. |
 | H4 | Bibliografía | Referencias o DOI mal atribuidos por IA. Contrastar título, autor y fuente primaria. | Conservar registros y consultas DOI; declarar verificación no basta. |
-| H5 | Conceptos | Afirmar superioridad universal del MLP. Comparar con baseline y costos. | Tablas 4 y 6; benchmark LGD de treinta semillas aún sin conciliar. |
+| H5 | Conceptos | Afirmar superioridad universal del MLP. Comparar con baseline y costos. | Tablas 4 y 5; benchmark LGD de treinta semillas con registros por corrida y selección por validación. |
 
 Las secciones 8.2–8.4 preservan relatos anteriores y explicitan la evidencia faltante. El enunciado permite presentar verificaciones cuando no hay cinco hallazgos genuinos; no corresponde completarlos con casos inventados.
 
@@ -778,7 +780,7 @@ conversación original facilita demostrar el error y su corrección.
 
 ## 9. Estado de entrega y límites
 
-La Tabla 11 separa implementación y verificación final. Esta edición corrige el reporte; no ejecuta treinta entrenamientos LGD ni integra los modelos para pérdida esperada.
+La Tabla 11 separa implementación y verificación final. La revisión LGD incorpora treinta entrenamientos y selección del checkpoint por validación. La integración de ambos modelos para pérdida esperada sigue pendiente.
 
 **Tabla 11. Estado observado y pendientes.** Fuente: revisión del repositorio y pruebas del 30/10/2026.
 
@@ -786,7 +788,7 @@ La Tabla 11 separa implementación y verificación final. Esta edición corrige 
 |---|---|---|
 | Datos | Matrices PD/LGD, EAD LGD, transformadores y EDA sin CSV. | La reconstrucción exacta desde otra descarga no está garantizada: falta checksum original. |
 | PD | Treinta semillas, calibración, presupuesto y checkpoint final. | Validación temporal adicional y calibración antes de uso real. |
-| LGD | Baseline, MLP y JSON con cinco semillas. | Conciliar treinta corridas y seleccionar checkpoint sin usar test. |
+| LGD | Baseline, MLP, cinco configuraciones y JSON con treinta semillas. | Selección por validación corregida y comprobada; queda una evaluación externa futura sobre datos no usados históricamente. |
 | Pérdida esperada | Función y pruebas. | Integrar PD/LGD reales y EAD en los mismos créditos. |
 | Scorecard y app | Inferencia, percentil, simulación y URL pública. | Verificar rama desplegada y enlaces reporte/video en la app servida. |
 | Reporte | Fuente única, matemáticas y tablas derivadas de evidencia. | Incorporar los resultados que resuelvan los pendientes anteriores. |

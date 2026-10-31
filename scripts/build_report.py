@@ -37,7 +37,7 @@ def evidence_blocks():
     blocks = {'PD_METRICS': table('**Tabla 4. PD en prueba temporal 2014, treinta semillas.** Fuente: `metricas_por_semilla.csv` y `resultados.json`, derivados en [evidence.json](evidence.json).', ['Métrica', 'Logística', 'MLP media ± DE', 'MLP mejor', 'MLP peor'], rows)}
     stats = lgd['mlp_30_semillas']
     base = lgd['baseline']
-    blocks['LGD_METRICS'] = table('**Tabla 5. Resultados LGD respaldados por el JSON versionado.** Fuente: [lgd_benchmark_results.json](../../artifacts/models/lgd_benchmark_results.json). La DE corresponde a las cinco corridas registradas.', ['Modelo', 'Parámetros', 'MAE media ± DE', 'MAE mín–máx', 'RMSE media ± DE', 'RMSE mín–máx'], [
+    blocks['LGD_METRICS'] = table('**Tabla 5. Resultados LGD respaldados por el JSON versionado.** Fuente: [lgd_benchmark_results.json](../../artifacts/models/lgd_benchmark_results.json). La DE corresponde a las corridas registradas en ese JSON.', ['Modelo', 'Parámetros', 'MAE media ± DE', 'MAE mín–máx', 'RMSE media ± DE', 'RMSE mín–máx'], [
         ['Lineal recortado', base['parametros'], f"{base['test_mae']:.5f}", '—', f"{base['test_rmse']:.5f}", '—'],
         [f"MLP ({stats['n_semillas']} semillas)", stats['parametros'], f"{stats['mae']['media']:.5f} ± {stats['mae']['std']:.5f}", f"{stats['mae']['min']:.5f}–{stats['mae']['max']:.5f}", f"{stats['rmse']['media']:.5f} ± {stats['rmse']['std']:.5f}", f"{stats['rmse']['min']:.5f}–{stats['rmse']['max']:.5f}"]])
     blocks['COMPUTE'] = table('**Tabla 7. Presupuesto y complejidad por familia.** Fuente: resumen de búsqueda PD, treinta corridas PD y JSON LGD versionados.', ['Familia / fase', 'Configuraciones o corridas', 'Tiempo registrado', 'Parámetros finales'], [

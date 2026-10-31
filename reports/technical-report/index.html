@@ -551,9 +551,10 @@ discriminación debe leerse junto con la calibración.</p>
 <p>Se usan <code>Charged Off</code> y <code>Does not meet the credit policy. Status:Charged Off</code>; se excluyen <code>Default</code>, moras cuyo proceso de recuperación no terminó y exposiciones no positivas. Esta pérdida sobre principal no descuenta flujos ni incluye todos los intereses, costos o tiempos de cobranza. Las recuperaciones pueden seguir incompletas. No se presenta como LGD regulatoria definitiva (Basel Committee on Banking Supervision, 2005).</p>
 <h3>2.2 Comparación y evidencia</h3>
 <p>Los modelos usan las mismas matrices: train 2007–2012 (14.419 filas), validación 2013 (14.836) y prueba 2014 (13.981). El baseline es regresión lineal recortada a <span class="math-inline">\([0,1]\)</span>. El MLP usa 44 entradas, capas de 64 y 32 unidades, BatchNorm, ReLU, dropout de 0,20 y salida sigmoide.</p>
-<p><strong>Discrepancia de evidencia:</strong> <code>docs/integrante-3.md</code> describe treinta semillas y cinco configuraciones, pero el JSON versionado registra <strong>cinco semillas y dos configuraciones</strong>. La Tabla 5 presenta solo lo respaldado por ese archivo. Recuperar o repetir el benchmark completo sigue pendiente. Además, el código elige el checkpoint con menor RMSE de prueba: debe cambiar a validación o una semilla preestablecida antes de presentar una selección independiente de test.</p>
+<p>El benchmark se repitió con cinco configuraciones y <strong>30 semillas independientes</strong> (101–3030, paso 101). Se seleccionó la arquitectura por RMSE de validación y, después, la semilla por ese mismo criterio. El checkpoint final es la <strong>semilla 808</strong>, con RMSE de validación <strong>0.093988</strong>. Todas las corridas se entrenan y valoran en validación antes de consultar prueba; los empates exactos se resuelven por la primera semilla del orden fijado. El JSON conserva métricas de cada corrida, la marca de selección y <code>test_used_for_selection=false</code>.</p>
+<p>La Tabla 5 presenta esta ejecución completa. Sustituye el archivo anterior de cinco semillas. La corrección evita usar el ranking de prueba para escoger el checkpoint, pero no convierte la prueba 2014 ya consultada históricamente en un conjunto externo nuevo.</p>
 <!-- BEGIN LGD_METRICS -->
-<div class="table-wrap"><table><caption><strong>Tabla 5. Resultados LGD respaldados por el JSON versionado.</strong> Fuente: <a href="../../artifacts/models/lgd_benchmark_results.json">lgd_benchmark_results.json</a>. La DE corresponde a las cinco corridas registradas.</caption>
+<div class="table-wrap"><table><caption><strong>Tabla 5. Resultados LGD respaldados por el JSON versionado.</strong> Fuente: <a href="../../artifacts/models/lgd_benchmark_results.json">lgd_benchmark_results.json</a>. La DE corresponde a las corridas registradas en ese JSON.</caption>
 <thead>
 <tr>
 <th>Modelo</th>
@@ -574,23 +575,23 @@ discriminación debe leerse junto con la calibración.</p>
 <td>—</td>
 </tr>
 <tr>
-<td>MLP (5 semillas)</td>
+<td>MLP (30 semillas)</td>
 <td>5185</td>
-<td>0.07706 ± 0.00064</td>
-<td>0.07647–0.07809</td>
-<td>0.08859 ± 0.00052</td>
-<td>0.08808–0.08950</td>
+<td>0.07714 ± 0.00074</td>
+<td>0.07566–0.07910</td>
+<td>0.08876 ± 0.00070</td>
+<td>0.08757–0.09062</td>
 </tr>
 </tbody>
 </table></div>
 <!-- END LGD_METRICS -->
 <h3>2.3 Distribución y aporte de la red</h3>
-<p>La Figura 6 conserva la comparación entregada por el equipo. Las predicciones se concentran cerca de la media y no reproducen toda la masa observada en uno. Una estimación de media condicional no tiene por qué reproducir la distribución marginal de la respuesta: son objetivos diferentes. La figura debe conciliarse con el benchmark final; no se atribuye a una corrida de treinta semillas no respaldada por el JSON actual.</p>
+<p>La Figura 6 se regeneró con el checkpoint seleccionado por validación y las predicciones del baseline sobre prueba 2014. Las predicciones se concentran cerca de la media y no reproducen toda la masa observada en uno. Una media condicional no tiene por qué reproducir la distribución marginal de la respuesta: son objetivos distintos.</p>
 <figure>
 <img src="../figures/distribucion_lgd_observada_vs_predicha.svg" alt="Distribución LGD observada y predicha">
-<figcaption><strong>Figura 6.</strong> Distribución LGD en prueba 2014, observada frente a baseline y MLP. <strong>Fuente:</strong> figura del equipo, generada por <code>lgd/experiments.py</code>; conciliación con benchmark completo pendiente.</figcaption>
+<figcaption><strong>Figura 6.</strong> Distribución LGD en prueba 2014, observada frente a baseline y MLP. <strong>Fuente:</strong> benchmark de 30 semillas, <code>lgd/experiments.py</code>; checkpoint 808 seleccionado por validación.</figcaption>
 </figure>
-<p>Las cinco corridas respaldadas presentan una diferencia pequeña de MAE y RMSE medio mayor que el baseline (Tabla 5). No muestran una ventaja clara del MLP para esta definición de LGD. La mayor complejidad no justifica afirmar superioridad universal.</p>
+<p>Las treinta corridas presentan una diferencia pequeña de MAE y RMSE medio mayor que el baseline (Tabla 5). No muestran una ventaja clara del MLP para esta definición de LGD. La mayor complejidad no justifica afirmar superioridad universal.</p>
 <h3>2.4 Pérdida esperada</h3>
 <p>La relación de riesgo es <span class="math-inline">\(E[L_i\mid x_i]\approx PD_i\,LGD_i\,EAD_i\)</span>, con LGD condicionada al incumplimiento (Basel Committee on Banking Supervision, 2005). Requiere horizonte y exposición compatibles; multiplicar medias de LGD y EAD aleatorias exige una aproximación adicional si son dependientes.</p>
 <p>Se propone <code>funded_amnt</code> como exposición conservadora en originación; <span class="math-inline">\(EAD_{obs}\)</span> construye la etiqueta histórica. Los cálculos dentro de créditos ya castigados no equivalen a pérdida esperada ex-ante. <code>lgd/expected_loss.py</code> implementa la multiplicación, pero el experimento aún no conecta los dos modelos sobre créditos alineados. <strong>La integración y evaluación de pérdida esperada siguen pendientes.</strong></p>
@@ -791,19 +792,19 @@ Fuente: elaboración propia con el MLP final y validación temporal.</caption>
 <tr>
 <td>Lineal LGD</td>
 <td>1 ajuste</td>
-<td>0.053 s</td>
+<td>0.040 s</td>
 <td>45</td>
 </tr>
 <tr>
 <td>MLP LGD: archivo guardado</td>
-<td>2 configuraciones + 5 semillas</td>
-<td>9.29 s búsqueda + 23.50 s ajustes</td>
+<td>5 configuraciones + 30 semillas</td>
+<td>31.98 s búsqueda + 165.07 s ajustes</td>
 <td>5185</td>
 </tr>
 </tbody>
 </table></div>
 <!-- END COMPUTE -->
-<p>El presupuesto oficial PD incluye 150 ensayos iniciales y 30 de refinamiento, más 25 corridas de robustez de candidatos. El resumen registra 1.994,85 s oficiales y 705,82 s de exploración descartada, total 2.700,67 s; se separan de los 30 ajustes finales. Para LGD se mantiene la discrepancia de la sección 2.2 hasta recuperar el benchmark completo.</p>
+<p>El presupuesto oficial PD incluye 150 ensayos iniciales y 30 de refinamiento, más 25 corridas de robustez de candidatos. El resumen registra 1.994,85 s oficiales y 705,82 s de exploración descartada, total 2.700,67 s; se separan de los 30 ajustes finales. Para LGD, la sección 2.2 documenta cinco configuraciones y treinta corridas; el JSON incluye la selección por validación y todas las métricas por semilla.</p>
 <h2 id="seccion-6">5. Cierre de hipótesis, discusión y aprendizajes</h2>
 <h3>5.1 Contraste con el modelo</h3>
 <p>Se ejecutó <strong>solo inferencia</strong> del checkpoint PD final sobre 5.000 filas de validación 2013, seleccionadas sin reemplazo con <code>default_rng(42)</code>. Para cada variable de la Tabla 3 se crean dos copias del mismo perfil: se sustituye únicamente su valor por P25 y P75 de toda la validación y se mantienen las demás variables fijas. Los cuartiles se calculan tras imputación y se convierten a unidades originales con el escalador guardado. Muestra, hashes y resultados quedan en <a href="evidence.json">evidence.json</a>, regenerable con <code>python scripts/report_evidence.py</code>.</p>
@@ -846,7 +847,7 @@ Fuente: elaboración propia con el MLP final y validación temporal.</caption>
 <!-- END HYPOTHESES -->
 <p>Las correlaciones pueden producir perfiles poco plausibles al cambiar una variable aislada. Las conclusiones se limitan al modelo, muestra y cuartiles descritos, sin intervalos de incertidumbre ni pruebas estadísticas de confirmación. La permutación de la Tabla 6 mide dependencia predictiva; los escenarios de la Tabla 8 miden dirección de respuesta en una comparación definida. No son medidas intercambiables.</p>
 <h3>5.2 Qué aportaron las redes</h3>
-<p>PD muestra mejora media moderada frente a la logística: AUC +0,00465 y Brier −0,00545 en prueba 2014. Debe leerse junto con variación entre semillas, mayor presupuesto y desplazamiento temporal de la tasa de incumplimiento. No demuestra superioridad general ni calibración adecuada para decisiones reales. En LGD, las cinco corridas guardadas no muestran una ventaja clara del MLP y no permiten dar por verificado un benchmark de treinta.</p>
+<p>PD muestra mejora media moderada frente a la logística: AUC +0,00465 y Brier −0,00545 en prueba 2014. Debe leerse junto con variación entre semillas, mayor presupuesto y desplazamiento temporal de la tasa de incumplimiento. No demuestra superioridad general ni calibración adecuada para decisiones reales. En LGD, las treinta corridas guardadas no muestran una ventaja clara del MLP frente al baseline; el checkpoint se seleccionó exclusivamente por validación.</p>
 <p>La logística permite interpretar log-odds directamente. El MLP representa no linealidades, pero necesita herramientas adicionales y cautela con correlaciones. Convertir PD en puntaje facilita la comunicación; no mejora por sí solo las probabilidades.</p>
 <h3>5.3 Aprendizajes</h3>
 <ol>
@@ -948,7 +949,7 @@ python run_app.py
 <td>H5</td>
 <td>Conceptos</td>
 <td>Afirmar superioridad universal del MLP. Comparar con baseline y costos.</td>
-<td>Tablas 4 y 6; benchmark LGD de treinta semillas aún sin conciliar.</td>
+<td>Tablas 4 y 5; benchmark LGD de treinta semillas con registros por corrida y selección por validación.</td>
 </tr>
 </tbody>
 </table></div>
@@ -1087,7 +1088,7 @@ resumen de ejecución versionado y revisar que cada descripción de fase
 corresponda a los ensayos realmente ejecutados. Guardar el diff o la
 conversación original facilita demostrar el error y su corrección.</p>
 <h2 id="seccion-10">9. Estado de entrega y límites</h2>
-<p>La Tabla 11 separa implementación y verificación final. Esta edición corrige el reporte; no ejecuta treinta entrenamientos LGD ni integra los modelos para pérdida esperada.</p>
+<p>La Tabla 11 separa implementación y verificación final. La revisión LGD incorpora treinta entrenamientos y selección del checkpoint por validación. La integración de ambos modelos para pérdida esperada sigue pendiente.</p>
 <div class="table-wrap"><table><caption><strong>Tabla 11. Estado observado y pendientes.</strong> Fuente: revisión del repositorio y pruebas del 30/10/2026.</caption>
 <thead>
 <tr>
@@ -1109,8 +1110,8 @@ conversación original facilita demostrar el error y su corrección.</p>
 </tr>
 <tr>
 <td>LGD</td>
-<td>Baseline, MLP y JSON con cinco semillas.</td>
-<td>Conciliar treinta corridas y seleccionar checkpoint sin usar test.</td>
+<td>Baseline, MLP, cinco configuraciones y JSON con treinta semillas.</td>
+<td>Selección por validación corregida y comprobada; queda una evaluación externa futura sobre datos no usados históricamente.</td>
 </tr>
 <tr>
 <td>Pérdida esperada</td>

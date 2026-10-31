@@ -152,11 +152,14 @@ def explorar_hiperparametros(X_train, y_train, X_val, y_val, demo: bool = False)
 
 
 def ejecutar_30_semillas_mlp(best_cfg, X_train, y_train, X_val, y_val, X_test, y_test, n_seeds: int = 30):
-    """Entrena la mejor arquitectura con N semillas independientes y evalúa en test."""
+    """Selecciona por RMSE de validación; evalúa test después de fijar el checkpoint."""
+    if n_seeds < 1:
+        raise ValueError("Se requiere al menos una semilla LGD.")
     test_maes = []
     test_rmses = []
     fit_times = []
     models = []
+    validation_metrics = []
 
     print(f"\nIniciando {n_seeds} corridas independientes para MLP...")
     for seed in range(1, n_seeds + 1):
@@ -170,18 +173,44 @@ def ejecutar_30_semillas_mlp(best_cfg, X_train, y_train, X_val, y_val, X_test, y
             seed=seed * 101,
         )
         m.fit(X_train, y_train, X_val, y_val, verbose=False)
-        mae, rmse = m.evaluate(X_test, y_test)
-        test_maes.append(mae)
-        test_rmses.append(rmse)
+        val_mae, val_rmse = m.evaluate(X_val, y_val)
+        if not np.isfinite([val_mae, val_rmse]).all():
+            raise ValueError(f"Métricas de validación no finitas para la semilla {m.seed}.")
+        validation_metrics.append({"mae": val_mae, "rmse": val_rmse})
         fit_times.append(m.fit_time_sec)
         models.append(m)
 
-    # Identificar la mejor corrida individual
-    best_idx = int(np.argmin(test_rmses))
+    # La selección queda fijada antes de consultar test. Empates: primera semilla.
+    best_idx = int(np.argmin([record["rmse"] for record in validation_metrics]))
     best_trained_model = models[best_idx]
+    selection = {
+        "criterion": "rmse",
+        "split": "validation",
+        "seed": best_trained_model.seed,
+        "validation_mae": float(validation_metrics[best_idx]["mae"]),
+        "validation_rmse": float(validation_metrics[best_idx]["rmse"]),
+        "tie_break": "first_seed_in_evaluation_order",
+        "test_used_for_selection": False,
+    }
+    per_seed = []
+    for model, validation in zip(models, validation_metrics):
+        mae, rmse = model.evaluate(X_test, y_test)
+        test_maes.append(mae)
+        test_rmses.append(rmse)
+        per_seed.append({
+            "seed": model.seed,
+            "validation_mae": float(validation["mae"]),
+            "validation_rmse": float(validation["rmse"]),
+            "test_mae": float(mae),
+            "test_rmse": float(rmse),
+            "fit_seconds": float(model.fit_time_sec),
+            "selected": model is best_trained_model,
+        })
 
     stats_summary = {
         "n_semillas": n_seeds,
+        "checkpoint_selection": selection,
+        "per_seed_metrics": per_seed,
         "parametros": best_trained_model.n_parameters,
         "mae": {
             "media": float(np.mean(test_maes)),
@@ -295,6 +324,8 @@ def ejecutar_experimento_completo(
         n_seeds=seeds_count,
     )
 
+    print(f"Checkpoint LGD seleccionado por validación: semilla {best_mlp.seed}; "
+          f"RMSE={stats_30['checkpoint_selection']['validation_rmse']:.6f}")
     preds_mlp = best_mlp.predict(X["test"])
     metrics_best_mlp = calcular_metricas_lgd(y["test"], preds_mlp)
 
@@ -340,6 +371,8 @@ def ejecutar_experimento_completo(
         "busqueda_hiperparametros": busqueda,
         "mlp_30_semillas": stats_30,
         "mejor_mlp_individual": {
+            "seed": best_mlp.seed,
+            "checkpoint_selection": stats_30["checkpoint_selection"],
             "configuracion": mejor_cfg,
             "parametros": best_mlp.n_parameters,
             "metricas_test": metrics_best_mlp,
